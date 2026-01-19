@@ -1,3 +1,4 @@
+import { supabase } from "@/lib/supabaseClient";
 import {
   Table,
   TableBody,
@@ -6,9 +7,31 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 
-export default function Home() {
+// Define el tipo para un registro de empleado
+type Empleado = {
+  id: number;
+  dia_creacion: string;
+  nombre_completo: string;
+  horario: string;
+  descanso: string;
+  fecha_nacimiento: string;
+  telefono: string;
+  estado: string;
+};
+
+export default async function Home() {
+  // Obtiene los datos de la tabla 'empleados'
+  const { data: empleados, error } = await supabase
+    .from("empleados")
+    .select("*");
+
+  if (error) {
+    console.error("Error al obtener empleados:", error.message);
+    return <main className="container mx-auto py-10"><p>Error al cargar los empleados.</p></main>;
+  }
+
   return (
     <main className="container mx-auto py-10">
       <Table>
@@ -25,24 +48,17 @@ export default function Home() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow>
-            <TableCell>2024-01-15</TableCell>
-            <TableCell>Juan Perez</TableCell>
-            <TableCell>09:00 - 18:00</TableCell>
-            <TableCell>Sábado, Domingo</TableCell>
-            <TableCell>1990-05-20</TableCell>
-            <TableCell>555-1234</TableCell>
-            <TableCell>Activo</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>2024-01-16</TableCell>
-            <TableCell>Maria Garcia</TableCell>
-            <TableCell>10:00 - 19:00</TableCell>
-            <TableCell>Jueves, Viernes</TableCell>
-            <TableCell>1988-11-30</TableCell>
-            <TableCell>555-5678</TableCell>
-            <TableCell>Inactivo</TableCell>
-          </TableRow>
+          {empleados && (empleados as Empleado[]).map((empleado) => (
+            <TableRow key={empleado.id}>
+              <TableCell>{empleado.dia_creacion}</TableCell>
+              <TableCell>{empleado.nombre_completo}</TableCell>
+              <TableCell>{empleado.horario}</TableCell>
+              <TableCell>{empleado.descanso}</TableCell>
+              <TableCell>{empleado.fecha_nacimiento}</TableCell>
+              <TableCell>{empleado.telefono}</TableCell>
+              <TableCell>{empleado.estado}</TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </main>
