@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { AddEmployeeForm } from "@/components/AddEmployeeForm";
 
 // Define el tipo para un registro de empleado
 type Empleado = {
@@ -16,18 +17,27 @@ type Empleado = {
   nombres: string;
   a_paterno: string;
   a_materno: string;
-  horario: string;
-  descanso: string;
-  fecha_nacimiento: string;
   telefono: string;
-  estado: number;
+  fecha_nacimiento: string;
+  // Relaciones (pueden ser null si no tienen dato asignado)
+  empleados_horarios: {
+    h_entrada: string;
+    h_salida: string;
+  } | null;
+  empleados_descansos: {
+    d_salida: string;
+    d_regreso: string;
+  } | null;
+  empleados_estados: {
+    estado: string;
+  } | null;
 };
 
 export default async function Home() {
   // Obtiene los datos de la tabla 'empleados'
   const { data: empleados, error } = await supabase
     .from("empleados")
-    .select("*");
+    .select("*, empleados_horarios ( h_entrada, h_salida ), empleados_descansos ( d_salida, d_regreso ), empleados_estados ( estado )");
 
   if (error) {
     console.error("Error al obtener empleados:", error.message);
@@ -36,6 +46,7 @@ export default async function Home() {
 
   return (
     <main className="container mx-auto py-10">
+      <AddEmployeeForm />
       <Table>
         <TableCaption>Una lista de sus empleados.</TableCaption>
         <TableHeader>
@@ -54,11 +65,11 @@ export default async function Home() {
             <TableRow key={empleado.id}>
               <TableCell>{empleado.c_empleado}</TableCell>
               <TableCell>{`${empleado.nombres} ${empleado.a_paterno} ${empleado.a_materno}`}</TableCell>
-              <TableCell>{empleado.horario}</TableCell>
-              <TableCell>{empleado.descanso}</TableCell>
+              <TableCell>{empleado.empleados_horarios ? `${empleado.empleados_horarios.h_entrada.slice(0,5)} - ${empleado.empleados_horarios.h_salida.slice(0,5)}` : 'N/A'}</TableCell>
+              <TableCell>{empleado.empleados_descansos ? `${empleado.empleados_descansos.d_salida.slice(0,5)} - ${empleado.empleados_descansos.d_regreso.slice(0,5)}` : 'N/A'}</TableCell>
               <TableCell>{empleado.fecha_nacimiento}</TableCell>
               <TableCell>{empleado.telefono}</TableCell>
-              <TableCell>{empleado.estado}</TableCell>
+              <TableCell>{empleado.empleados_estados?.estado ?? 'N/A'}</TableCell>
             </TableRow>
           ))}
         </TableBody>
