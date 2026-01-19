@@ -46,7 +46,9 @@ export default async function Home() {
 
   return (
     <main className="container mx-auto py-10">
-      <AddEmployeeForm />
+      <div className="flex justify-end mb-4">
+        <AddEmployeeForm />
+      </div>
       <Table>
         <TableCaption>Una lista de sus empleados.</TableCaption>
         <TableHeader>
