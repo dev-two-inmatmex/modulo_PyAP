@@ -12,13 +12,15 @@ import {
 // Define el tipo para un registro de empleado
 type Empleado = {
   id: number;
-  dia_creacion: string;
-  nombre_completo: string;
+  c_empleado: string;
+  nombres: string;
+  a_paterno: string;
+  a_materno: string;
   horario: string;
   descanso: string;
   fecha_nacimiento: string;
   telefono: string;
-  estado: string;
+  estado: number;
 };
 
 export default async function Home() {
@@ -50,8 +52,8 @@ export default async function Home() {
         <TableBody>
           {empleados && (empleados as Empleado[]).map((empleado) => (
             <TableRow key={empleado.id}>
-              <TableCell>{empleado.dia_creacion}</TableCell>
-              <TableCell>{empleado.nombre_completo}</TableCell>
+              <TableCell>{empleado.c_empleado}</TableCell>
+              <TableCell>{`${empleado.nombres} ${empleado.a_paterno} ${empleado.a_materno}`}</TableCell>
               <TableCell>{empleado.horario}</TableCell>
               <TableCell>{empleado.descanso}</TableCell>
               <TableCell>{empleado.fecha_nacimiento}</TableCell>
