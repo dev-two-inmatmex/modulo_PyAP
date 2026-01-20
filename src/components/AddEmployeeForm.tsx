@@ -106,8 +106,8 @@ export function AddEmployeeForm({ horarios, descansos }: { horarios: Horario[] |
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="id_horario">Horario</Label>
-                <Select name="id_horario">
+                <Label htmlFor="id_ext_horario">Horario</Label>
+                <Select name="id_ext_horario">
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccione un horario" />
                   </SelectTrigger>
@@ -121,8 +121,8 @@ export function AddEmployeeForm({ horarios, descansos }: { horarios: Horario[] |
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="id_descanso">Descanso</Label>
-                <Select name="id_descanso">
+                <Label htmlFor="id_ext_descanso">Descanso</Label>
+                <Select name="id_ext_descanso">
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccione un descanso" />
                   </SelectTrigger>

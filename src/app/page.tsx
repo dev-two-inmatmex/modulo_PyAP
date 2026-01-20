@@ -19,6 +19,9 @@ type Empleado = {
   a_materno: string;
   telefono: string;
   fecha_nacimiento: string;
+  id_estado: number;
+  id_ext_horario: number | null;
+  id_ext_descanso: number | null;
   // Relaciones (pueden ser null si no tienen dato asignado)
   empleados_horarios: {
     h_entrada: string;

@@ -10,8 +10,8 @@ const EmployeeSchema = z.object({
   a_materno: z.string().min(1, 'El apellido materno es requerido'),
   telefono: z.string().min(1, 'El teléfono es requerido'),
   fecha_nacimiento: z.string().min(1, 'La fecha de nacimiento es requerida'),
-  id_horario: z.coerce.number().min(1, 'El horario es requerido'),
-  id_descanso: z.coerce.number().min(1, 'El descanso es requerido'),
+  id_ext_horario: z.coerce.number().min(1, 'El horario es requerido'),
+  id_ext_descanso: z.coerce.number().min(1, 'El descanso es requerido'),
 })
 
 export async function addEmployee(prevState: any, formData: FormData) {
@@ -21,8 +21,8 @@ export async function addEmployee(prevState: any, formData: FormData) {
     a_materno: formData.get('a_materno'),
     telefono: formData.get('telefono'),
     fecha_nacimiento: formData.get('fecha_nacimiento'),
-    id_horario: formData.get('id_horario'),
-    id_descanso: formData.get('id_descanso'),
+    id_ext_horario: formData.get('id_ext_horario'),
+    id_ext_descanso: formData.get('id_ext_descanso'),
   })
 
   if (!validatedFields.success) {
