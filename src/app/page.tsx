@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { AddEmployee } from "@/components/AddEmployee";
 
 // Define el tipo para un registro de empleado
 type Empleado = {
@@ -18,7 +19,7 @@ type Empleado = {
   a_materno: string;
   telefono: string;
   fecha_nacimiento: string;
-  id_estado: number;
+  id_ext_estado: number;
   id_ext_horario: number | null;
   id_ext_descanso: number | null;
   // Relaciones (pueden ser null si no tienen dato asignado)
@@ -41,6 +42,9 @@ export default async function Home() {
     .from("empleados")
     .select("*, empleados_horarios ( h_entrada, h_salida ), empleados_descansos ( d_salida, d_regreso ), empleados_estados ( estado )");
 
+  const { data: horarios } = await supabase.from('empleados_horarios').select('*');
+  const { data: descansos } = await supabase.from('empleados_descansos').select('*');
+
   if (error) {
     console.error("Error al obtener empleados:", error.message);
     return <main className="container mx-auto py-10"><p>Error al cargar los empleados.</p></main>;
@@ -48,6 +52,9 @@ export default async function Home() {
 
   return (
     <main className="container mx-auto py-10">
+      <div className="flex justify-end mb-4">
+        <AddEmployee horarios={horarios || []} descansos={descansos || []} />
+      </div>
       <Table>
         <TableCaption>Una lista de sus empleados.</TableCaption>
         <TableHeader>

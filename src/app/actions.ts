@@ -34,7 +34,7 @@ export async function addEmployee(prevState: any, formData: FormData) {
 
   const { error } = await supabase
     .from('empleados')
-    .insert({ ...validatedFields.data, id_estado: 1 })
+    .insert({ ...validatedFields.data, id_ext_estado: 1 })
 
   if (error) {
     console.error('Error al insertar empleado:', error)
