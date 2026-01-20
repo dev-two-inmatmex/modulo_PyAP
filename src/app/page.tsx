@@ -52,8 +52,8 @@ export default async function Home() {
     .from("empleados")
     .select("*, empleados_horarios ( h_entrada, h_salida ), empleados_descansos ( d_salida, d_regreso ), empleados_estados ( estado )");
 
-  const { data: horarios } = await supabase.from('horarios').select('*');
-  const { data: descansos } = await supabase.from('descansos').select('*');
+  const { data: horarios } = await supabase.from('empleados_horarios').select('*');
+  const { data: descansos } = await supabase.from('empleados_descansos').select('*');
 
   if (error) {
     console.error("Error al obtener empleados:", error.message);
