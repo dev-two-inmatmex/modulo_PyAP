@@ -33,11 +33,27 @@ type Empleado = {
   } | null;
 };
 
+type Horario = {
+  id: number;
+  h_entrada: string;
+  h_salida: string;
+};
+
+type Descanso = {
+  id: number;
+  d_salida: string;
+  d_regreso: string;
+};
+
+
 export default async function Home() {
   // Obtiene los datos de la tabla 'empleados'
   const { data: empleados, error } = await supabase
     .from("empleados")
     .select("*, empleados_horarios ( h_entrada, h_salida ), empleados_descansos ( d_salida, d_regreso ), empleados_estados ( estado )");
+
+  const { data: horarios } = await supabase.from('horarios').select('*');
+  const { data: descansos } = await supabase.from('descansos').select('*');
 
   if (error) {
     console.error("Error al obtener empleados:", error.message);
@@ -47,7 +63,7 @@ export default async function Home() {
   return (
     <main className="container mx-auto py-10">
       <div className="flex justify-end mb-4">
-        <AddEmployeeForm />
+        <AddEmployeeForm horarios={horarios} descansos={descansos} />
       </div>
       <Table>
         <TableCaption>Una lista de sus empleados.</TableCaption>
@@ -65,7 +81,7 @@ export default async function Home() {
         <TableBody>
           {empleados && (empleados as Empleado[]).map((empleado) => (
             <TableRow key={empleado.id}>
-              <TableCell>{empleado.c_empleado}</TableCell>
+              <TableCell>{new Date(empleado.c_empleado).toLocaleDateString()}</TableCell>
               <TableCell>{`${empleado.nombres} ${empleado.a_paterno} ${empleado.a_materno}`}</TableCell>
               <TableCell>{empleado.empleados_horarios ? `${empleado.empleados_horarios.h_entrada.slice(0,5)} - ${empleado.empleados_horarios.h_salida.slice(0,5)}` : 'N/A'}</TableCell>
               <TableCell>{empleado.empleados_descansos ? `${empleado.empleados_descansos.d_salida.slice(0,5)} - ${empleado.empleados_descansos.d_regreso.slice(0,5)}` : 'N/A'}</TableCell>

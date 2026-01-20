@@ -1,6 +1,6 @@
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
+import { useFormStatus } from 'react-dom'
 import { addEmployee } from '@/app/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +16,7 @@ import {
   DialogFooter,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const initialState = {
   message: null,
@@ -31,7 +32,19 @@ function SubmitButton() {
   )
 }
 
-export function AddEmployeeForm() {
+type Horario = {
+  id: number;
+  h_entrada: string;
+  h_salida: string;
+};
+
+type Descanso = {
+  id: number;
+  d_salida: string;
+  d_regreso: string;
+};
+
+export function AddEmployeeForm({ horarios, descansos }: { horarios: Horario[] | null, descansos: Descanso[] | null }) {
   const [state, formAction] = useActionState(addEmployee, initialState)
   const { toast } = useToast()
   const formRef = useRef<HTMLFormElement>(null)
@@ -89,6 +102,38 @@ export function AddEmployeeForm() {
               <div className="space-y-2">
                 <Label htmlFor="fecha_nacimiento">Fecha de Nacimiento</Label>
                 <Input id="fecha_nacimiento" name="fecha_nacimiento" type="date" required />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="id_horario">Horario</Label>
+                <Select name="id_horario">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccione un horario" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {horarios?.map((horario) => (
+                      <SelectItem key={horario.id} value={String(horario.id)}>
+                        {horario.h_entrada.slice(0, 5)} - {horario.h_salida.slice(0, 5)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="id_descanso">Descanso</Label>
+                <Select name="id_descanso">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccione un descanso" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {descansos?.map((descanso) => (
+                      <SelectItem key={descanso.id} value={String(descanso.id)}>
+                        {descanso.d_salida.slice(0, 5)} - {descanso.d_regreso.slice(0, 5)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
