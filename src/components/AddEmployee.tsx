@@ -217,7 +217,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        captionLayout="dropdown-buttons"
+                        captionLayout="dropdown"
                         fromYear={1900}
                         toYear={new Date().getFullYear()}
                         selected={field.value}
