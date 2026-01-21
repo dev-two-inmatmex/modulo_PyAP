@@ -218,8 +218,8 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
                       <Calendar
                         mode="single"
                         captionLayout="dropdown"
-                        fromDate={new Date(1900, 0, 1)}
-                        toDate={new Date()}
+                        from={new Date(1900, 0, 1)}
+                        to={new Date()}
                         selected={field.value}
                         onSelect={field.onChange}
                         initialFocus
