@@ -218,13 +218,10 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
                       <Calendar
                         mode="single"
                         captionLayout="dropdown"
-                        fromYear={1900}
-                        toYear={new Date().getFullYear()}
+                        fromDate={new Date(1900, 0, 1)}
+                        toDate={new Date()}
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date("1900-01-01")
-                        }
                         initialFocus
                       />
                     </PopoverContent>
