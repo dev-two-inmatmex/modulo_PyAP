@@ -1,7 +1,6 @@
 'use client'
 
 import * as React from 'react'
-import { useFormState } from 'react-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -78,7 +77,7 @@ interface AddEmployeeProps {
 export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast()
-  const [state, formAction] = useFormState(addEmployee, {
+  const [state, formAction] = React.useActionState(addEmployee, {
     message: '',
     errors: {},
   })
