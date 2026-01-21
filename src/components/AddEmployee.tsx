@@ -5,7 +5,7 @@ import { useFormState } from 'react-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 
@@ -82,6 +82,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
     message: '',
     errors: {},
   })
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<EmployeeFormValues>({
     resolver: zodResolver(EmployeeSchema),
@@ -121,7 +122,9 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
         formData.append(key, String(value))
       }
     })
-    formAction(formData)
+    startTransition(() => {
+      formAction(formData)
+    })
   }
 
   return (
@@ -276,7 +279,9 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">Agregar Empleado</Button>
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? 'Agregando...' : 'Agregar Empleado'}
+            </Button>
           </form>
         </Form>
       </DialogContent>
