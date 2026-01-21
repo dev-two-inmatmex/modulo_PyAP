@@ -59,7 +59,7 @@ export default async function Home() {
         <TableCaption>nempleados.</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead>DÍA DE CREACIÓN</TableHead>
+            <TableHead>ID EMPLEADO</TableHead>
             <TableHead>NOMBRE COMPLETO</TableHead>
             <TableHead>HORARIO</TableHead>
             <TableHead>DESCANSO</TableHead>
@@ -71,7 +71,7 @@ export default async function Home() {
         <TableBody>
           {empleados && (empleados as Empleado[]).map((empleado) => (
             <TableRow key={empleado.id}>
-              <TableCell>{new Date(empleado.c_empleado).toLocaleDateString()}</TableCell>
+              <TableCell>{empleado.c_empleado}</TableCell>
               <TableCell>{`${empleado.nombres} ${empleado.a_paterno} ${empleado.a_materno}`}</TableCell>
               <TableCell>{empleado.empleados_horarios ? `${empleado.empleados_horarios.h_entrada.slice(0,5)} - ${empleado.empleados_horarios.h_salida.slice(0,5)}` : 'N/A'}</TableCell>
               <TableCell>{empleado.empleados_descansos ? `${empleado.empleados_descansos.d_salida.slice(0,5)} - ${empleado.empleados_descansos.d_regreso.slice(0,5)}` : 'N/A'}</TableCell>

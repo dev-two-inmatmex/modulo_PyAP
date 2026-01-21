@@ -32,9 +32,20 @@ export async function addEmployee(prevState: any, formData: FormData) {
     }
   }
 
+  const { nombres, a_paterno, a_materno } = validatedFields.data;
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+
+  const c_empleado = `${nombres.charAt(0)}${a_paterno.charAt(0)}${a_materno.charAt(0)}${year}${month}${day}${hours}${minutes}`;
+
   const { error } = await supabase
     .from('empleados')
-    .insert({ ...validatedFields.data, id_ext_estado: 1 })
+    .insert({ ...validatedFields.data, c_empleado, id_ext_estado: 1 })
 
   if (error) {
     console.error('Error al insertar empleado:', error)
