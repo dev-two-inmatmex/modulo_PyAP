@@ -5,8 +5,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useEffect, useState, useTransition } from 'react'
-import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
 
 import { addEmployee } from '@/app/actions'
 import { useToast } from '@/hooks/use-toast'
@@ -34,13 +32,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import { cn } from "@/lib/utils"
 
 
 const EmployeeSchema = z.object({
@@ -48,9 +39,7 @@ const EmployeeSchema = z.object({
   a_paterno: z.string().min(1, 'El apellido paterno es requerido'),
   a_materno: z.string().min(1, 'El apellido materno es requerido'),
   telefono: z.string().min(1, 'El teléfono es requerido'),
-  fecha_nacimiento: z.date({
-    required_error: "La fecha de nacimiento es requerida.",
-  }),
+  fecha_nacimiento: z.string().min(1, 'La fecha de nacimiento es requerida'),
   id_ext_horario: z.string().min(1, 'El horario es requerido'),
   id_ext_descanso: z.string().min(1, 'El descanso es requerido'),
 })
@@ -90,6 +79,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
       a_paterno: '',
       a_materno: '',
       telefono: '',
+      fecha_nacimiento: '',
       id_ext_horario: '',
       id_ext_descanso: '',
     },
@@ -115,11 +105,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
   const onSubmit = (data: EmployeeFormValues) => {
     const formData = new FormData()
     Object.entries(data).forEach(([key, value]) => {
-      if (key === 'fecha_nacimiento' && value instanceof Date) {
-        formData.append(key, format(value, 'yyyy-MM-dd'))
-      } else {
-        formData.append(key, String(value))
-      }
+      formData.append(key, String(value))
     })
     startTransition(() => {
       formAction(formData)
@@ -193,39 +179,11 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
               control={form.control}
               name="fecha_nacimiento"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem>
                   <FormLabel>Fecha de Nacimiento</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Elige una fecha</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        captionLayout="dropdown"
-                        from={new Date(1900, 0, 1)}
-                        to={new Date()}
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
