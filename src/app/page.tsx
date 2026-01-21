@@ -56,7 +56,7 @@ export default async function Home() {
         <AddEmployee horarios={horarios || []} descansos={descansos || []} />
       </div>
       <Table>
-        <TableCaption>Una lista de sus empleados.</TableCaption>
+        <TableCaption>nempleados.</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>DÍA DE CREACIÓN</TableHead>
