@@ -12,7 +12,7 @@ import { AddEmployee } from "@/components/AddEmployee";
 
 // Define el tipo para un registro de empleado
 type Empleado = {
-  id: number;
+  id: string;
   c_empleado: string;
   nombres: string;
   a_paterno: string;

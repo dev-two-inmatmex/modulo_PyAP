@@ -32,6 +32,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 
 
 const EmployeeSchema = z.object({
@@ -84,6 +85,24 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
       id_ext_descanso: '',
     },
   })
+
+  const { watch } = form;
+  const [nombres, a_paterno, a_materno] = watch(['nombres', 'a_paterno', 'a_materno']);
+  const [idPreview, setIdPreview] = useState('');
+
+  useEffect(() => {
+    const firstInitial = nombres?.[0] || '';
+    const paternalInitial = a_paterno?.[0] || '';
+    const maternalInitial = a_materno?.[0] || '';
+
+    if (firstInitial && paternalInitial && maternalInitial) {
+        const preview = `${firstInitial}${paternalInitial}${maternalInitial}YYYYMMDDHHMM`;
+        setIdPreview(preview);
+    } else {
+        setIdPreview('');
+    }
+  }, [nombres, a_paterno, a_materno]);
+
 
   useEffect(() => {
     if (state.message && !state.errors) {
@@ -177,6 +196,21 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
                 </FormItem>
               )}
             />
+
+            <div className="space-y-2">
+              <Label>ID de Empleado (previsualización)</Label>
+              <Input
+                  placeholder="AQSYYYYMMDDHHMM"
+                  readOnly
+                  disabled
+                  value={idPreview}
+                  className="uppercase bg-muted/50"
+              />
+              <p className="text-sm text-muted-foreground">
+                  El ID final se completa con la fecha y hora del registro.
+              </p>
+            </div>
+
             <FormField
               control={form.control}
               name="telefono"
