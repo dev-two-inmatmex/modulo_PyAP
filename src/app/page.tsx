@@ -71,7 +71,7 @@ export default async function Home() {
         <TableBody>
           {empleados && (empleados as Empleado[]).map((empleado) => (
             <TableRow key={empleado.id}>
-              <TableCell>{empleado.c_empleado}</TableCell>
+              <TableCell>{empleado.id}</TableCell>
               <TableCell>{`${empleado.nombres} ${empleado.a_paterno} ${empleado.a_materno}`}</TableCell>
               <TableCell>{empleado.empleados_horarios ? `${empleado.empleados_horarios.h_entrada.slice(0,5)} - ${empleado.empleados_horarios.h_salida.slice(0,5)}` : 'N/A'}</TableCell>
               <TableCell>{empleado.empleados_descansos ? `${empleado.empleados_descansos.d_salida.slice(0,5)} - ${empleado.empleados_descansos.d_regreso.slice(0,5)}` : 'N/A'}</TableCell>

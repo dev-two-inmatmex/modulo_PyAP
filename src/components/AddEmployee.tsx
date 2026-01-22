@@ -32,11 +32,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-
 
 const EmployeeSchema = z.object({
-  id: z.string().optional(),
   nombres: z.string().min(1, 'El nombre es requerido'),
   a_paterno: z.string().min(1, 'El apellido paterno es requerido'),
   a_materno: z.string().min(1, 'El apellido materno es requerido'),
@@ -44,8 +41,8 @@ const EmployeeSchema = z.object({
   fecha_nacimiento: z.string().min(1, 'La fecha de nacimiento es requerida'),
   id_ext_horario: z.string().min(1, 'El horario es requerido'),
   id_ext_descanso: z.string().min(1, 'El descanso es requerido'),
-  registration_timestamp: z.string(),
-  c_empleado: z.string(),
+  registration_timestamp: z.string().min(1, 'Timestamp de registro requerido.'),
+  c_empleado: z.string().min(1, 'ID de empleado es requerido.'),
 })
 
 type EmployeeFormValues = z.infer<typeof EmployeeSchema>
@@ -81,7 +78,6 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
   const form = useForm<EmployeeFormValues>({
     resolver: zodResolver(EmployeeSchema),
     defaultValues: {
-      id: '',
       nombres: '',
       a_paterno: '',
       a_materno: '',
@@ -96,7 +92,6 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
 
   const { watch } = form;
   const [nombres, a_paterno, a_materno] = watch(['nombres', 'a_paterno', 'a_materno']);
-  const [idPreview, setIdPreview] = useState('');
 
   const handleOpenChange = useCallback((isOpen: boolean) => {
     setOpen(isOpen);
@@ -112,7 +107,6 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
       form.setValue('registration_timestamp', timestamp);
     } else {
       form.reset();
-      setIdPreview('');
       setRegistrationTimestamp('');
     }
   }, [form]);
@@ -125,10 +119,9 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
 
     if (firstInitial && paternalInitial && maternalInitial && registrationTimestamp) {
         const preview = `${firstInitial}${paternalInitial}${maternalInitial}${registrationTimestamp}`;
-        setIdPreview(preview);
         form.setValue('c_empleado', preview);
     } else {
-        setIdPreview('...YYYYMMDDHHMM');
+        form.setValue('c_empleado', '');
     }
   }, [nombres, a_paterno, a_materno, registrationTimestamp, form]);
 
@@ -220,20 +213,25 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
                 </FormItem>
               )}
             />
-
-            <div className="space-y-2">
-              <Label>ID de Empleado (previsualización)</Label>
-              <Input
-                  placeholder="AQSYYYYMMDDHHMM"
-                  readOnly
-                  disabled
-                  value={idPreview}
-                  className="uppercase bg-muted/50"
-              />
-              <p className="text-sm text-muted-foreground">
-                  El ID final se completa con la fecha y hora del registro.
-              </p>
-            </div>
+            <FormField
+              control={form.control}
+              name="c_empleado"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID de Empleado</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Se genera automáticamente"
+                      {...field}
+                      readOnly
+                      disabled
+                      className="uppercase bg-muted/50"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
