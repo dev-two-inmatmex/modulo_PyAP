@@ -42,7 +42,7 @@ const EmployeeSchema = z.object({
   id_ext_horario: z.string().min(1, 'El horario es requerido'),
   id_ext_descanso: z.string().min(1, 'El descanso es requerido'),
   registration_timestamp: z.string().min(1, 'Timestamp de registro requerido.'),
-  c_empleado: z.string().min(1, 'ID de empleado es requerido.'),
+  id: z.string().min(1, 'ID de empleado es requerido.'),
 })
 
 type EmployeeFormValues = z.infer<typeof EmployeeSchema>
@@ -86,7 +86,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
       id_ext_horario: '',
       id_ext_descanso: '',
       registration_timestamp: '',
-      c_empleado: '',
+      id: '',
     },
   })
 
@@ -119,9 +119,9 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
 
     if (firstInitial && paternalInitial && maternalInitial && registrationTimestamp) {
         const preview = `${firstInitial}${paternalInitial}${maternalInitial}${registrationTimestamp}`;
-        form.setValue('c_empleado', preview);
+        form.setValue('id', preview);
     } else {
-        form.setValue('c_empleado', '');
+        form.setValue('id', '');
     }
   }, [nombres, a_paterno, a_materno, registrationTimestamp, form]);
 
@@ -215,7 +215,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
             />
             <FormField
               control={form.control}
-              name="c_empleado"
+              name="id"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>ID de Empleado</FormLabel>
