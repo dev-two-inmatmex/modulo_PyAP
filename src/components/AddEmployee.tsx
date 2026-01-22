@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useEffect, useState, useTransition, useCallback } from 'react'
 
-import { addEmployee } from '@/app/actions'
+import { addUser } from '@/app/actions'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -33,98 +33,62 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-const EmployeeSchema = z.object({
+const UserSchema = z.object({
   nombres: z.string().min(1, 'El nombre es requerido'),
   a_paterno: z.string().min(1, 'El apellido paterno es requerido'),
   a_materno: z.string().min(1, 'El apellido materno es requerido'),
   telefono: z.string().min(1, 'El teléfono es requerido'),
   fecha_nacimiento: z.string().min(1, 'La fecha de nacimiento es requerida'),
-  id_ext_horario: z.string().min(1, 'El horario es requerido'),
-  id_ext_descanso: z.string().min(1, 'El descanso es requerido'),
-  registration_timestamp: z.string().min(1, 'Timestamp de registro requerido.'),
-  id: z.string().min(1, 'ID de empleado es requerido.'),
+  id_ext_turno: z.string().min(1, 'El turno es requerido'),
+  id_ext_rol: z.string().min(1, 'El rol es requerido'),
 })
 
-type EmployeeFormValues = z.infer<typeof EmployeeSchema>
+type UserFormValues = z.infer<typeof UserSchema>
 
-type Horario = {
+type Turno = {
   id: number;
-  h_entrada: string;
-  h_salida: string;
+  horario_entrada: string;
+  horario_salida: string;
 };
 
-type Descanso = {
+type Rol = {
   id: number;
-  d_salida: string;
-  d_regreso: string;
+  rol: string;
 };
 
-interface AddEmployeeProps {
-  horarios: Horario[];
-  descansos: Descanso[];
+interface AddUserProps {
+  turnos: Turno[];
+  roles: Rol[];
 }
 
-export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
+export function AddEmployee({ turnos, roles }: AddUserProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast()
-  const [state, formAction] = React.useActionState(addEmployee, {
+  const [state, formAction] = React.useActionState(addUser, {
     message: '',
     errors: {},
   })
   const [isPending, startTransition] = useTransition();
 
-  const [registrationTimestamp, setRegistrationTimestamp] = useState('');
-
-  const form = useForm<EmployeeFormValues>({
-    resolver: zodResolver(EmployeeSchema),
+  const form = useForm<UserFormValues>({
+    resolver: zodResolver(UserSchema),
     defaultValues: {
       nombres: '',
       a_paterno: '',
       a_materno: '',
       telefono: '',
       fecha_nacimiento: '',
-      id_ext_horario: '',
-      id_ext_descanso: '',
-      registration_timestamp: '',
-      id: '',
+      id_ext_turno: '',
+      id_ext_rol: '',
     },
   })
 
-  const { watch } = form;
-  const [nombres, a_paterno, a_materno] = watch(['nombres', 'a_paterno', 'a_materno']);
-
   const handleOpenChange = useCallback((isOpen: boolean) => {
     setOpen(isOpen);
-    if (isOpen) {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const timestamp = `${year}${month}${day}${hours}${minutes}`;
-      setRegistrationTimestamp(timestamp);
-      form.setValue('registration_timestamp', timestamp);
-    } else {
+    if (!isOpen) {
       form.reset();
-      setRegistrationTimestamp('');
     }
   }, [form]);
-
-
-  useEffect(() => {
-    const firstInitial = nombres?.[0] || '';
-    const paternalInitial = a_paterno?.[0] || '';
-    const maternalInitial = a_materno?.[0] || '';
-
-    if (firstInitial && paternalInitial && maternalInitial && registrationTimestamp) {
-        const preview = `${firstInitial}${paternalInitial}${maternalInitial}${registrationTimestamp}`;
-        form.setValue('id', preview);
-    } else {
-        form.setValue('id', '');
-    }
-  }, [nombres, a_paterno, a_materno, registrationTimestamp, form]);
-
 
   useEffect(() => {
     if (state.message && !state.errors) {
@@ -142,7 +106,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
     }
   }, [state, toast, handleOpenChange])
 
-  const onSubmit = (data: EmployeeFormValues) => {
+  const onSubmit = (data: UserFormValues) => {
     startTransition(() => {
       formAction(data)
     })
@@ -151,11 +115,11 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>Agregar Nuevo Empleado</Button>
+        <Button>Agregar Nuevo Usuario</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Agregar Nuevo Empleado</DialogTitle>
+          <DialogTitle>Agregar Nuevo Usuario</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -215,26 +179,6 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
             />
             <FormField
               control={form.control}
-              name="id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ID de Empleado</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Se genera automáticamente"
-                      {...field}
-                      readOnly
-                      disabled
-                      className="uppercase bg-muted/50"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="telefono"
               render={({ field }) => (
                 <FormItem>
@@ -261,20 +205,20 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
             />
             <FormField
               control={form.control}
-              name="id_ext_horario"
+              name="id_ext_turno"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Horario</FormLabel>
+                  <FormLabel>Turno</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccione un horario" />
+                        <SelectValue placeholder="Seleccione un turno" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {horarios.map((horario) => (
-                        <SelectItem key={horario.id} value={String(horario.id)}>
-                          {horario.h_entrada.slice(0,5)} - {horario.h_salida.slice(0,5)}
+                      {turnos.map((turno) => (
+                        <SelectItem key={turno.id} value={String(turno.id)}>
+                          {turno.horario_entrada.slice(0,5)} - {turno.horario_salida.slice(0,5)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -283,22 +227,22 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
                 </FormItem>
               )}
             />
-            <FormField
+             <FormField
               control={form.control}
-              name="id_ext_descanso"
+              name="id_ext_rol"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descanso</FormLabel>
+                  <FormLabel>Rol</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccione un descanso" />
+                        <SelectValue placeholder="Seleccione un rol" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {descansos.map((descanso) => (
-                        <SelectItem key={descanso.id} value={String(descanso.id)}>
-                          {descanso.d_salida.slice(0,5)} - {descanso.d_regreso.slice(0,5)}
+                      {roles.map((rol) => (
+                        <SelectItem key={rol.id} value={String(rol.id)}>
+                          {rol.rol}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -308,7 +252,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
               )}
             />
             <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? 'Agregando...' : 'Agregar Empleado'}
+              {isPending ? 'Agregando...' : 'Agregar Usuario'}
             </Button>
           </form>
         </Form>
