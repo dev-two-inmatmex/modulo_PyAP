@@ -26,6 +26,8 @@ type Usuario = {
   usuarios_turnos: {
     horario_entrada: string;
     horario_salida: string;
+    salida_descanso: string | null;
+    regreso_descanso: string | null;
   } | null;
   usuarios_estados: {
     estado: string;
@@ -38,10 +40,10 @@ type Usuario = {
 };
 
 export default async function Home() {
-  // Obtiene los datos de la tabla 'empleados'
+  // Obtiene los datos de la tabla 'usuarios'
   const { data: usuarios, error } = await supabase
     .from("usuarios")
-    .select("*, usuarios_turnos ( horario_entrada, horario_salida ), usuarios_estados ( estado )");
+    .select("*, usuarios_turnos ( horario_entrada, horario_salida, salida_descanso, regreso_descanso ), usuarios_estados ( estado )");
 
   const { data: turnos } = await supabase.from('usuarios_turnos').select('*');
 
