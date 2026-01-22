@@ -36,6 +36,7 @@ import { Label } from "@/components/ui/label"
 
 
 const EmployeeSchema = z.object({
+  id: z.string().optional(),
   nombres: z.string().min(1, 'El nombre es requerido'),
   a_paterno: z.string().min(1, 'El apellido paterno es requerido'),
   a_materno: z.string().min(1, 'El apellido materno es requerido'),
@@ -43,6 +44,7 @@ const EmployeeSchema = z.object({
   fecha_nacimiento: z.string().min(1, 'La fecha de nacimiento es requerida'),
   id_ext_horario: z.string().min(1, 'El horario es requerido'),
   id_ext_descanso: z.string().min(1, 'El descanso es requerido'),
+  registration_timestamp: z.string(),
 })
 
 type EmployeeFormValues = z.infer<typeof EmployeeSchema>
@@ -73,9 +75,12 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
   })
   const [isPending, startTransition] = useTransition();
 
+  const [registrationTimestamp, setRegistrationTimestamp] = useState('');
+
   const form = useForm<EmployeeFormValues>({
     resolver: zodResolver(EmployeeSchema),
     defaultValues: {
+      id: '',
       nombres: '',
       a_paterno: '',
       a_materno: '',
@@ -83,6 +88,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
       fecha_nacimiento: '',
       id_ext_horario: '',
       id_ext_descanso: '',
+      registration_timestamp: '',
     },
   })
 
@@ -90,18 +96,38 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
   const [nombres, a_paterno, a_materno] = watch(['nombres', 'a_paterno', 'a_materno']);
   const [idPreview, setIdPreview] = useState('');
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (isOpen) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const timestamp = `${year}${month}${day}${hours}${minutes}`;
+      setRegistrationTimestamp(timestamp);
+      form.setValue('registration_timestamp', timestamp);
+    } else {
+      form.reset();
+      setIdPreview('');
+      setRegistrationTimestamp('');
+    }
+  };
+
+
   useEffect(() => {
     const firstInitial = nombres?.[0] || '';
     const paternalInitial = a_paterno?.[0] || '';
     const maternalInitial = a_materno?.[0] || '';
 
-    if (firstInitial && paternalInitial && maternalInitial) {
-        const preview = `${firstInitial}${paternalInitial}${maternalInitial}YYYYMMDDHHMM`;
+    if (firstInitial && paternalInitial && maternalInitial && registrationTimestamp) {
+        const preview = `${firstInitial}${paternalInitial}${maternalInitial}${registrationTimestamp}`;
         setIdPreview(preview);
     } else {
-        setIdPreview('');
+        setIdPreview('...YYYYMMDDHHMM');
     }
-  }, [nombres, a_paterno, a_materno]);
+  }, [nombres, a_paterno, a_materno, registrationTimestamp]);
 
 
   useEffect(() => {
@@ -110,8 +136,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
         title: 'Éxito',
         description: state.message,
       })
-      setOpen(false)
-      form.reset()
+      handleOpenChange(false)
     } else if (state.message && state.errors) {
       toast({
         variant: 'destructive',
@@ -119,7 +144,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
         description: state.message,
       })
     }
-  }, [state, toast, form])
+  }, [state, toast, form, handleOpenChange])
 
   const onSubmit = (data: EmployeeFormValues) => {
     startTransition(() => {
@@ -128,7 +153,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button>Agregar Nuevo Empleado</Button>
       </DialogTrigger>
