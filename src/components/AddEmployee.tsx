@@ -45,6 +45,7 @@ const EmployeeSchema = z.object({
   id_ext_horario: z.string().min(1, 'El horario es requerido'),
   id_ext_descanso: z.string().min(1, 'El descanso es requerido'),
   registration_timestamp: z.string(),
+  c_empleado: z.string(),
 })
 
 type EmployeeFormValues = z.infer<typeof EmployeeSchema>
@@ -89,6 +90,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
       id_ext_horario: '',
       id_ext_descanso: '',
       registration_timestamp: '',
+      c_empleado: '',
     },
   })
 
@@ -124,10 +126,11 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
     if (firstInitial && paternalInitial && maternalInitial && registrationTimestamp) {
         const preview = `${firstInitial}${paternalInitial}${maternalInitial}${registrationTimestamp}`;
         setIdPreview(preview);
+        form.setValue('c_empleado', preview);
     } else {
         setIdPreview('...YYYYMMDDHHMM');
     }
-  }, [nombres, a_paterno, a_materno, registrationTimestamp]);
+  }, [nombres, a_paterno, a_materno, registrationTimestamp, form]);
 
 
   useEffect(() => {

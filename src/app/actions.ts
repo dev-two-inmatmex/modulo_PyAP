@@ -13,6 +13,7 @@ const EmployeeSchema = z.object({
   id_ext_horario: z.coerce.number().min(1, 'El horario es requerido'),
   id_ext_descanso: z.coerce.number().min(1, 'El descanso es requerido'),
   registration_timestamp: z.string().min(1, 'Timestamp de registro requerido.'),
+  c_empleado: z.string().min(1, 'ID de empleado es requerido.'),
 })
 
 export async function addEmployee(prevState: any, data: unknown) {
@@ -25,14 +26,11 @@ export async function addEmployee(prevState: any, data: unknown) {
     }
   }
 
-  const { registration_timestamp, ...employeeData } = validatedFields.data;
-  const { nombres, a_paterno, a_materno } = employeeData;
-
-  const c_empleado = `${nombres.charAt(0)}${a_paterno.charAt(0)}${a_materno.charAt(0)}${registration_timestamp}`;
+  const { registration_timestamp, ...insertData } = validatedFields.data;
 
   const { error } = await supabase
     .from('empleados')
-    .insert({ ...employeeData, c_empleado, id_ext_estado: 1 })
+    .insert({ ...insertData, id_ext_estado: 1 })
 
   if (error) {
     console.error('Error al insertar empleado:', error)
