@@ -11,39 +11,39 @@ import {
 import { AddEmployee } from "@/components/AddEmployee";
 
 // Define el tipo para un registro de empleado
-type Empleado = {
+type Usuario = {
   id: string;
-  c_empleado: string;
+  creacion_usuario: string;
   nombres: string;
   a_paterno: string;
   a_materno: string;
   telefono: string;
   fecha_nacimiento: string;
+  id_ext_rol: string;
   id_ext_estado: number;
-  id_ext_horario: number | null;
-  id_ext_descanso: number | null;
+  id_ext_turno: number | null;
   // Relaciones (pueden ser null si no tienen dato asignado)
-  empleados_horarios: {
-    h_entrada: string;
-    h_salida: string;
+  usuarios_turnos: {
+    horario_entrada: string;
+    horario_salida: string;
   } | null;
-  empleados_descansos: {
-    d_salida: string;
-    d_regreso: string;
-  } | null;
-  empleados_estados: {
+  usuarios_estados: {
     estado: string;
+    descripcion: string;
+  } | null;
+  usuarios_roles: {
+    rol: string;
+    descripcion: string;
   } | null;
 };
 
 export default async function Home() {
   // Obtiene los datos de la tabla 'empleados'
-  const { data: empleados, error } = await supabase
-    .from("empleados")
-    .select("*, empleados_horarios ( h_entrada, h_salida ), empleados_descansos ( d_salida, d_regreso ), empleados_estados ( estado )");
+  const { data: usuarios, error } = await supabase
+    .from("usuarios")
+    .select("*, usuarios_turnos ( horario_entrada, horario_salida ), usuarios_estados ( estado )");
 
-  const { data: horarios } = await supabase.from('empleados_horarios').select('*');
-  const { data: descansos } = await supabase.from('empleados_descansos').select('*');
+  const { data: turnos } = await supabase.from('usuarios_turnos').select('*');
 
   if (error) {
     console.error("Error al obtener empleados:", error.message);
@@ -53,31 +53,26 @@ export default async function Home() {
   return (
     <main className="container mx-auto py-10">
       <div className="flex justify-end mb-4">
-        <AddEmployee horarios={horarios || []} descansos={descansos || []} />
       </div>
       <Table>
         <TableCaption>Lista de empleados.</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead>ID EMPLEADO</TableHead>
             <TableHead>NOMBRE COMPLETO</TableHead>
             <TableHead>HORARIO</TableHead>
             <TableHead>DESCANSO</TableHead>
-            <TableHead>FECHA NACIMIENTO</TableHead>
             <TableHead>TELÉFONO</TableHead>
             <TableHead>ESTADO</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {empleados && (empleados as Empleado[]).map((empleado) => (
-            <TableRow key={empleado.id}>
-              <TableCell>{empleado.id}</TableCell>
-              <TableCell>{`${empleado.nombres} ${empleado.a_paterno} ${empleado.a_materno}`}</TableCell>
-              <TableCell>{empleado.empleados_horarios ? `${empleado.empleados_horarios.h_entrada.slice(0,5)} - ${empleado.empleados_horarios.h_salida.slice(0,5)}` : 'N/A'}</TableCell>
-              <TableCell>{empleado.empleados_descansos ? `${empleado.empleados_descansos.d_salida.slice(0,5)} - ${empleado.empleados_descansos.d_regreso.slice(0,5)}` : 'N/A'}</TableCell>
-              <TableCell>{empleado.fecha_nacimiento}</TableCell>
-              <TableCell>{empleado.telefono}</TableCell>
-              <TableCell>{empleado.empleados_estados?.estado ?? 'N/A'}</TableCell>
+          {usuarios && (usuarios as any[]).map((usuario) => (
+            <TableRow key={usuario.id}>
+              <TableCell>{`${usuario.nombres} ${usuario.a_paterno} ${usuario.a_materno}`}</TableCell>
+              <TableCell>{usuario.usuarios_turnos?.horario_entrada && usuario.usuarios_turnos?.horario_salida ? `${usuario.usuarios_turnos.horario_entrada.slice(0,5)} - ${usuario.usuarios_turnos.horario_salida.slice(0,5)}` : 'N/A'}</TableCell>
+              <TableCell>{usuario.usuarios_turnos?.salida_descanso && usuario.usuarios_turnos?.regreso_descanso ? `${usuario.usuarios_turnos.salida_descanso.slice(0,5)} - ${usuario.usuarios_turnos.regreso_descanso.slice(0,5)}` : 'N/A'}</TableCell>
+              <TableCell>{usuario.telefono}</TableCell>
+              <TableCell>{usuario.usuarios_estados?.estado ?? 'N/A'}</TableCell>
             </TableRow>
           ))}
         </TableBody>
