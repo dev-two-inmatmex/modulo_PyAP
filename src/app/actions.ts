@@ -14,16 +14,8 @@ const EmployeeSchema = z.object({
   id_ext_descanso: z.coerce.number().min(1, 'El descanso es requerido'),
 })
 
-export async function addEmployee(prevState: any, formData: FormData) {
-  const validatedFields = EmployeeSchema.safeParse({
-    nombres: formData.get('nombres'),
-    a_paterno: formData.get('a_paterno'),
-    a_materno: formData.get('a_materno'),
-    telefono: formData.get('telefono'),
-    fecha_nacimiento: formData.get('fecha_nacimiento'),
-    id_ext_horario: formData.get('id_ext_horario'),
-    id_ext_descanso: formData.get('id_ext_descanso'),
-  })
+export async function addEmployee(prevState: any, data: unknown) {
+  const validatedFields = EmployeeSchema.safeParse(data)
 
   if (!validatedFields.success) {
     return {

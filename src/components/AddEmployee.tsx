@@ -122,12 +122,8 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
   }, [state, toast, form])
 
   const onSubmit = (data: EmployeeFormValues) => {
-    const formData = new FormData()
-    Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, String(value))
-    })
     startTransition(() => {
-      formAction(formData)
+      formAction(data)
     })
   }
 
