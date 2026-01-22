@@ -4,7 +4,7 @@ import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useState, useTransition, useCallback } from 'react'
 
 import { addEmployee } from '@/app/actions'
 import { useToast } from '@/hooks/use-toast'
@@ -96,7 +96,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
   const [nombres, a_paterno, a_materno] = watch(['nombres', 'a_paterno', 'a_materno']);
   const [idPreview, setIdPreview] = useState('');
 
-  const handleOpenChange = (isOpen: boolean) => {
+  const handleOpenChange = useCallback((isOpen: boolean) => {
     setOpen(isOpen);
     if (isOpen) {
       const now = new Date();
@@ -113,7 +113,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
       setIdPreview('');
       setRegistrationTimestamp('');
     }
-  };
+  }, [form]);
 
 
   useEffect(() => {
@@ -144,7 +144,7 @@ export function AddEmployee({ horarios, descansos }: AddEmployeeProps) {
         description: state.message,
       })
     }
-  }, [state, toast, form, handleOpenChange])
+  }, [state, toast, handleOpenChange])
 
   const onSubmit = (data: EmployeeFormValues) => {
     startTransition(() => {
