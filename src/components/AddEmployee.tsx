@@ -47,8 +47,11 @@ type UserFormValues = z.infer<typeof UserSchema>
 
 type Turno = {
   id: number;
+  nombre_turno: string | null;
   horario_entrada: string;
   horario_salida: string;
+  salida_descanso: string;
+  regreso_descanso: string;
 };
 
 type Rol = {
@@ -218,7 +221,7 @@ export function AddEmployee({ turnos, roles }: AddUserProps) {
                     <SelectContent>
                       {turnos.map((turno) => (
                         <SelectItem key={turno.id} value={String(turno.id)}>
-                          {turno.horario_entrada.slice(0,5)} - {turno.horario_salida.slice(0,5)}
+                          {turno.nombre_turno || `${turno.horario_entrada.slice(0,5)} - ${turno.horario_salida.slice(0,5)}`}
                         </SelectItem>
                       ))}
                     </SelectContent>
