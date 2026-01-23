@@ -8,7 +8,10 @@ const UserSchema = z.object({
   nombres: z.string().min(1, 'El nombre es requerido'),
   a_paterno: z.string().min(1, 'El apellido paterno es requerido'),
   a_materno: z.string().min(1, 'El apellido materno es requerido'),
-  telefono: z.string().min(1, 'El teléfono es requerido'),
+  email: z.string().email('El email no es válido').min(1, 'El email es requerido'),
+  direccion: z.string().min(1, 'La dirección es requerida'),
+  telefono1: z.string().min(1, 'Se requiere al menos un teléfono'),
+  telefono2: z.string().optional().or(z.literal('')),
   fecha_nacimiento: z.string().min(1, 'La fecha de nacimiento es requerida'),
   id_ext_turno: z.coerce.number().min(1, 'El turno es requerido'),
   id_ext_rol: z.coerce.number().min(1, 'El rol es requerido'),
@@ -24,19 +27,51 @@ export async function addUser(prevState: any, data: unknown) {
     }
   }
 
-  const { error } = await supabase
+  const { telefono1, telefono2, ...userData } = validatedFields.data
+
+  const { data: newUser, error: userError } = await supabase
     .from('usuarios')
     .insert({ 
-      ...validatedFields.data, 
+      ...userData,
       creacion_usuario: new Date().toISOString(), 
       id_ext_estado: 1 
     })
+    .select('id')
+    .single()
 
-  if (error) {
-    console.error('Error al insertar usuario:', error)
+  if (userError) {
+    console.error('Error al insertar usuario:', userError)
     return {
       message: 'Error de base de datos: No se pudo crear el usuario.',
     }
+  }
+
+  if (!newUser) {
+    return {
+      message: 'Error de base de datos: No se pudo obtener el ID del nuevo usuario.',
+    }
+  }
+
+  const telefonosToInsert = []
+  if (telefono1) {
+      telefonosToInsert.push({ id_ext_usuario: newUser.id, numero_telefonico: telefono1 })
+  }
+  if (telefono2 && telefono2.length > 0) {
+      telefonosToInsert.push({ id_ext_usuario: newUser.id, numero_telefonico: telefono2 })
+  }
+
+  if (telefonosToInsert.length > 0) {
+      const { error: phoneError } = await supabase
+          .from('telefonos_usuarios')
+          .insert(telefonosToInsert)
+
+      if (phoneError) {
+          console.error('Error al insertar teléfonos:', phoneError)
+          revalidatePath('/')
+          return {
+            message: 'Usuario agregado, pero hubo un error al guardar los teléfonos.',
+          }
+      }
   }
 
   revalidatePath('/')

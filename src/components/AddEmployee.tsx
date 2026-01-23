@@ -37,10 +37,13 @@ const UserSchema = z.object({
   nombres: z.string().min(1, 'El nombre es requerido'),
   a_paterno: z.string().min(1, 'El apellido paterno es requerido'),
   a_materno: z.string().min(1, 'El apellido materno es requerido'),
-  telefono: z.string().min(1, 'El teléfono es requerido'),
+  email: z.string().email('El email no es válido').min(1, 'El email es requerido'),
+  direccion: z.string().min(1, 'La dirección es requerida'),
+  telefono1: z.string().min(1, 'Se requiere al menos un teléfono'),
+  telefono2: z.string().optional(),
   fecha_nacimiento: z.string().min(1, 'La fecha de nacimiento es requerida'),
   id_ext_turno: z.string().min(1, 'El turno es requerido'),
-  id_ext_rol: z.string().min(1, 'El rol es requerido'),
+  id_ext_rol: z.string().default('1'),
 })
 
 type UserFormValues = z.infer<typeof UserSchema>
@@ -79,10 +82,13 @@ export function AddEmployee({ turnos, roles }: AddUserProps) {
       nombres: '',
       a_paterno: '',
       a_materno: '',
-      telefono: '',
+      email: '',
+      direccion: '',
+      telefono1: '',
+      telefono2: '',
       fecha_nacimiento: '',
       id_ext_turno: '',
-      id_ext_rol: '',
+      id_ext_rol: '1',
     },
   })
 
@@ -182,12 +188,51 @@ export function AddEmployee({ turnos, roles }: AddUserProps) {
             />
             <FormField
               control={form.control}
-              name="telefono"
+              name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Teléfono</FormLabel>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="usuario@ejemplo.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="direccion"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Dirección</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Av. Siempre Viva 123" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="telefono1"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Teléfono 1</FormLabel>
                   <FormControl>
                     <Input placeholder="1234567890" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="telefono2"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Teléfono 2 (Opcional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="0987654321" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -222,30 +267,6 @@ export function AddEmployee({ turnos, roles }: AddUserProps) {
                       {turnos.map((turno) => (
                         <SelectItem key={turno.id} value={String(turno.id)}>
                           {turno.nombre_turno || `${turno.horario_entrada.slice(0,5)} - ${turno.horario_salida.slice(0,5)}`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name="id_ext_rol"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Rol</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione un rol" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {roles.map((rol) => (
-                        <SelectItem key={rol.id} value={String(rol.id)}>
-                          {rol.rol}
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -9,12 +9,30 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AddEmployee } from "@/components/AddEmployee";
+interface Telefono {
+  numero_telefonico: string;
+}
+
+interface Usuario {
+  id: string;
+  nombres: string;
+  a_paterno: string;
+  a_materno: string;
+  email: string;
+  direccion: string;
+  telefonos_usuarios: Telefono[]; 
+  usuarios_horarios: { horario_entrada: string; horario_salida: string } | null;
+  usuarios_descansos: { descanso_inicio: string; descanso_final: string } | null;
+  usuarios_roles: { rol: string } | null;
+  usuarios_estados: { estado: string } | null;
+}
 
 export default async function Home() {
-  const { data: usuarios, error } = await supabase
+  const { data: dataRaw, error } = await supabase
     .from("usuarios")
     .select("*, usuarios_horarios ( horario_entrada, horario_salida ), usuarios_descansos ( descanso_inicio, descanso_final ), usuarios_estados ( estado ), usuarios_roles ( rol ), telefonos_usuarios (numero_telefonico)");
 
+  const usuarios = dataRaw as unknown as Usuario[];
   const { data: turnos } = await supabase.from('usuarios_turnos').select('*');
   const { data: roles } = await supabase.from('usuarios_roles').select('*');
 
@@ -26,10 +44,10 @@ export default async function Home() {
   return (
     <main className="container mx-auto py-10">
       <div className="flex justify-end mb-4">
-        {/*<AddEmployee turnos={turnos || []} roles={roles || []} />*/}
+        <AddEmployee turnos={turnos || []} roles={roles || []} />
       </div>
       <Table>
-        <TableCaption>Lista de usuarios.</TableCaption>
+        <TableCaption>Lista de usuarios registrado en el sistema.</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>NOMBRE COMPLETO</TableHead>
@@ -43,11 +61,16 @@ export default async function Home() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {usuarios && (usuarios as any[]).map((usuario) => (
+          {usuarios?.map((usuario) => (
             <TableRow key={usuario.id}>
               <TableCell>{`${usuario.nombres} ${usuario.a_paterno} ${usuario.a_materno}`}</TableCell>
               <TableCell>{usuario.direccion}</TableCell>
-              <TableCell></TableCell>
+              <TableCell>{usuario.telefonos_usuarios && usuario.telefonos_usuarios.length > 0 ? (
+                <ul>{usuario.telefonos_usuarios.map((tel, index) => (
+                  <li key={index}>{tel.numero_telefonico}</li>)
+                  )}
+                </ul>
+                ):(<span className="text-gray-400 italic text-xs">Sin tel.</span>)}</TableCell>
               <TableCell>{usuario.email}</TableCell>
               <TableCell>{(usuario.usuarios_horarios?.horario_entrada && usuario.usuarios_horarios?.horario_salida) ? `${usuario.usuarios_horarios.horario_entrada.slice(0,5)} - ${usuario.usuarios_horarios.horario_salida.slice(0,5)}` : 'N/A'}</TableCell>
               <TableCell>{(usuario.usuarios_descansos?.descanso_inicio && usuario.usuarios_descansos?.descanso_final) ? `${usuario.usuarios_descansos.descanso_inicio.slice(0,5)} - ${usuario.usuarios_descansos.descanso_final.slice(0,5)}` : 'N/A'}</TableCell>
