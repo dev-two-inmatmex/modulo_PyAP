@@ -42,20 +42,25 @@ const UserSchema = z.object({
   telefono1: z.string().min(1, 'Se requiere al menos un teléfono'),
   telefono2: z.string().optional(),
   fecha_nacimiento: z.string().min(1, 'La fecha de nacimiento es requerida'),
-  id_ext_turno: z.string().min(1, 'El turno es requerido'),
-  id_ext_rol: z.string().default('1'),
+  pago_dia: z.string().min(1, 'El pago por día es requerido'),
+  id_ext_horario: z.string().min(1, 'El horario es requerido'),
+  id_ext_descanso: z.string().min(1, 'El descanso es requerido'),
+  id_ext_rol: z.string().min(1, 'El rol es requerido'),
 })
 
 type UserFormValues = z.infer<typeof UserSchema>
 
-type Turno = {
+type Horario = {
   id: number;
-  nombre_turno: string | null;
   horario_entrada: string;
   horario_salida: string;
-  salida_descanso: string;
-  regreso_descanso: string;
 };
+
+type Descanso = {
+  id: number;
+  descanso_inicio: string;
+  descanso_final: string;
+}
 
 type Rol = {
   id: number;
@@ -63,11 +68,12 @@ type Rol = {
 };
 
 interface AddUserProps {
-  turnos: Turno[];
+  horarios: Horario[];
+  descansos: Descanso[];
   roles: Rol[];
 }
 
-export function AddEmployee({ turnos, roles }: AddUserProps) {
+export function AddEmployee({ horarios, descansos, roles }: AddUserProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast()
   const [state, formAction] = React.useActionState(addUser, {
@@ -87,8 +93,10 @@ export function AddEmployee({ turnos, roles }: AddUserProps) {
       telefono1: '',
       telefono2: '',
       fecha_nacimiento: '',
-      id_ext_turno: '',
-      id_ext_rol: '1',
+      pago_dia: '',
+      id_ext_horario: '',
+      id_ext_descanso: '',
+      id_ext_rol: '',
     },
   })
 
@@ -126,7 +134,7 @@ export function AddEmployee({ turnos, roles }: AddUserProps) {
       <DialogTrigger asChild>
         <Button>Agregar Nuevo Usuario</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Agregar Nuevo Usuario</DialogTitle>
         </DialogHeader>
@@ -150,42 +158,44 @@ export function AddEmployee({ turnos, roles }: AddUserProps) {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="a_paterno"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Apellido Paterno</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Doe"
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                      className="uppercase"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="a_materno"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Apellido Materno</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Smith"
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                      className="uppercase"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="a_paterno"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Apellido Paterno</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Doe"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                        className="uppercase"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="a_materno"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Apellido Materno</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Smith"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                        className="uppercase"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
               name="email"
@@ -212,61 +222,126 @@ export function AddEmployee({ turnos, roles }: AddUserProps) {
                 </FormItem>
               )}
             />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="telefono1"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Teléfono 1</FormLabel>
+                    <FormControl>
+                      <Input placeholder="1234567890" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="telefono2"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Teléfono 2 (Opcional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="0987654321" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="fecha_nacimiento"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fecha de Nacimiento</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="pago_dia"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pago por Día</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="100.00" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
-              name="telefono1"
+              name="id_ext_horario"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Teléfono 1</FormLabel>
-                  <FormControl>
-                    <Input placeholder="1234567890" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="telefono2"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Teléfono 2 (Opcional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="0987654321" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="fecha_nacimiento"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Fecha de Nacimiento</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="id_ext_turno"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Turno</FormLabel>
+                  <FormLabel>Horario</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccione un turno" />
+                        <SelectValue placeholder="Seleccione un horario" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {turnos.map((turno) => (
-                        <SelectItem key={turno.id} value={String(turno.id)}>
-                          {turno.nombre_turno || `${turno.horario_entrada.slice(0,5)} - ${turno.horario_salida.slice(0,5)}`}
+                      {horarios.map((horario) => (
+                        <SelectItem key={horario.id} value={String(horario.id)}>
+                          {`${horario.horario_entrada.slice(0,5)} - ${horario.horario_salida.slice(0,5)}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="id_ext_descanso"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descanso</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione un descanso" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {descansos.map((descanso) => (
+                        <SelectItem key={descanso.id} value={String(descanso.id)}>
+                          {`${descanso.descanso_inicio.slice(0,5)} - ${descanso.descanso_final.slice(0,5)}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="id_ext_rol"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rol</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione un rol" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {roles.map((rol) => (
+                        <SelectItem key={rol.id} value={String(rol.id)}>
+                          {rol.rol}
                         </SelectItem>
                       ))}
                     </SelectContent>

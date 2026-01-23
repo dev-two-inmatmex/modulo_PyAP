@@ -13,7 +13,9 @@ const UserSchema = z.object({
   telefono1: z.string().min(1, 'Se requiere al menos un teléfono'),
   telefono2: z.string().optional().or(z.literal('')),
   fecha_nacimiento: z.string().min(1, 'La fecha de nacimiento es requerida'),
-  id_ext_turno: z.coerce.number().min(1, 'El turno es requerido'),
+  pago_dia: z.coerce.number().min(0, 'El pago por día debe ser un número positivo'),
+  id_ext_horario: z.coerce.number().min(1, 'El horario es requerido'),
+  id_ext_descanso: z.coerce.number().min(1, 'El descanso es requerido'),
   id_ext_rol: z.coerce.number().min(1, 'El rol es requerido'),
 })
 
