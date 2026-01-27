@@ -14,25 +14,25 @@ export default async function RootPage() {
     redirect('/login')
   }
 
-  // 3. Consultamos tu tabla 'usuario_rol'
-  // para decidir a dónde enviarlo apenas entre a la web.
-  const { data: infoRol } = await supabase
+  // 3. Consultamos tu tabla 'usuario_rol' para obtener el rol del usuario.
+  const { data: infoRol, error: rolError } = await supabase
     .from('usuario_rol')
-    .select(`
-      id_rol,
-      roles_sistema ( nombre_rol )
-    `)
+    .select('roles_sistema ( nombre_rol )')
     .eq('id_usuario', user.id)
     .single()
 
-  // When fetching related data, Supabase can return it as an array.
-  // The error occurs because we're trying to access a property on an array.
-  // We need to access the first element of the array.
-  const nombreRol = Array.isArray(infoRol?.roles_sistema)
-    ? infoRol.roles_sistema[0]?.nombre_rol
-    : infoRol?.roles_sistema?.nombre_rol
+  // Si hay un error al obtener el rol o el usuario no tiene uno, lo mandamos a /perfil.
+  if (rolError || !infoRol || !infoRol.roles_sistema) {
+    redirect('/perfil')
+  }
+  
+  // Supabase puede devolver la relación como objeto o array. Este código maneja ambos.
+  const rolesSistema = infoRol.roles_sistema
+  const nombreRol = Array.isArray(rolesSistema)
+    ? rolesSistema[0]?.nombre_rol
+    : rolesSistema?.nombre_rol
 
-  // 4. Redirección inteligente basada en tu estructura de carpetas
+  // 4. Redirección inteligente basada en el rol del usuario.
   switch (nombreRol) {
     case 'Administrador':
       redirect('/admin')
@@ -45,7 +45,7 @@ export default async function RootPage() {
     case 'Usuario Operativo':
       redirect('/operativo')
     default:
-      // Si no tiene un rol asignado aún, lo mandamos a ver sus datos básicos
+      // Si el rol no existe o no coincide, lo mandamos a su perfil.
       redirect('/perfil')
   }
 }
