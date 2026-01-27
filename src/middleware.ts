@@ -32,19 +32,20 @@ export async function middleware(request: NextRequest) {
   )
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
+  const isProfilePage = request.nextUrl.pathname.startsWith('/perfil')
+  const isLoginPage = request.nextUrl.pathname.startsWith('/login')
 
-  // Redirect to login if not authenticated and not on login page
-  if (!session && pathname !== '/login') {
+  // Si intenta entrar al perfil sin estar logueado, al login
+  if (isProfilePage && !user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Redirect to home if authenticated and on login page
-  if (session && pathname === '/login') {
-    return NextResponse.redirect(new URL('/', request.url))
+  // Si ya está logueado e intenta ir al login, al perfil
+  if (isLoginPage && user) {
+    return NextResponse.redirect(new URL('/perfil', request.url))
   }
 
   return response

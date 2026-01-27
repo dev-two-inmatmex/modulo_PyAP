@@ -1,3 +1,4 @@
+
 'use client'
 
 import * as React from 'react'
@@ -6,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useEffect, useState, useTransition, useCallback } from 'react'
 
-import { addUser } from '@/app/actions'
+import { addUser } from '@/app/perfil/actions'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -62,12 +63,18 @@ type Descanso = {
   descanso_final: string;
 }
 
+type Rol = {
+  id: number;
+  rol: string;
+}
+
 interface AddUserProps {
   horarios: Horario[];
   descansos: Descanso[];
+  roles: Rol[];
 }
 
-export function AddEmployee({ horarios, descansos }: AddUserProps) {
+export function AddEmployee({ horarios, descansos, roles }: AddUserProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast()
   const [state, formAction] = React.useActionState(addUser, {
@@ -119,6 +126,7 @@ export function AddEmployee({ horarios, descansos }: AddUserProps) {
 
   const onSubmit = (data: UserFormValues) => {
     startTransition(() => {
+      // @ts-ignore
       formAction(data)
     })
   }
@@ -312,6 +320,30 @@ export function AddEmployee({ horarios, descansos }: AddUserProps) {
                       {descansos.map((descanso) => (
                         <SelectItem key={descanso.id} value={String(descanso.id)}>
                           {`${descanso.descanso_inicio.slice(0,5)} - ${descanso.descanso_final.slice(0,5)}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="id_ext_rol"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rol</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione un rol" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {roles.map((rol) => (
+                        <SelectItem key={rol.id} value={String(rol.id)}>
+                          {rol.rol}
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -1,9 +1,10 @@
 
 'use server'
 
-import { z } from 'zod'
-import { supabase } from '@/lib/supabaseClient'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { z } from 'zod'
+import { createClient } from '@/lib/supabaseServer'
 
 const UserSchema = z.object({
   nombres: z.string().min(1, 'El nombre es requerido'),
@@ -21,6 +22,7 @@ const UserSchema = z.object({
 })
 
 export async function addUser(prevState: any, data: unknown) {
+  const supabase = await createClient()
   const validatedFields = UserSchema.safeParse(data)
 
   if (!validatedFields.success) {
@@ -70,15 +72,22 @@ export async function addUser(prevState: any, data: unknown) {
 
       if (phoneError) {
           console.error('Error al insertar teléfonos:', phoneError)
-          revalidatePath('/')
+          revalidatePath('/perfil')
           return {
             message: 'Usuario agregado, pero hubo un error al guardar los teléfonos.',
           }
       }
   }
 
-  revalidatePath('/')
+  revalidatePath('/perfil')
   return {
     message: 'Usuario agregado exitosamente.',
   }
+}
+
+export async function logout() {
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  revalidatePath('/', 'layout')
+  redirect('/login')
 }
