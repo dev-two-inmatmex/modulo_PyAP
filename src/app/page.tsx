@@ -13,30 +13,29 @@ interface Telefono {
   numero_telefonico: string;
 }
 
-interface Usuario {
+interface Empleado {
   id: string;
   nombres: string;
-  a_paterno: string;
-  a_materno: string;
-  email: string;
+  apellido_paterno: string;
+  apellido_materno: string;
+  fecha_nacimiento: string;
+  sexo: string;
   direccion: string;
-  pago_dia: number;
-  telefonos_usuarios: Telefono[]; 
-  usuarios_horarios: { horario_entrada: string; horario_salida: string } | null;
-  usuarios_descansos: { descanso_inicio: string; descanso_final: string } | null;
-  usuarios_roles: { rol: string } | null;
-  usuarios_estados: { estado: string } | null;
+  usuario_telefonos: Telefono[];
+  fecha_alta_sistema: string;
+  fecha_ingreso: string;
+  estatus: { nombre_estatus: string } | null;
 }
 
 export default async function Home() {
   const { data: dataRaw, error } = await supabase
-    .from("usuarios")
-    .select("*, usuarios_horarios ( horario_entrada, horario_salida ), usuarios_descansos ( descanso_inicio, descanso_final ), usuarios_estados ( estado ), usuarios_roles ( rol ), telefonos_usuarios (numero_telefonico)");
+    .from("empleados")
+    .select("*, estatus ( nombre_estatus ), usuario_telefonos ( numero_telefonico )");
 
-  const usuarios = dataRaw as unknown as Usuario[];
-  const { data: horarios } = await supabase.from('usuarios_horarios').select('*');
+  const Empleados = dataRaw as unknown as Empleado[];
+  /*const { data: horarios } = await supabase.from('usuarios_horarios').select('*');
   const { data: descansos } = await supabase.from('usuarios_descansos').select('*');
-  const { data: roles } = await supabase.from('usuarios_roles').select('*');
+  const { data: roles } = await supabase.from('usuarios_roles').select('*');*/
 
   if (error) {
     console.error("Error al obtener usuarios:", error.message);
@@ -46,40 +45,35 @@ export default async function Home() {
   return (
     <main className="container mx-auto py-10">
       <div className="flex justify-end mb-4">
-        <AddEmployee horarios={horarios || []} descansos={descansos || []} roles={roles || []} />
+        {/*<AddEmployee horarios={horarios || []} descansos={descansos || []} />*/}
       </div>
       <Table>
         <TableCaption>Lista de usuarios registrado en el sistema.</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>NOMBRE COMPLETO</TableHead>
+            <TableHead>SEXO</TableHead>
             <TableHead>DIRECCIÓN</TableHead>
             <TableHead>TELÉFONO</TableHead>
-            <TableHead>EMAIL</TableHead>
-            <TableHead>PAGO POR DÍA</TableHead>
-            <TableHead>HORARIO</TableHead>
-            <TableHead>DESCANSO</TableHead>
-            <TableHead>ROL</TableHead>
             <TableHead>ESTADO</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {usuarios?.map((usuario) => (
-            <TableRow key={usuario.id}>
-              <TableCell>{`${usuario.nombres} ${usuario.a_paterno} ${usuario.a_materno}`}</TableCell>
-              <TableCell>{usuario.direccion}</TableCell>
-              <TableCell>{usuario.telefonos_usuarios && usuario.telefonos_usuarios.length > 0 ? (
-                <ul>{usuario.telefonos_usuarios.map((tel, index) => (
+          {Empleados?.map((Empleado) => (
+            <TableRow key={Empleado.id}>
+              <TableCell>{`${Empleado.nombres} ${Empleado.apellido_paterno} ${Empleado.apellido_materno}`}</TableCell>
+              <TableCell>{Empleado.sexo}</TableCell>
+              <TableCell>{Empleado.direccion}</TableCell>
+              <TableCell>{Empleado.usuario_telefonos && Empleado.usuario_telefonos.length > 0 ? (
+                <ul>{Empleado.usuario_telefonos.map((tel, index) => (
                   <li key={index}>{tel.numero_telefonico}</li>)
                   )}
                 </ul>
-                ):(<span className="text-gray-400 italic text-xs">Sin tel.</span>)}</TableCell>
-              <TableCell>{usuario.email}</TableCell>
-              <TableCell>${usuario.pago_dia ? usuario.pago_dia.toFixed(2) : 'N/A'}</TableCell>
-              <TableCell>{(usuario.usuarios_horarios?.horario_entrada && usuario.usuarios_horarios?.horario_salida) ? `${usuario.usuarios_horarios.horario_entrada.slice(0,5)} - ${usuario.usuarios_horarios.horario_salida.slice(0,5)}` : 'N/A'}</TableCell>
+                ):(<span className="text-gray-400 italic text-xs">Sin teléfonos.</span>)}</TableCell>
+              {/*<TableCell>{(usuario.usuarios_horarios?.horario_entrada && usuario.usuarios_horarios?.horario_salida) ? `${usuario.usuarios_horarios.horario_entrada.slice(0,5)} - ${usuario.usuarios_horarios.horario_salida.slice(0,5)}` : 'N/A'}</TableCell>
               <TableCell>{(usuario.usuarios_descansos?.descanso_inicio && usuario.usuarios_descansos?.descanso_final) ? `${usuario.usuarios_descansos.descanso_inicio.slice(0,5)} - ${usuario.usuarios_descansos.descanso_final.slice(0,5)}` : 'N/A'}</TableCell>
-              <TableCell>{(usuario.usuarios_roles?.rol ?? 'N/A')}</TableCell>
-              <TableCell>{usuario.usuarios_estados?.estado ?? 'N/A'}</TableCell>
+              <TableCell>{(usuario.usuarios_roles?.rol ?? 'N/A')}</TableCell>*/}
+              <TableCell>{Empleado.estatus?.nombre_estatus ?? 'N/A'}</TableCell>
             </TableRow>
           ))}
         </TableBody>

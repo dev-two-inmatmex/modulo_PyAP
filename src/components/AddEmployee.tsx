@@ -62,18 +62,12 @@ type Descanso = {
   descanso_final: string;
 }
 
-type Rol = {
-  id: number;
-  rol: string;
-};
-
 interface AddUserProps {
   horarios: Horario[];
   descansos: Descanso[];
-  roles: Rol[];
 }
 
-export function AddEmployee({ horarios, descansos, roles }: AddUserProps) {
+export function AddEmployee({ horarios, descansos }: AddUserProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast()
   const [state, formAction] = React.useActionState(addUser, {
@@ -228,7 +222,7 @@ export function AddEmployee({ horarios, descansos, roles }: AddUserProps) {
                 name="telefono1"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Teléfono 1</FormLabel>
+                    <FormLabel>Teléfono Principal</FormLabel>
                     <FormControl>
                       <Input placeholder="1234567890" {...field} />
                     </FormControl>
@@ -241,7 +235,7 @@ export function AddEmployee({ horarios, descansos, roles }: AddUserProps) {
                 name="telefono2"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Teléfono 2 (Opcional)</FormLabel>
+                    <FormLabel>Teléfono Secundario (Opcional)</FormLabel>
                     <FormControl>
                       <Input placeholder="0987654321" {...field} />
                     </FormControl>
@@ -318,30 +312,6 @@ export function AddEmployee({ horarios, descansos, roles }: AddUserProps) {
                       {descansos.map((descanso) => (
                         <SelectItem key={descanso.id} value={String(descanso.id)}>
                           {`${descanso.descanso_inicio.slice(0,5)} - ${descanso.descanso_final.slice(0,5)}`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="id_ext_rol"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Rol</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione un rol" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {roles.map((rol) => (
-                        <SelectItem key={rol.id} value={String(rol.id)}>
-                          {rol.rol}
                         </SelectItem>
                       ))}
                     </SelectContent>
