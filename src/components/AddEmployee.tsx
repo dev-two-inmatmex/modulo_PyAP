@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useEffect, useState, useTransition, useCallback } from 'react'
 
-import { addUser } from '@/app/perfil/actions'
+import { addUser } from '@/app/(user)/perfil/actions'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

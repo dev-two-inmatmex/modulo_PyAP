@@ -3,11 +3,11 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabaseServer'
+import { createClient } from '@/lib/Supabase/server'
 
 const LoginSchema = z.object({
   email: z.string().email('El email no es válido.'),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres.'),
+  password: z.string().min(3, 'La contraseña debe tener al menos 6 caracteres.'),
 })
 
 export async function login(prevState: any, formData: FormData) {

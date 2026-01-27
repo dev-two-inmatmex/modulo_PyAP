@@ -1,5 +1,5 @@
 
-import { createClient } from '@/lib/supabaseServer'
+import { createClient } from '@/lib/Supabase/server'
 import {
   Table,
   TableBody,
