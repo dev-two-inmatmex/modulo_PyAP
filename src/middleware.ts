@@ -31,21 +31,21 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  const isProfilePage = request.nextUrl.pathname.startsWith('/perfil')
-  const isLoginPage = request.nextUrl.pathname.startsWith('/login')
+  const url = request.nextUrl.clone()
 
-  // Si intenta entrar al perfil sin estar logueado, al login
-  if (isProfilePage && !user) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  // 3. Lógica de Redirección para tu estructura
+  // Si el usuario NO está logueado e intenta ir a /perfil
+  if (!user && url.pathname.startsWith('/perfil')) {
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
   }
 
-  // Si ya está logueado e intenta ir al login, al perfil
-  if (isLoginPage && user) {
-    return NextResponse.redirect(new URL('/perfil', request.url))
+  // Si el usuario YA está logueado e intenta ir al login
+  if (user && url.pathname.startsWith('/login')) {
+    url.pathname = '/perfil'
+    return NextResponse.redirect(url)
   }
 
   return response
@@ -59,6 +59,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!_next/static|_next/image|favicon.ico|api/auth).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

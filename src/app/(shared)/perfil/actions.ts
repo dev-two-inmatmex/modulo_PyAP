@@ -2,7 +2,7 @@
 'use server'
 
 import { z } from 'zod'
-import { supabase } from '@/lib/Supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { revalidatePath } from 'next/cache'
 
 const UserSchema = z.object({

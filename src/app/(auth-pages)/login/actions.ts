@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
-import { createClient } from '@/lib/Supabase/server'
+import { createClient } from '@/lib/supabase/server'
 
 const LoginSchema = z.object({
   email: z.string().email('El email no es válido.'),
