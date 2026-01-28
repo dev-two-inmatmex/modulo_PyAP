@@ -38,6 +38,6 @@ export async function login(prevState: any, formData: FormData) {
     }
   }
 
-  revalidatePath('/', 'layout')
-  redirect('/')
+  revalidatePath('/')
+  redirect('/perfil')
 }

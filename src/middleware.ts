@@ -17,13 +17,6 @@ export async function middleware(request: NextRequest) {
         setAll: (cookiesToSet) => {
           cookiesToSet.forEach(({ name, value, options }) => {
             request.cookies.set({ name, value, ...options })
-          })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
-          cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set({ name, value, ...options })
           })
         },
@@ -35,17 +28,24 @@ export async function middleware(request: NextRequest) {
 
   const url = request.nextUrl.clone()
 
-  // 3. Lógica de Redirección para tu estructura
-  // Si el usuario NO está logueado e intenta ir a /perfil
   if (!user && url.pathname.startsWith('/perfil')) {
     url.pathname = '/login'
-    return NextResponse.redirect(url)
+    const redirectResponse = NextResponse.redirect(url)
+    request.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie)
+    })
+    return redirectResponse
   }
 
   // Si el usuario YA está logueado e intenta ir al login
   if (user && url.pathname.startsWith('/login')) {
     url.pathname = '/perfil'
-    return NextResponse.redirect(url)
+    const redirectResponse = NextResponse.redirect(url)
+    request.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie)
+    })
+
+    return redirectResponse
   }
 
   return response
