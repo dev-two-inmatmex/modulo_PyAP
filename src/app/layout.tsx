@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'Hola World',
-  description: 'A simple page that says Hola Mundo',
+  title: 'Sistema INMATMEX',
+  description: 'Proyecto Cerebro V2',
 };
 
 export default function RootLayout({
