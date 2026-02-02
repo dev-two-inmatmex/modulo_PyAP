@@ -9,7 +9,7 @@ export default async function ProfilePage() {
   const { data: { user }} = await supabase.auth.getUser();
 
   if (!user) {
-    return null;
+    return redirect("/login");
   }
 
   // 1. Fetch employee data with type safety

@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { redirect } from 'next/navigation'
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } })
@@ -30,6 +31,7 @@ export async function middleware(request: NextRequest) {
   const hasAnyRole = roles.length > 0
 
   // 2. CASO: NO HAY USUARIO
+
   if (!user) {
     if (pathname !== '/login') {
       url.pathname = '/login'
@@ -40,7 +42,7 @@ export async function middleware(request: NextRequest) {
 
   // 3. CASO: USUARIO LOGUEADO
   if (user) {
-    if (pathname === '/login') {
+    if (pathname === '/login' || pathname === '/') {
       url.pathname = '/perfil'
       return syncCookiesAndRedirect(request, url)
     }
@@ -60,16 +62,18 @@ export async function middleware(request: NextRequest) {
     if (!isAdmin) {
       const roleMapping: Record<string, string> = {
         '/administracion': 'Administrador',
-        '/empleado': 'Empleado',
         '/direccion': 'Dirección',
         '/rh': 'RH',
         '/supervisor': 'Supervisor',
       }
 
-      for (const [path, role] of Object.entries(roleMapping)) {
-        if (pathname.startsWith(path) && !roles.includes(role)) {
-          url.pathname = '/perfil'
-          return syncCookiesAndRedirect(request, url)
+      const protectedPath = Object.keys(roleMapping).find(path => pathname.startsWith(path));
+
+      if (protectedPath) {
+        const requiredRole = roleMapping[protectedPath];
+        if (!roles.includes(requiredRole)) {
+          url.pathname = '/perfil';
+          return syncCookiesAndRedirect(request, url);
         }
       }
     }
