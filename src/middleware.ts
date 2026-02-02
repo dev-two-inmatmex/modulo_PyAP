@@ -2,11 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  })
+  let response = NextResponse.next({ request: { headers: request.headers } })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,40 +21,70 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-
   const url = request.nextUrl.clone()
+  const { pathname } = url
 
-  if (!user && url.pathname.startsWith('/perfil')) {
-    url.pathname = '/login'
-    const redirectResponse = NextResponse.redirect(url)
-    request.cookies.getAll().forEach((cookie) => {
-      redirectResponse.cookies.set(cookie)
-    })
-    return redirectResponse
+  // 1. EXTRAER METADATA DEL TRIGGER
+  const roles = user?.user_metadata?.roles || []
+  const isAdmin = user?.user_metadata?.is_admin || false
+  const hasAnyRole = roles.length > 0
+
+  // 2. CASO: NO HAY USUARIO
+  if (!user) {
+    if (pathname !== '/login') {
+      url.pathname = '/login'
+      return syncCookiesAndRedirect(request, url)
+    }
+    return response
   }
 
-  // Si el usuario YA está logueado e intenta ir al login
-  if (user && url.pathname.startsWith('/login')) {
-    url.pathname = '/perfil'
-    const redirectResponse = NextResponse.redirect(url)
-    request.cookies.getAll().forEach((cookie) => {
-      redirectResponse.cookies.set(cookie)
-    })
+  // 3. CASO: USUARIO LOGUEADO
+  if (user) {
+    if (pathname === '/login') {
+      url.pathname = '/perfil'
+      return syncCookiesAndRedirect(request, url)
+    }
 
-    return redirectResponse
+    if (pathname.startsWith('/perfil') && pathname === '/login') {
+      url.pathname = '/perfil'
+      return syncCookiesAndRedirect(request, url)
+    }
+
+    // Si no tiene roles y no está en /perfil, forzar /perfil
+    if (!hasAnyRole && !pathname.startsWith('/perfil')) {
+      url.pathname = '/perfil'
+      return syncCookiesAndRedirect(request, url)
+    }
+
+    // Protección de rutas por carpeta (RBAC)
+    if (!isAdmin) {
+      const roleMapping: Record<string, string> = {
+        '/administracion': 'Administrador',
+        '/empleado': 'Empleado',
+        '/direccion': 'Dirección',
+        '/rh': 'RH',
+        '/supervisor': 'Supervisor',
+      }
+
+      for (const [path, role] of Object.entries(roleMapping)) {
+        if (pathname.startsWith(path) && !roles.includes(role)) {
+          url.pathname = '/perfil'
+          return syncCookiesAndRedirect(request, url)
+        }
+      }
+    }
   }
+
 
   return response
 }
 
+function syncCookiesAndRedirect(request: NextRequest, url: URL) {
+  const res = NextResponse.redirect(url)
+  request.cookies.getAll().forEach((c) => res.cookies.set(c))
+  return res
+}
+
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 }
