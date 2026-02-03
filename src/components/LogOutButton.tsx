@@ -1,22 +1,31 @@
+
 'use client';
 
 import { useTransition } from 'react';
 import { logout } from "@/app/(shared)/perfil/actions";
+import { Button } from './ui/button';
+import { LogOut } from 'lucide-react';
+import { useSidebar } from './ui/sidebar';
 
 export default function LogoutButton() {
   const [isPending, startTransition] = useTransition();
+  const { state } = useSidebar();
+
 
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="icon"
+      className="ml-auto text-muted-foreground hover:text-foreground"
       onClick={() => {
         startTransition(() => {
           logout();
         });
       }}
       disabled={isPending}
-      className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50"
+      aria-label={isPending ? 'Cerrando Sesión...' : 'Cerrar Sesión'}
     >
-      {isPending ? 'Cerrando Sesión...' : 'Cerrar Sesión'}
-    </button>
+      <LogOut className="size-5" />
+    </Button>
   );
 }

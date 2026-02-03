@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { redirect } from 'next/navigation'
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } })
@@ -25,11 +24,8 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone()
   const { pathname } = url
 
-  // 1. EXTRAER METADATA DEL TRIGGER
-  const roles = user?.user_metadata?.roles || []
-  const isAdmin = user?.user_metadata?.is_admin || false
-  const hasAnyRole = roles.length > 0
 
+  
   // 2. CASO: NO HAY USUARIO
 
   if (!user) {
@@ -39,6 +35,17 @@ export async function middleware(request: NextRequest) {
     }
     return response
   }
+  
+  const { data: rolesData } = await supabase
+  .from('v_usuario_roles')
+  .select('nombre_rol')
+  .eq('id_usuario', user.id)
+
+  // Aplanamos el array: ['Administrador', 'RH']
+  const roles = rolesData?.map(r => r.nombre_rol) || []
+  const isAdmin = roles.includes('Administrador')
+
+  const hasAnyRole = roles.length > 0
 
   // 3. CASO: USUARIO LOGUEADO
   if (user) {
