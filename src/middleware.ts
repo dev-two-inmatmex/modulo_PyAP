@@ -24,10 +24,7 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone()
   const { pathname } = url
 
-
-  
   // 2. CASO: NO HAY USUARIO
-
   if (!user) {
     if (pathname !== '/login') {
       url.pathname = '/login'

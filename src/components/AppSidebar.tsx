@@ -67,10 +67,10 @@ const navItems: NavItem[] = [
     label: 'Dirección',
     href: '/direccion',
     icon: Briefcase,
-    roles: ['Dirección'],
+    roles: ['Dirección', 'Administrador'],
   },
-  { label: 'Recursos Humanos', href: '/rh', icon: ClipboardList, roles: ['RH'] },
-  { label: 'Supervisor', href: '/supervisor', icon: Eye, roles: ['Supervisor'] },
+  { label: 'Recursos Humanos', href: '/rh', icon: ClipboardList, roles: ['RH','Administrador'] },
+  { label: 'Supervisor', href: '/supervisor', icon: Eye, roles: ['Supervisor', 'Administrador'] },
 ];
 
 interface AppSidebarProps {
