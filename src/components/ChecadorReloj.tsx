@@ -33,7 +33,7 @@ function SubmitButton({ label, disabled }: { label: string, disabled: boolean })
   );
 }
 
-export function ChecadorReloj({ latestTurno, horario }: { latestTurno: TurnoUsuario | null, horario: Horario | null }) {
+export function ChecadorReloj({ latestTurno, turno }: { latestTurno: TurnoUsuario | null, turno: Horario | null }) {
   const [time, setTime] = useState(new Date());
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -96,9 +96,9 @@ export function ChecadorReloj({ latestTurno, horario }: { latestTurno: TurnoUsua
         <form action={handleAction} className="w-full">
             <SubmitButton label={label} disabled={!action || isPending} />
         </form>
-        {horario && (
+        {turno && (
             <p className="text-sm text-muted-foreground">
-                Recuerda: Horario de {formatHorario(horario.horario_entrada)} a {formatHorario(horario.horario_salida)}
+                Recuerda: Horario de {formatHorario(turno.horario_entrada)} a {formatHorario(turno.horario_salida)}
             </p>
         )}
       </CardFooter>

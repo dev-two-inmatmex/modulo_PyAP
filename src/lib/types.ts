@@ -14,10 +14,17 @@ export interface UsuarioRol {
   roles_sistema: RolSistema[];
 }
 
+export interface EmpleadoTurno {
+    id: string;
+    entrada: string | null;
+    salida_comida: string | null;
+    regreso_comida: string | null;
+    salida: string | null;
+}
 export interface TurnoUsuario {
     id: string;
-    id_usuario: string;
     fecha: string;
+    id_usuario: string;
     entrada: string | null;
     salida_descanso: string | null;
     regreso_descanso: string | null;

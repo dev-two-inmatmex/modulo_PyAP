@@ -18,9 +18,9 @@ export async function registrarChequeo(action: ChequeoAction) {
     const now = new Date().toISOString();
 
     const { data: latestTurno, error: findError } = await supabase
-        .from("usuarios_turnos")
+        .from("registro_checador")
         .select("*")
-        .eq("id_usuario", user.id)
+        .eq("id_empleado", user.id)
         .eq("fecha", today)
         .order("entrada", { ascending: false })
         .limit(1)
