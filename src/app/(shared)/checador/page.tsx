@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { ChecadorReloj } from "@/components/ChecadorReloj";
 import { ChecadorHistorial } from "@/components/ChecadorHistorial";
-import type { TurnoUsuario, Horario } from "@/lib/types";
+import type { TurnoUsuario, EmpleadoTurno } from "@/lib/types";
 
 export default async function ChecadorPage() {
   const supabase = await createClient();
@@ -38,7 +38,7 @@ export default async function ChecadorPage() {
     .select("horario_entrada:entrada, horario_salida:salida")
     .eq("id", user.id)
     .limit(1)
-    .maybeSingle<Horario>();
+    .maybeSingle<EmpleadoTurno>();
 
   if (turnoError) console.error("Error fetching turno:", turnoError.message);
   if (horarioError) console.error("Error fetching horario:", horarioError.message);

@@ -5,7 +5,7 @@ import { useFormStatus } from 'react-dom';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { registrarChequeo } from '@/app/(shared)/checador/actions';
-import type { TurnoUsuario, Horario } from '@/lib/types';
+import type { TurnoUsuario, EmpleadoTurno } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 const formatTime = (date: Date) => {
@@ -31,7 +31,7 @@ function SubmitButton({ label, disabled }: { label: string, disabled: boolean })
   );
 }
 
-export function ChecadorReloj({ latestTurno, turno }: { latestTurno: TurnoUsuario | null, turno: Horario | null }) {
+export function ChecadorReloj({ latestTurno, turno }: { latestTurno: TurnoUsuario | null, turno: EmpleadoTurno | null }) {
   const [time, setTime] = useState<Date | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -61,7 +61,7 @@ export function ChecadorReloj({ latestTurno, turno }: { latestTurno: TurnoUsuari
 
   const { action, label, message } = getChequeoState();
 
-  const formatHorario = (timeStr: string | undefined) => {
+  const formatHorario = (timeStr: string | null | undefined) => {
     if (!timeStr) return '';
     const [h, m] = timeStr.split(':');
     const date = new Date();
@@ -104,7 +104,7 @@ export function ChecadorReloj({ latestTurno, turno }: { latestTurno: TurnoUsuari
         </form>
         {turno && (
             <p className="text-sm text-muted-foreground">
-                Recuerda: Horario de {formatHorario(turno.horario_entrada)} a {formatHorario(turno.horario_salida)}
+                Recuerda: Horario de {formatHorario(turno.entrada)} a {formatHorario(turno.salida)}
             </p>
         )}
       </CardFooter>

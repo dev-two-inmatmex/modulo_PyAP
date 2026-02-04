@@ -17,8 +17,8 @@ export interface UsuarioRol {
 export interface EmpleadoTurno {
     id: string;
     entrada: string | null;
-    salida_comida: string | null;
-    regreso_comida: string | null;
+    salida_descanso: string | null;
+    regreso_descanso: string | null;
     salida: string | null;
 }
 export interface TurnoUsuario {
@@ -29,9 +29,4 @@ export interface TurnoUsuario {
     salida_descanso: string | null;
     regreso_descanso: string | null;
     salida: string | null;
-}
-
-export interface Horario {
-    horario_entrada: string;
-    horario_salida: string;
 }
