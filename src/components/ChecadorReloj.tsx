@@ -4,10 +4,8 @@ import { useState, useEffect, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { registrarChequeo } from '@/app/(shared)/checador/actions';
 import type { TurnoUsuario, Horario } from '@/lib/types';
-import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
 const formatTime = (date: Date) => {
@@ -34,11 +32,13 @@ function SubmitButton({ label, disabled }: { label: string, disabled: boolean })
 }
 
 export function ChecadorReloj({ latestTurno, turno }: { latestTurno: TurnoUsuario | null, turno: Horario | null }) {
-  const [time, setTime] = useState(new Date());
+  const [time, setTime] = useState<Date | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
   useEffect(() => {
+    // This effect runs only on the client, after hydration, preventing a mismatch.
+    setTime(new Date());
     const timerId = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timerId);
   }, []);
@@ -83,10 +83,16 @@ export function ChecadorReloj({ latestTurno, turno }: { latestTurno: TurnoUsuari
   return (
     <Card className="w-full max-w-sm mx-auto shadow-lg border-2">
       <CardHeader className="text-center pb-2">
-        <CardDescription className="text-lg text-foreground/80">{formatDate(time)}</CardDescription>
+        <CardDescription className="text-lg text-foreground/80">{time ? formatDate(time) : 'Cargando...'}</CardDescription>
         <CardTitle className="text-7xl font-bold tracking-tighter text-green-700">
-          {formatTime(time).split(' ')[0]}
-          <span className="text-4xl font-medium ml-2">{formatTime(time).split(' ')[1]}</span>
+          {time ? (
+            <>
+              {formatTime(time).split(' ')[0]}
+              <span className="text-4xl font-medium ml-2">{formatTime(time).split(' ')[1]}</span>
+            </>
+          ) : (
+            '--:--'
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="text-center">
