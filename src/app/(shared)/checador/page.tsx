@@ -19,7 +19,7 @@ export default async function ChecadorPage() {
   const { data: latestTurno, error: turnoError } = await supabase
     .from("registro_checador")
     .select("*")
-    .eq("id_usuario", user.id)
+    .eq("id_empleado", user.id)
     .eq("fecha", today)
     .order("entrada", { ascending: false })
     .limit(1)
@@ -28,7 +28,7 @@ export default async function ChecadorPage() {
   const { data: turnosDelDia, error: turnosError } = await supabase
     .from("registro_checador")
     .select("*")
-    .eq("id_usuario", user.id)
+    .eq("id_empleado", user.id)
     .eq("fecha", today)
     .order("entrada", { ascending: true })
     .returns<TurnoUsuario[]>();
@@ -37,7 +37,8 @@ export default async function ChecadorPage() {
     .from("vista_horarios_empleados")
     .select("horario_entrada:entrada, horario_salida:salida")
     .eq("id", user.id)
-    .single<Horario>();
+    .limit(1)
+    .maybeSingle<Horario>();
 
   if (turnoError) console.error("Error fetching turno:", turnoError.message);
   if (horarioError) console.error("Error fetching horario:", horarioError.message);
