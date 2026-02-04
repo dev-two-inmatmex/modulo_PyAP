@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { TurnoUsuario } from "@/lib/types";
+import type { Turno_Realizandose } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 function formatTimestamp(timestamp: string | null | undefined): string {
@@ -23,7 +23,7 @@ function formatTimestamp(timestamp: string | null | undefined): string {
 }
 
 
-export function ChecadorHistorial({ turnos }: { turnos: TurnoUsuario[] }) {
+export function ChecadorHistorial({ turnos }: { turnos: Turno_Realizandose[] }) {
     return (
         <Card className="shadow-lg">
             <CardHeader>
@@ -42,12 +42,12 @@ export function ChecadorHistorial({ turnos }: { turnos: TurnoUsuario[] }) {
                         </TableHeader>
                         <TableBody>
                             {turnos.length > 0 ? (
-                                turnos.map((turno) => (
-                                    <TableRow key={turno.id}>
-                                        <TableCell>{formatTimestamp(turno.entrada)}</TableCell>
-                                        <TableCell>{formatTimestamp(turno.salida_descanso)}</TableCell>
-                                        <TableCell>{formatTimestamp(turno.regreso_descanso)}</TableCell>
-                                        <TableCell>{formatTimestamp(turno.salida)}</TableCell>
+                                turnos.map((tc) => (
+                                    <TableRow key={tc.id}>
+                                        <TableCell>{formatTimestamp(tc.entrada)}</TableCell>
+                                        <TableCell>{formatTimestamp(tc.salida_descanso)}</TableCell>
+                                        <TableCell>{formatTimestamp(tc.regreso_descanso)}</TableCell>
+                                        <TableCell>{formatTimestamp(tc.salida)}</TableCell>
                                     </TableRow>
                                 ))
                             ) : (

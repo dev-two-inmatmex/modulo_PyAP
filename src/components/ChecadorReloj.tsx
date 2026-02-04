@@ -5,7 +5,7 @@ import { useFormStatus } from 'react-dom';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { registrarChequeo } from '@/app/(shared)/checador/actions';
-import type { TurnoUsuario, EmpleadoTurno } from '@/lib/types';
+import type { Turno_Realizandose, EmpleadoTurno } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 const formatTime = (date: Date) => {
@@ -31,7 +31,7 @@ function SubmitButton({ label, disabled }: { label: string, disabled: boolean })
   );
 }
 
-export function ChecadorReloj({ latestTurno, turno }: { latestTurno: TurnoUsuario | null, turno: EmpleadoTurno | null }) {
+export function ChecadorReloj({ latestTurno, turno }: { latestTurno: Turno_Realizandose | null, turno: EmpleadoTurno | null }) {
   const [time, setTime] = useState<Date | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();

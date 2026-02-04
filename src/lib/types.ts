@@ -15,16 +15,13 @@ export interface UsuarioRol {
 }
 
 export interface EmpleadoTurno {
-    id: string;
     entrada: string | null;
-    salida_descanso: string | null;
-    regreso_descanso: string | null;
     salida: string | null;
 }
-export interface TurnoUsuario {
+export interface Turno_Realizandose {
     id: string;
     fecha: string;
-    id_usuario: string;
+    id_empleado: string;
     entrada: string | null;
     salida_descanso: string | null;
     regreso_descanso: string | null;

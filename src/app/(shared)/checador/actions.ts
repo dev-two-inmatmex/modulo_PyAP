@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import type { TurnoUsuario } from "@/lib/types";
+import type { Turno_Realizandose } from "@/lib/types";
 
 type ChequeoAction = 'entrada' | 'salida_descanso' | 'regreso_descanso' | 'salida';
 
@@ -24,7 +24,7 @@ export async function registrarChequeo(action: ChequeoAction) {
         .eq("fecha", today)
         .order("entrada", { ascending: false })
         .limit(1)
-        .maybeSingle<TurnoUsuario>();
+        .maybeSingle<Turno_Realizandose>();
 
     if (findError) {
         console.error("Error finding turno:", findError);
@@ -36,8 +36,8 @@ export async function registrarChequeo(action: ChequeoAction) {
             return { error: "Ya has registrado tu entrada hoy." };
         }
 
-        const { error } = await supabase.from("usuarios_turnos").insert({
-            id_usuario: user.id,
+        const { error } = await supabase.from("registro_checador").insert({
+            id_empleado: user.id,
             fecha: today,
             entrada: now,
         });
@@ -52,7 +52,7 @@ export async function registrarChequeo(action: ChequeoAction) {
         }
 
         const { error } = await supabase
-            .from("usuarios_turnos")
+            .from("registro_checador")
             .update({ [action]: now })
             .eq("id", latestTurno.id);
         
