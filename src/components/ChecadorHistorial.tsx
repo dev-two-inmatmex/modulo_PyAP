@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { RegistroChequeo } from "@/lib/types";
+import type { Turno } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 function formatTimestamp(timestamp: string | null | undefined): string {
@@ -24,16 +24,7 @@ function formatTimestamp(timestamp: string | null | undefined): string {
     }
 }
 
-const tipoRegistroMap: Record<string, string> = {
-    'entrada': 'Entrada',
-    'salida_descanso': 'Salida a Descanso',
-    'regreso_descanso': 'Regreso de Descanso',
-    'salida': 'Salida',
-};
-
-export function ChecadorHistorial({ registros }: { registros: RegistroChequeo[] | null }) {
-    const hasRecords = registros && registros.length > 0;
-
+export function ChecadorHistorial({ turnoHoy }: { turnoHoy: Turno | null }) {
     return (
         <Card className="shadow-lg">
             <CardHeader>
@@ -44,25 +35,19 @@ export function ChecadorHistorial({ registros }: { registros: RegistroChequeo[] 
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="font-semibold">Tipo de Registro</TableHead>
-                                <TableHead className="font-semibold text-right">Hora</TableHead>
+                                <TableHead className="font-semibold">Entrada</TableHead>
+                                <TableHead className="font-semibold">Salida a Descanso</TableHead>
+                                <TableHead className="font-semibold">Regreso de Descanso</TableHead>
+                                <TableHead className="font-semibold text-right">Salida</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {hasRecords && registros ? (
-                                registros.map((registro) => (
-                                    <TableRow key={registro.id}>
-                                        <TableCell className="capitalize">{tipoRegistroMap[registro.tipo] || registro.tipo.replace(/_/g, ' ')}</TableCell>
-                                        <TableCell className="text-right">{formatTimestamp(registro.registro)}</TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={2} className="text-center text-muted-foreground h-24">
-                                        No hay registros de chequeo para hoy.
-                                    </TableCell>
-                                </TableRow>
-                            )}
+                            <TableRow>
+                                <TableCell>{formatTimestamp(turnoHoy?.entrada)}</TableCell>
+                                <TableCell>{formatTimestamp(turnoHoy?.salida_descanso)}</TableCell>
+                                <TableCell>{formatTimestamp(turnoHoy?.regreso_descanso)}</TableCell>
+                                <TableCell className="text-right">{formatTimestamp(turnoHoy?.salida)}</TableCell>
+                            </TableRow>
                         </TableBody>
                     </Table>
                 </div>

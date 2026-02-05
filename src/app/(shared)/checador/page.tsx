@@ -2,8 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { ChecadorReloj } from "@/components/ChecadorReloj";
 import { ChecadorHistorial } from "@/components/ChecadorHistorial";
-import type { EmpleadoTurno, RegistroChequeo, Turno } from "@/lib/types";
-
+import type { EmpleadoTurno, Turno } from "@/lib/types";
 
 export default async function ChecadorPage() {
   const supabase = await createClient();
@@ -17,36 +16,17 @@ export default async function ChecadorPage() {
 
   const today = new Date().toISOString().split("T")[0];
 
-  // Fetch all check-in records for the user for today
   const { data: registrosDeHoy, error: registrosError } = await supabase
     .from("registro_checador")
-    .select("*")
+    .select("registro, tipo")
     .eq("id_empleado", user.id)
-    .eq("fecha", today)
-    .order("registro", { ascending: true });
+    .eq("fecha", today);
 
   if (registrosError) {
       console.error("Error fetching check-in records:", registrosError.message);
-      // Optionally, render an error message to the user
   }
 
-  const reconstruirTurno = (registros: RegistroChequeo[]): Turno => {
-    const turno: Turno = {
-      entrada: null,
-      salida_descanso: null,
-      regreso_descanso: null,
-      salida: null,
-    };
-    registros.forEach(registro => {
-      if (registro.tipo && registro.tipo in turno) {
-          turno[registro.tipo as keyof Turno] = registro.registro;
-      }
-    });
-    return turno;
-  };
-
-  const turnoHoy = reconstruirTurno(registrosDeHoy || []);
-  const registrosOrdenados = registrosDeHoy || [];
+  const turnoHoy: Turno | null = registrosDeHoy ? Object.fromEntries(registrosDeHoy.map(r => [r.tipo, r.registro])) as Turno : null;
 
   const { data: empleadoTurnoRel, error: horarioError } = await supabase
     .from("empleado_turno")
@@ -76,7 +56,7 @@ export default async function ChecadorPage() {
         <ChecadorReloj turnoHoy={turnoHoy} turnoAsignado={turnoAsignado} />
       </div>
       <div className="md:col-span-2">
-        <ChecadorHistorial registros={registrosOrdenados} />
+        <ChecadorHistorial turnoHoy={turnoHoy} />
       </div>
     </div>
   );
