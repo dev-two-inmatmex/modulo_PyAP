@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { TurnoHoy } from "@/lib/types";
+import type { RegistroChequeo } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 function formatTimestamp(timestamp: string | null | undefined): string {
@@ -24,9 +24,15 @@ function formatTimestamp(timestamp: string | null | undefined): string {
     }
 }
 
+const tipoRegistroMap: Record<string, string> = {
+    'entrada': 'Entrada',
+    'salida_descanso': 'Salida a Descanso',
+    'regreso_descanso': 'Regreso de Descanso',
+    'salida': 'Salida',
+};
 
-export function ChecadorHistorial({ turnoHoy }: { turnoHoy: TurnoHoy | null }) {
-    const hasRecords = turnoHoy && Object.values(turnoHoy).some(val => val !== null);
+export function ChecadorHistorial({ registros }: { registros: RegistroChequeo[] | null }) {
+    const hasRecords = registros && registros.length > 0;
 
     return (
         <Card className="shadow-lg">
@@ -38,23 +44,21 @@ export function ChecadorHistorial({ turnoHoy }: { turnoHoy: TurnoHoy | null }) {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="font-semibold">Entrada</TableHead>
-                                <TableHead className="font-semibold">Salida a Descanso</TableHead>
-                                <TableHead className="font-semibold">Regreso de Descanso</TableHead>
-                                <TableHead className="font-semibold">Salida</TableHead>
+                                <TableHead className="font-semibold">Tipo de Registro</TableHead>
+                                <TableHead className="font-semibold text-right">Hora</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {hasRecords && turnoHoy ? (
-                                <TableRow>
-                                    <TableCell>{formatTimestamp(turnoHoy.entrada)}</TableCell>
-                                    <TableCell>{formatTimestamp(turnoHoy.salida_descanso)}</TableCell>
-                                    <TableCell>{formatTimestamp(turnoHoy.regreso_descanso)}</TableCell>
-                                    <TableCell>{formatTimestamp(turnoHoy.salida)}</TableCell>
-                                </TableRow>
+                            {hasRecords && registros ? (
+                                registros.map((registro) => (
+                                    <TableRow key={registro.id}>
+                                        <TableCell className="capitalize">{tipoRegistroMap[registro.tipo] || registro.tipo.replace(/_/g, ' ')}</TableCell>
+                                        <TableCell className="text-right">{formatTimestamp(registro.registro)}</TableCell>
+                                    </TableRow>
+                                ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="text-center text-muted-foreground h-24">
+                                    <TableCell colSpan={2} className="text-center text-muted-foreground h-24">
                                         No hay registros de chequeo para hoy.
                                     </TableCell>
                                 </TableRow>

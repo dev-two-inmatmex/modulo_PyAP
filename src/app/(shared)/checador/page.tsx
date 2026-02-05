@@ -2,24 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { ChecadorReloj } from "@/components/ChecadorReloj";
 import { ChecadorHistorial } from "@/components/ChecadorHistorial";
-import type { EmpleadoTurno, RegistroChequeo, TurnoHoy } from "@/lib/types";
+import type { EmpleadoTurno, RegistroChequeo, Turno } from "@/lib/types";
 
-// Helper function to reconstruct the day's turn from individual records
-function reconstruirTurno(registros: RegistroChequeo[]): TurnoHoy {
-    const turno: TurnoHoy = {
-        entrada: null,
-        salida_descanso: null,
-        regreso_descanso: null,
-        salida: null,
-    };
-
-    for (const registro of registros) {
-        if (registro.tipo && Object.prototype.hasOwnProperty.call(turno, registro.tipo)) {
-            (turno as any)[registro.tipo] = registro.registro;
-        }
-    }
-    return turno;
-}
 
 export default async function ChecadorPage() {
   const supabase = await createClient();
@@ -46,7 +30,23 @@ export default async function ChecadorPage() {
       // Optionally, render an error message to the user
   }
 
+  const reconstruirTurno = (registros: RegistroChequeo[]): Turno => {
+    const turno: Turno = {
+      entrada: null,
+      salida_descanso: null,
+      regreso_descanso: null,
+      salida: null,
+    };
+    registros.forEach(registro => {
+      if (registro.tipo && registro.tipo in turno) {
+          turno[registro.tipo as keyof Turno] = registro.registro;
+      }
+    });
+    return turno;
+  };
+
   const turnoHoy = reconstruirTurno(registrosDeHoy || []);
+  const registrosOrdenados = registrosDeHoy || [];
 
   const { data: empleadoTurnoRel, error: horarioError } = await supabase
     .from("empleado_turno")
@@ -76,7 +76,7 @@ export default async function ChecadorPage() {
         <ChecadorReloj turnoHoy={turnoHoy} turnoAsignado={turnoAsignado} />
       </div>
       <div className="md:col-span-2">
-        <ChecadorHistorial turnoHoy={turnoHoy} />
+        <ChecadorHistorial registros={registrosOrdenados} />
       </div>
     </div>
   );

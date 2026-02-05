@@ -31,7 +31,7 @@ export interface RegistroChequeo {
 }
 
 // A reconstructed object representing all check-ins for the day, for UI purposes.
-export interface TurnoHoy {
+export interface Turno {
   entrada: string | null;
   salida_descanso: string | null;
   regreso_descanso: string | null;
