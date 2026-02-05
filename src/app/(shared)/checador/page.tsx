@@ -36,7 +36,7 @@ export default async function ChecadorPage() {
   // Fetch all check-in records for the user for today
   const { data: registrosDeHoy, error: registrosError } = await supabase
     .from("registro_checador")
-    .select("registro, tipo")
+    .select("*")
     .eq("id_empleado", user.id)
     .eq("fecha", today)
     .order("registro", { ascending: true });

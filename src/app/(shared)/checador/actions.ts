@@ -18,7 +18,7 @@ export async function registrarChequeo(action: ChequeoAction) {
     // Find latest record for today to validate the action
     const { data: latestRecord, error: findError } = await supabase
         .from("registro_checador")
-        .select("tipo")
+        .select("tipo_registro")
         .eq("id_empleado", user.id)
         .eq("fecha", today)
         .order("registro", { ascending: false })
@@ -30,7 +30,7 @@ export async function registrarChequeo(action: ChequeoAction) {
         return { error: "Error al buscar registros existentes." };
     }
 
-    const lastAction = latestRecord?.tipo;
+    const lastAction = latestRecord?.tipo_registro;
 
     // Business logic for checking order of actions
     if (action === 'entrada' && lastAction) {
