@@ -18,12 +18,21 @@ export interface EmpleadoTurno {
     entrada: string | null;
     salida: string | null;
 }
-export interface Turno_Realizandose {
-    id: string;
-    fecha: string;
-    id_empleado: string;
-    entrada: string | null;
-    salida_descanso: string | null;
-    regreso_descanso: string | null;
-    salida: string | null;
+
+// Represents one row in the new `registro_checador` table.
+// NOTE: This assumes a `tipo` column (type: text) was added to the table.
+export interface RegistroChequeo {
+  id: string;
+  fecha: string;
+  id_empleado: string;
+  registro: string; // The time, e.g., "14:30:00"
+  tipo: 'entrada' | 'salida_descanso' | 'regreso_descanso' | 'salida';
+}
+
+// A reconstructed object representing all check-ins for the day, for UI purposes.
+export interface TurnoHoy {
+  entrada: string | null;
+  salida_descanso: string | null;
+  regreso_descanso: string | null;
+  salida: string | null;
 }

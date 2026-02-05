@@ -5,7 +5,7 @@ import { useFormStatus } from 'react-dom';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { registrarChequeo } from '@/app/(shared)/checador/actions';
-import type { Turno_Realizandose, EmpleadoTurno } from '@/lib/types';
+import type { TurnoHoy, EmpleadoTurno } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 const formatTime = (date: Date) => {
@@ -31,7 +31,7 @@ function SubmitButton({ label, disabled }: { label: string, disabled: boolean })
   );
 }
 
-export function ChecadorReloj({ latestTurno, turno }: { latestTurno: Turno_Realizandose | null, turno: EmpleadoTurno | null }) {
+export function ChecadorReloj({ turnoHoy, turnoAsignado }: { turnoHoy: TurnoHoy | null, turnoAsignado: EmpleadoTurno | null }) {
   const [time, setTime] = useState<Date | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -44,16 +44,16 @@ export function ChecadorReloj({ latestTurno, turno }: { latestTurno: Turno_Reali
   }, []);
 
   const getChequeoState = () => {
-    if (!latestTurno?.entrada) {
+    if (!turnoHoy?.entrada) {
       return { action: 'entrada' as const, label: 'Entrada', message: 'No has checado entrada' };
     }
-    if (!latestTurno?.salida_descanso) {
+    if (!turnoHoy?.salida_descanso) {
       return { action: 'salida_descanso' as const, label: 'Salida a Descanso', message: 'Turno iniciado' };
     }
-    if (!latestTurno?.regreso_descanso) {
+    if (!turnoHoy?.regreso_descanso) {
       return { action: 'regreso_descanso' as const, label: 'Regreso de Descanso', message: 'En descanso' };
     }
-    if (!latestTurno?.salida) {
+    if (!turnoHoy?.salida) {
       return { action: 'salida' as const, label: 'Salida', message: 'Turno reanudado' };
     }
     return { action: null, label: 'Turno Terminado', message: 'Has completado tu turno de hoy' };
@@ -75,6 +75,9 @@ export function ChecadorReloj({ latestTurno, turno }: { latestTurno: Turno_Reali
               const result = await registrarChequeo(action);
               if (result?.error) {
                   toast({ title: 'Error', description: result.error, variant: 'destructive' })
+              }
+              if (result?.success) {
+                  toast({ title: 'Éxito', description: result.success })
               }
           })
       }
@@ -102,9 +105,9 @@ export function ChecadorReloj({ latestTurno, turno }: { latestTurno: Turno_Reali
         <form action={handleAction} className="w-full">
             <SubmitButton label={label} disabled={!action || isPending} />
         </form>
-        {turno && (
+        {turnoAsignado && (
             <p className="text-sm text-muted-foreground">
-                Recuerda: Horario de {formatHorario(turno.entrada)} a {formatHorario(turno.salida)}
+                Recuerda: Horario de {formatHorario(turnoAsignado.entrada)} a {formatHorario(turnoAsignado.salida)}
             </p>
         )}
       </CardFooter>

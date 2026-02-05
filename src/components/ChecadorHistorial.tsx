@@ -6,13 +6,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { Turno_Realizandose } from "@/lib/types";
+import type { TurnoHoy } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 function formatTimestamp(timestamp: string | null | undefined): string {
     if (!timestamp) return '---';
     try {
-        const date = new Date(timestamp);
+        const [hours, minutes, seconds] = timestamp.split(':');
+        const date = new Date();
+        date.setHours(parseInt(hours), parseInt(minutes), parseInt(seconds || '0'));
         if (isNaN(date.getTime())) {
             return 'Hora inválida';
         }
@@ -23,7 +25,9 @@ function formatTimestamp(timestamp: string | null | undefined): string {
 }
 
 
-export function ChecadorHistorial({ turnos }: { turnos: Turno_Realizandose[] }) {
+export function ChecadorHistorial({ turnoHoy }: { turnoHoy: TurnoHoy | null }) {
+    const hasRecords = turnoHoy && Object.values(turnoHoy).some(val => val !== null);
+
     return (
         <Card className="shadow-lg">
             <CardHeader>
@@ -41,15 +45,13 @@ export function ChecadorHistorial({ turnos }: { turnos: Turno_Realizandose[] }) 
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {turnos.length > 0 ? (
-                                turnos.map((tc) => (
-                                    <TableRow key={tc.id}>
-                                        <TableCell>{formatTimestamp(tc.entrada)}</TableCell>
-                                        <TableCell>{formatTimestamp(tc.salida_descanso)}</TableCell>
-                                        <TableCell>{formatTimestamp(tc.regreso_descanso)}</TableCell>
-                                        <TableCell>{formatTimestamp(tc.salida)}</TableCell>
-                                    </TableRow>
-                                ))
+                            {hasRecords ? (
+                                <TableRow>
+                                    <TableCell>{formatTimestamp(turnoHoy?.entrada)}</TableCell>
+                                    <TableCell>{formatTimestamp(turnoHoy?.salida_descanso)}</TableCell>
+                                    <TableCell>{formatTimestamp(turnoHoy?.regreso_descanso)}</TableCell>
+                                    <TableCell>{formatTimestamp(turnoHoy?.salida)}</TableCell>
+                                </TableRow>
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={4} className="text-center text-muted-foreground h-24">
