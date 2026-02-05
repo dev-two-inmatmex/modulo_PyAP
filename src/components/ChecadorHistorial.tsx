@@ -45,12 +45,12 @@ export function ChecadorHistorial({ turnoHoy }: { turnoHoy: TurnoHoy | null }) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {hasRecords ? (
+                            {hasRecords && turnoHoy ? (
                                 <TableRow>
-                                    <TableCell>{formatTimestamp(turnoHoy?.entrada)}</TableCell>
-                                    <TableCell>{formatTimestamp(turnoHoy?.salida_descanso)}</TableCell>
-                                    <TableCell>{formatTimestamp(turnoHoy?.regreso_descanso)}</TableCell>
-                                    <TableCell>{formatTimestamp(turnoHoy?.salida)}</TableCell>
+                                    <TableCell>{formatTimestamp(turnoHoy.entrada)}</TableCell>
+                                    <TableCell>{formatTimestamp(turnoHoy.salida_descanso)}</TableCell>
+                                    <TableCell>{formatTimestamp(turnoHoy.regreso_descanso)}</TableCell>
+                                    <TableCell>{formatTimestamp(turnoHoy.salida)}</TableCell>
                                 </TableRow>
                             ) : (
                                 <TableRow>
