@@ -5,7 +5,7 @@ import { ChecadorHistorial } from "@/components/ChecadorHistorial";
 import type { EmpleadoTurno, RegistroChequeo, TurnoHoy } from "@/lib/types";
 
 // Helper function to reconstruct the day's turn from individual records
-function reconstruirTurno(registros: Pick<RegistroChequeo, 'registro'>[]): TurnoHoy {
+function reconstruirTurno(registros: RegistroChequeo[]): TurnoHoy {
     const turno: TurnoHoy = {
         entrada: null,
         salida_descanso: null,
@@ -13,13 +13,11 @@ function reconstruirTurno(registros: Pick<RegistroChequeo, 'registro'>[]): Turno
         salida: null,
     };
 
-    const tiempos = registros.map(r => r.registro).filter(Boolean) as string[];
-
-    if (tiempos.length > 0) turno.entrada = tiempos[0];
-    if (tiempos.length > 1) turno.salida_descanso = tiempos[1];
-    if (tiempos.length > 2) turno.regreso_descanso = tiempos[2];
-    if (tiempos.length > 3) turno.salida = tiempos[3];
-    
+    for (const registro of registros) {
+        if (registro.tipo && Object.prototype.hasOwnProperty.call(turno, registro.tipo)) {
+            (turno as any)[registro.tipo] = registro.registro;
+        }
+    }
     return turno;
 }
 
@@ -38,7 +36,7 @@ export default async function ChecadorPage() {
   // Fetch all check-in records for the user for today
   const { data: registrosDeHoy, error: registrosError } = await supabase
     .from("registro_checador")
-    .select("registro")
+    .select("registro, tipo")
     .eq("id_empleado", user.id)
     .eq("fecha", today)
     .order("registro", { ascending: true });

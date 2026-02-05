@@ -19,12 +19,15 @@ export interface EmpleadoTurno {
     salida: string | null;
 }
 
+type ChequeoTipo = 'entrada' | 'salida_descanso' | 'regreso_descanso' | 'salida';
+
 // Represents one row in the `registro_checador` table.
 export interface RegistroChequeo {
   id: string;
   fecha: string;
   id_empleado: string;
   registro: string; // The time, e.g., "14:30:00"
+  tipo: ChequeoTipo; // The type of check-in
 }
 
 // A reconstructed object representing all check-ins for the day, for UI purposes.

@@ -14,49 +14,51 @@ export async function registrarChequeo(action: ChequeoAction) {
     }
 
     const today = new Date().toISOString().split('T')[0];
-    const now = new Date();
-    // Format to HH:MM:SS
-    const timeNow = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
 
-    // Check for existing records for today to validate the action
-    const { data: todaysRecords, error: findError } = await supabase
+    // Find latest record for today to validate the action
+    const { data: latestRecord, error: findError } = await supabase
         .from("registro_checador")
-        .select("id")
+        .select("tipo")
         .eq("id_empleado", user.id)
-        .eq("fecha", today);
+        .eq("fecha", today)
+        .order("registro", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
     if (findError) {
-        console.error("Error finding check-in records:", findError);
+        console.error("Error finding latest check-in record:", findError);
         return { error: "Error al buscar registros existentes." };
     }
 
-    const numRecords = todaysRecords?.length || 0;
+    const lastAction = latestRecord?.tipo;
 
-    // Business logic for checking order of actions based on record count
-    if (action === 'entrada' && numRecords > 0) {
+    // Business logic for checking order of actions
+    if (action === 'entrada' && lastAction) {
         return { error: "Ya has registrado tu entrada hoy." };
     }
-     if (action !== 'entrada' && numRecords === 0) {
-        return { error: "Debes registrar tu entrada primero." };
-    }
-    if (action === 'salida_descanso' && numRecords !== 1) {
+    if (action === 'salida_descanso' && lastAction !== 'entrada') {
         return { error: "Debes registrar tu entrada para poder salir a descanso." };
     }
-    if (action === 'regreso_descanso' && numRecords !== 2) {
+    if (action === 'regreso_descanso' && lastAction !== 'salida_descanso') {
         return { error: "Debes registrar tu salida a descanso para poder regresar." };
     }
-    if (action === 'salida' && numRecords !== 3) {
+    if (action === 'salida' && lastAction !== 'regreso_descanso') {
         return { error: "Debes registrar tu regreso de descanso para poder registrar tu salida." };
     }
-    if (numRecords >= 4) {
+    if (lastAction === 'salida') {
         return { error: "Ya has completado todos tus registros del día." };
     }
+
+    const now = new Date();
+    // Format to HH:MM:SS
+    const timeNow = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
 
     // Insert the new record
     const { error: insertError } = await supabase.from("registro_checador").insert({
         id_empleado: user.id,
         fecha: today,
-        registro: timeNow // This is the time of the event
+        registro: timeNow,
+        tipo: action
     });
 
     if (insertError) {
