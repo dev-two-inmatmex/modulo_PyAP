@@ -8,15 +8,16 @@ import { registrarChequeo } from '@/app/(shared)/checador/actions';
 import type { EmpleadoTurno, RegistroChequeo } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
-const formatTime = (date: Date) => {
-  return date.toLocaleTimeString('en-US', {
+const formatClientTime = (date: Date) => {
+  return date.toLocaleTimeString('es-ES', {
     hour: '2-digit',
     minute: '2-digit',
-    hour12: true,
+    second: '2-digit',
+    hour12: false,
   });
 };
 
-const formatDate = (date: Date) => {
+const formatClientDate = (date: Date) => {
   const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
   const formatted = new Intl.DateTimeFormat('es-ES', options).format(date);
   return `Hoy, ${formatted.charAt(0).toUpperCase() + formatted.slice(1)}`;
@@ -32,16 +33,39 @@ function SubmitButton({ label, disabled }: { label: string, disabled: boolean })
 }
 
 export function ChecadorReloj({ registros, turnoAsignado }: { registros: RegistroChequeo[], turnoAsignado: EmpleadoTurno | undefined }) {
-  const [time, setTime] = useState<Date | null>(null);
+  const [serverDateTime, setServerDateTime] = useState<Date | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
   useEffect(() => {
-    // This effect runs only on the client, after hydration, preventing a mismatch.
-    setTime(new Date());
-    const timerId = setInterval(() => setTime(new Date()), 1000);
+    const fetchServerTime = async () => {
+      try {
+        const response = await fetch('/api/time');
+        const data = await response.json();
+        setServerDateTime(new Date(data.serverTime));
+      } catch (error) {
+        console.error('Failed to fetch server time:', error);
+        // Fallback to client time if server time cannot be fetched
+        setServerDateTime(new Date());
+      }
+    };
+
+    fetchServerTime(); // Fetch immediately on mount
+
+    const timerId = setInterval(() => {
+      setServerDateTime(prevTime => {
+        if (prevTime) {
+          const newTime = new Date(prevTime.getTime() + 1000);
+          return newTime;
+        }
+        return null;
+      });
+    }, 1000);
+
     return () => clearInterval(timerId);
   }, []);
+
+  const currentTime = serverDateTime;
 
   const getChequeoState = () => {
     if (!registros || registros.length === 0) {
@@ -75,15 +99,20 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
     const [h, m] = timeStr.split(':');
     const date = new Date();
     date.setHours(parseInt(h), parseInt(m), 0);
-    return formatTime(date);
+    return date.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
   };
   
   const handleAction = async () => {
-      if (action && time) {
-        const timeNow = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
+      if (action && currentTime) {
+        const dateWithTimezone = currentTime.toISOString();
+        const timeWithoutTimezone = currentTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
 
           startTransition(async () => {
-              const result = await registrarChequeo(action, timeNow);
+              const result = await registrarChequeo(action, dateWithTimezone, timeWithoutTimezone);
               if (result?.error) {
                   toast({ title: 'Error', description: result.error, variant: 'destructive' })
               }
@@ -97,15 +126,15 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
   return (
     <Card className="w-full max-w-sm mx-auto shadow-lg border-2">
       <CardHeader className="text-center pb-2">
-        <CardDescription className="text-lg text-foreground/80">{time ? formatDate(time) : 'Cargando...'}</CardDescription>
+        <CardDescription className="text-lg text-foreground/80">{currentTime ? formatClientDate(currentTime) : 'Cargando...'}</CardDescription>
         <CardTitle className="text-7xl font-bold tracking-tighter text-green-700">
-          {time ? (
+          {currentTime ? (
             <>
-              {formatTime(time).split(' ')[0]}
-              <span className="text-4xl font-medium ml-2">{formatTime(time).split(' ')[1]}</span>
+              {formatClientTime(currentTime).split(':')[0]}:{formatClientTime(currentTime).split(':')[1]}
+              <span className="text-4xl font-medium ml-2">{formatClientTime(currentTime).split(':')[2]}</span>
             </>
           ) : (
-            '--:--'
+            '--:--:--'
           )}
         </CardTitle>
       </CardHeader>

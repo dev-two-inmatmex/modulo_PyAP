@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 type ChequeoAction = 'entrada' | 'salida_descanso' | 'regreso_descanso' | 'salida';
 
-export async function registrarChequeo(action: ChequeoAction, timeNow: string) {
+export async function registrarChequeo(action: ChequeoAction, dateWithTimezone: string, timeWithoutTimezone: string) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -13,7 +13,7 @@ export async function registrarChequeo(action: ChequeoAction, timeNow: string) {
         throw new Error("Usuario no autenticado.");
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = dateWithTimezone;
 
     // Find latest record for today to validate the action
     const { data: latestRecord, error: findError } = await supabase
@@ -53,7 +53,7 @@ export async function registrarChequeo(action: ChequeoAction, timeNow: string) {
     const { error: insertError } = await supabase.from("registro_checador").insert({
         id_empleado: user.id,
         fecha: today,
-        registro: timeNow,
+        registro: timeWithoutTimezone,
         tipo_registro: action
     });
 
