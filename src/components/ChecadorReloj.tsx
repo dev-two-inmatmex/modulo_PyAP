@@ -5,7 +5,7 @@ import { useFormStatus } from 'react-dom';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { registrarChequeo } from '@/app/(shared)/checador/actions';
-import type { TurnoHoy, EmpleadoTurno } from '@/lib/types';
+import type { EmpleadoTurno, RegistroChequeo } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 const formatTime = (date: Date) => {
@@ -31,7 +31,7 @@ function SubmitButton({ label, disabled }: { label: string, disabled: boolean })
   );
 }
 
-export function ChecadorReloj({ turnoHoy, turnoAsignado }: { turnoHoy: TurnoHoy | null, turnoAsignado: EmpleadoTurno | null }) {
+export function ChecadorReloj({ registros, turnoAsignado }: { registros: RegistroChequeo[], turnoAsignado: EmpleadoTurno | undefined }) {
   const [time, setTime] = useState<Date | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -44,16 +44,25 @@ export function ChecadorReloj({ turnoHoy, turnoAsignado }: { turnoHoy: TurnoHoy 
   }, []);
 
   const getChequeoState = () => {
-    if (!turnoHoy?.entrada) {
+    if (!registros || registros.length === 0) {
       return { action: 'entrada' as const, label: 'Entrada', message: 'No has checado entrada' };
     }
-    if (!turnoHoy?.salida_descanso) {
+
+    // Buscamos si existen los tipos de registro en la lista
+    const tieneEntrada = registros.some(r => r.tipo_registro === 'entrada');
+    const tieneSalidaDescanso = registros.some(r => r.tipo_registro === 'salida_descanso');
+    const tieneRegresoDescanso = registros.some(r => r.tipo_registro === 'regreso_descanso');
+    const tieneSalida = registros.some(r => r.tipo_registro === 'salida');
+    if (!tieneEntrada) {
+      return { action: 'entrada' as const, label: 'Entrada', message: 'No has checado entrada' };
+    }
+    if (!tieneSalidaDescanso) {
       return { action: 'salida_descanso' as const, label: 'Salida a Descanso', message: 'Turno iniciado' };
     }
-    if (!turnoHoy?.regreso_descanso) {
+    if (!tieneRegresoDescanso) {
       return { action: 'regreso_descanso' as const, label: 'Regreso de Descanso', message: 'En descanso' };
     }
-    if (!turnoHoy?.salida) {
+    if (!tieneSalida) {
       return { action: 'salida' as const, label: 'Salida', message: 'Turno reanudado' };
     }
     return { action: null, label: 'Turno Terminado', message: 'Has completado tu turno de hoy' };
@@ -70,9 +79,11 @@ export function ChecadorReloj({ turnoHoy, turnoAsignado }: { turnoHoy: TurnoHoy 
   };
   
   const handleAction = async () => {
-      if (action) {
+      if (action && time) {
+        const timeNow = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
+
           startTransition(async () => {
-              const result = await registrarChequeo(action);
+              const result = await registrarChequeo(action, timeNow);
               if (result?.error) {
                   toast({ title: 'Error', description: result.error, variant: 'destructive' })
               }
@@ -105,11 +116,11 @@ export function ChecadorReloj({ turnoHoy, turnoAsignado }: { turnoHoy: TurnoHoy 
         <form action={handleAction} className="w-full">
             <SubmitButton label={label} disabled={!action || isPending} />
         </form>
-        {turnoAsignado && (
+        {/*{turnoAsignado && (*/}
             <p className="text-sm text-muted-foreground">
-                Recuerda: Horario de {formatHorario(turnoAsignado.entrada)} a {formatHorario(turnoAsignado.salida)}
+                Recuerda: Horario de {formatHorario(turnoAsignado?.entrada)} a {formatHorario(turnoAsignado?.salida)}
             </p>
-        )}
+        {/*)}*/}
       </CardFooter>
     </Card>
   );

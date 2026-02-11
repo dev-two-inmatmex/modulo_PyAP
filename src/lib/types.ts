@@ -1,7 +1,17 @@
 export interface Empleado {
+  id: string;
   nombres: string;
   apellido_paterno: string;
   apellido_materno: string;
+}
+
+export interface Vista_Lista_Empleados{
+  id: string | null;
+  nombre_completo: string;
+  puesto: string | null;
+  area: string | null;
+  estatus: string | null;
+  url_avatar: string | null;
 }
 
 export interface RolSistema {
@@ -16,6 +26,8 @@ export interface UsuarioRol {
 
 export interface EmpleadoTurno {
     entrada: string | null;
+    salida_descanso: string | null;
+    regreso_descanso: string | null;
     salida: string | null;
 }
 
@@ -27,11 +39,12 @@ export interface RegistroChequeo {
   fecha: string;
   id_empleado: string;
   registro: string; // The time, e.g., "14:30:00"
-  tipo: ChequeoTipo; // The type of check-in
+  tipo_registro: ChequeoTipo; // The type of check-in
 }
 
 // A reconstructed object representing all check-ins for the day, for UI purposes.
 export interface Turno {
+  id: string;
   entrada: string | null;
   salida_descanso: string | null;
   regreso_descanso: string | null;

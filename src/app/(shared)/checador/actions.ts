@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 type ChequeoAction = 'entrada' | 'salida_descanso' | 'regreso_descanso' | 'salida';
 
-export async function registrarChequeo(action: ChequeoAction) {
+export async function registrarChequeo(action: ChequeoAction, timeNow: string) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -49,16 +49,12 @@ export async function registrarChequeo(action: ChequeoAction) {
         return { error: "Ya has completado todos tus registros del día." };
     }
 
-    const now = new Date();
-    // Format to HH:MM:SS
-    const timeNow = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-
     // Insert the new record
     const { error: insertError } = await supabase.from("registro_checador").insert({
         id_empleado: user.id,
         fecha: today,
         registro: timeNow,
-        tipo: action
+        tipo_registro: action
     });
 
     if (insertError) {

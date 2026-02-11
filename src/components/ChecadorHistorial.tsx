@@ -6,8 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { Turno } from "@/lib/types";
+import type { RegistroChequeo } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 
 function formatTimestamp(timestamp: string | null | undefined): string {
     if (!timestamp) return '---';
@@ -24,7 +25,7 @@ function formatTimestamp(timestamp: string | null | undefined): string {
     }
 }
 
-export function ChecadorHistorial({ turnoHoy }: { turnoHoy: Turno | null }) {
+export function ChecadorHistorial({ registros }: { registros: RegistroChequeo[] }) {
     return (
         <Card className="shadow-lg">
             <CardHeader>
@@ -35,19 +36,17 @@ export function ChecadorHistorial({ turnoHoy }: { turnoHoy: Turno | null }) {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="font-semibold">Entrada</TableHead>
-                                <TableHead className="font-semibold">Salida a Descanso</TableHead>
-                                <TableHead className="font-semibold">Regreso de Descanso</TableHead>
-                                <TableHead className="font-semibold text-right">Salida</TableHead>
+                                <TableHead className="font-semibold">Registro</TableHead>
+                                <TableHead className="font-semibold">Tipo</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow>
-                                <TableCell>{formatTimestamp(turnoHoy?.entrada)}</TableCell>
-                                <TableCell>{formatTimestamp(turnoHoy?.salida_descanso)}</TableCell>
-                                <TableCell>{formatTimestamp(turnoHoy?.regreso_descanso)}</TableCell>
-                                <TableCell className="text-right">{formatTimestamp(turnoHoy?.salida)}</TableCell>
-                            </TableRow>
+                            {registros?.map((registro, index) => (
+                                <TableRow key={index}>
+                                <TableCell>{formatTimestamp(registro?.registro)}</TableCell>
+                                <TableCell>{registro?.tipo_registro}</TableCell>
+                                </TableRow>
+                            ))}
                         </TableBody>
                     </Table>
                 </div>

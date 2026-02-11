@@ -69,7 +69,16 @@ const navItems: NavItem[] = [
     icon: Briefcase,
     roles: ['Dirección', 'Administrador'],
   },
-  { label: 'Recursos Humanos', href: '/rh', icon: ClipboardList, roles: ['RH','Administrador'] },
+  { label: 'Recursos Humanos', href: '/rh', icon: ClipboardList, roles: ['RH','Administrador'],
+    subItems: [
+      {
+        label: 'Empleados',
+        href: '/rh/empleados',
+        icon: Users,
+        roles: ['RH','Administrador'],
+      },
+    ],
+   },
   { label: 'Supervisor', href: '/supervisor', icon: Eye, roles: ['Supervisor', 'Administrador'] },
 ];
 
