@@ -40,6 +40,9 @@ export interface RegistroChequeo {
   id_empleado: string;
   registro: string; // The time, e.g., "14:30:00"
   tipo_registro: ChequeoTipo; // The type of check-in
+  latitud: number;
+  longitud: number;
+  exactitud_geografica: number;
 }
 
 // A reconstructed object representing all check-ins for the day, for UI purposes.

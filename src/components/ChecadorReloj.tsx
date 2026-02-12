@@ -107,20 +107,40 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
   };
   
   const handleAction = async () => {
-      if (action && currentTime) {
-        const dateWithTimezone = currentTime.toISOString();
-        const timeWithoutTimezone = currentTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    if (action && currentTime) {
+      startTransition(() => {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            const { latitude, longitude, accuracy } = pos.coords;
+            const dateWithTimezone = currentTime.toISOString();
+            const timeWithoutTimezone = currentTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
 
-          startTransition(async () => {
-              const result = await registrarChequeo(action, dateWithTimezone, timeWithoutTimezone);
-              if (result?.error) {
-                  toast({ title: 'Error', description: result.error, variant: 'destructive' })
-              }
-              if (result?.success) {
-                  toast({ title: 'Éxito', description: result.success })
-              }
-          })
-      }
+            const result = await registrarChequeo(
+              action,
+              dateWithTimezone,
+              timeWithoutTimezone,
+              latitude,
+              longitude,
+              accuracy
+            );
+
+            if (result?.error) {
+              toast({ title: 'Error', description: result.error, variant: 'destructive' });
+            } else if (result?.success) {
+              toast({ title: 'Éxito', description: result.success });
+            }
+          },
+          (err) => {
+            toast({
+              title: 'Ubicación requerida',
+              description: 'Debes permitir el acceso al GPS para checar.',
+              variant: 'destructive'
+            });
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      });
+    }
   }
 
   return (
@@ -145,11 +165,11 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
         <form action={handleAction} className="w-full">
             <SubmitButton label={label} disabled={!action || isPending} />
         </form>
-        {/*{turnoAsignado && (*/}
+        {turnoAsignado && (
             <p className="text-sm text-muted-foreground">
                 Recuerda: Horario de {formatHorario(turnoAsignado?.entrada)} a {formatHorario(turnoAsignado?.salida)}
             </p>
-        {/*)}*/}
+        )}
       </CardFooter>
     </Card>
   );
