@@ -8,17 +8,24 @@ import { registrarChequeo } from '@/app/(shared)/checador/actions';
 import type { EmpleadoTurno, RegistroChequeo } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
-const formatClientTime = (date: Date) => {
-  return date.toLocaleTimeString('es-ES', {
+const formatClientTime = (date: Date, timeZone?: string | null) => {
+  const options: Intl.DateTimeFormatOptions = {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
     hour12: false,
-  });
+  };
+  if (timeZone) {
+    options.timeZone = timeZone;
+  }
+  return date.toLocaleTimeString('es-ES', options);
 };
 
-const formatClientDate = (date: Date) => {
+const formatClientDate = (date: Date, timeZone?: string | null) => {
   const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+    if (timeZone) {
+    options.timeZone = timeZone;
+  }
   const formatted = new Intl.DateTimeFormat('es-ES', options).format(date);
   return `Hoy, ${formatted.charAt(0).toUpperCase() + formatted.slice(1)}`;
 };
@@ -32,8 +39,16 @@ function SubmitButton({ label, disabled }: { label: string, disabled: boolean })
   );
 }
 
+interface UserLocation {
+    latitude: number;
+    longitude: number;
+    accuracy: number;
+}
+
 export function ChecadorReloj({ registros, turnoAsignado }: { registros: RegistroChequeo[], turnoAsignado: EmpleadoTurno | undefined }) {
   const [serverDateTime, setServerDateTime] = useState<Date | null>(null);
+  const [userTimezone, setUserTimezone] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
@@ -45,25 +60,48 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
         setServerDateTime(new Date(data.serverTime));
       } catch (error) {
         console.error('Failed to fetch server time:', error);
-        // Fallback to client time if server time cannot be fetched
         setServerDateTime(new Date());
       }
     };
 
-    fetchServerTime(); // Fetch immediately on mount
+    fetchServerTime();
 
     const timerId = setInterval(() => {
-      setServerDateTime(prevTime => {
-        if (prevTime) {
-          const newTime = new Date(prevTime.getTime() + 1000);
-          return newTime;
-        }
-        return null;
-      });
+      setServerDateTime(prevTime => prevTime ? new Date(prevTime.getTime() + 1000) : null);
     }, 1000);
 
     return () => clearInterval(timerId);
   }, []);
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude, accuracy } = pos.coords;
+        setUserLocation({ latitude, longitude, accuracy });
+        try {
+          const tzResponse = await fetch(`https://timeapi.io/api/TimeZone/coordinate?latitude=${latitude}&longitude=${longitude}`);
+          if (tzResponse.ok) {
+            const tzData = await tzResponse.json();
+            setUserTimezone(tzData.timeZone);
+          } else {
+            throw new Error('API request failed');
+          }
+        } catch (e) {
+          console.error("Could not fetch timezone, using device default.", e);
+          const fallbackTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          setUserTimezone(fallbackTz);
+          toast({ title: 'Zona Horaria', description: 'No se pudo detectar la zona horaria por ubicación. Usando la del dispositivo.', variant: 'default' });
+        }
+      },
+      (err) => {
+        console.warn("Location denied, using device default timezone.");
+        const fallbackTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        setUserTimezone(fallbackTz);
+        toast({ title: 'Ubicación requerida', description: 'Para registrar la hora correcta, se usará la zona horaria del dispositivo.', variant: 'destructive' });
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }, [toast]);
 
   const currentTime = serverDateTime;
 
@@ -71,8 +109,6 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
     if (!registros || registros.length === 0) {
       return { action: 'entrada' as const, label: 'Entrada', message: 'No has checado entrada' };
     }
-
-    // Buscamos si existen los tipos de registro en la lista
     const tieneEntrada = registros.some(r => r.tipo_registro === 'entrada');
     const tieneSalidaDescanso = registros.some(r => r.tipo_registro === 'salida_descanso');
     const tieneRegresoDescanso = registros.some(r => r.tipo_registro === 'regreso_descanso');
@@ -103,55 +139,59 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
+      timeZone: userTimezone || undefined
     });
   };
-  
+
   const handleAction = async () => {
-    if (action && currentTime) {
-      startTransition(() => {
-        navigator.geolocation.getCurrentPosition(
-          async (pos) => {
-            const { latitude, longitude, accuracy } = pos.coords;
-            const dateWithTimezone = currentTime.toISOString();
-            const timeWithoutTimezone = currentTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    if (action && currentTime && userLocation && userTimezone) {
+      startTransition(async () => {
+        const { latitude, longitude, accuracy } = userLocation;
+        
+        const dateInTimezone = new Intl.DateTimeFormat('sv-SE', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            timeZone: userTimezone,
+        }).format(currentTime);
 
-            const result = await registrarChequeo(
-              action,
-              dateWithTimezone,
-              timeWithoutTimezone,
-              latitude,
-              longitude,
-              accuracy
-            );
+        const timeInTimezone = new Intl.DateTimeFormat('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+            timeZone: userTimezone,
+        }).format(currentTime);
 
-            if (result?.error) {
-              toast({ title: 'Error', description: result.error, variant: 'destructive' });
-            } else if (result?.success) {
-              toast({ title: 'Éxito', description: result.success });
-            }
-          },
-          (err) => {
-            toast({
-              title: 'Ubicación requerida',
-              description: 'Debes permitir el acceso al GPS para checar.',
-              variant: 'destructive'
-            });
-          },
-          { enableHighAccuracy: true, timeout: 10000 }
+        const result = await registrarChequeo(
+          action,
+          dateInTimezone,
+          timeInTimezone,
+          latitude,
+          longitude,
+          accuracy
         );
+
+        if (result?.error) {
+          toast({ title: 'Error', description: result.error, variant: 'destructive' });
+        } else if (result?.success) {
+          toast({ title: 'Éxito', description: result.success });
+        }
       });
+    } else if (!userLocation || !userTimezone) {
+        toast({ title: 'Por favor, espere', description: 'Obteniendo ubicación y zona horaria...', variant: 'default'})
     }
   }
 
   return (
     <Card className="w-full max-w-sm mx-auto shadow-lg border-2">
       <CardHeader className="text-center pb-2">
-        <CardDescription className="text-lg text-foreground/80">{currentTime ? formatClientDate(currentTime) : 'Cargando...'}</CardDescription>
+        <CardDescription className="text-lg text-foreground/80">{currentTime && userTimezone ? formatClientDate(currentTime, userTimezone) : 'Cargando...'}</CardDescription>
         <CardTitle className="text-7xl font-bold tracking-tighter text-green-700">
-          {currentTime ? (
+          {currentTime && userTimezone ? (
             <>
-              {formatClientTime(currentTime).split(':')[0]}:{formatClientTime(currentTime).split(':')[1]}
-              <span className="text-4xl font-medium ml-2">{formatClientTime(currentTime).split(':')[2]}</span>
+              {formatClientTime(currentTime, userTimezone).split(':')[0]}:{formatClientTime(currentTime, userTimezone).split(':')[1]}
+              <span className="text-4xl font-medium ml-2">{formatClientTime(currentTime, userTimezone).split(':')[2]}</span>
             </>
           ) : (
             '--:--:--'
@@ -163,7 +203,7 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
       </CardContent>
       <CardFooter className="flex flex-col gap-4 px-6 pb-6">
         <form action={handleAction} className="w-full">
-            <SubmitButton label={label} disabled={!action || isPending} />
+            <SubmitButton label={label} disabled={!action || isPending || !userLocation || !userTimezone} />
         </form>
         {turnoAsignado && (
             <p className="text-sm text-muted-foreground">
