@@ -6,12 +6,12 @@ export interface Empleado {
 }
 
 export interface Vista_Lista_Empleados{
-  id: string | null;
+  id: string;
   nombre_completo: string;
   puesto: string | null;
   area: string | null;
   estatus: string | null;
-  url_avatar: string | null;
+  url: string | null;
 }
 
 export interface RolSistema {

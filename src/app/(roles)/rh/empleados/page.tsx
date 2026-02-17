@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { EmployeeCard, Employee } from '@/components/EmployeeCard';
+import { EmployeeCard} from '@/components/EmployeeCard';
 import {AddEmployee} from '@/components/AddEmployee'
 import { SearchBar } from '@/components/SearchBar';
 

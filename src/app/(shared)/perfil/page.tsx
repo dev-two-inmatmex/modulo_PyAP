@@ -32,7 +32,7 @@ export default async function ProfilePage() {
       <div className="w-full max-w-md bg-card rounded-2xl shadow-lg p-8 border">
         <div className="flex flex-col items-center text-center">
           <Avatar className="w-24 h-24 mb-4">
-            <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(fullName)}`} />
+            <AvatarImage src={`https://hpfclglvfxgikexuvtwu.supabase.co/storage/v1/object/public/avatars/${encodeURIComponent(user.id)}/avatar.webp`} />
             <AvatarFallback>{fullName[0]}</AvatarFallback>
           </Avatar>
           <h1 className="text-2xl font-bold text-foreground">{fullName}</h1>

@@ -3,22 +3,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Vista_Lista_Empleados } from "@/lib/types";
-export interface Employee {
-    id: number | string;
-    name: string;
-    position: string;
-    area: string;
-    status: string;
-    avatarUrl: string;
-}
 
 export function EmployeeCard({ empleado }: { empleado: Vista_Lista_Empleados }) {
     return (
       <Card>
         <CardHeader>
           <div className="flex items-center space-x-4">
-            <Avatar>
-              <AvatarImage src={empleado.url_avatar || '@/placeholders/placeholder-profile.png'} alt={empleado.nombre_completo} />
+            <Avatar className="w-24 h-24 mb-4">
+              <AvatarImage src={`https://hpfclglvfxgikexuvtwu.supabase.co/storage/v1/object/public/avatars/${encodeURIComponent(empleado.id)}/avatar.webp` || '@/placeholders/placeholder-profile.png'} alt={empleado.nombre_completo} />
               <AvatarFallback>{empleado.nombre_completo.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>

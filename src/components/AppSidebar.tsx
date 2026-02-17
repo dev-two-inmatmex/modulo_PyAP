@@ -178,9 +178,9 @@ export default function AppSidebar({ userRoles, user }: AppSidebarProps) {
         <div className="flex items-center gap-3">
           <Avatar className="h-9 w-9">
             <AvatarImage
-              src={`https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(
-                user.fullName
-              )}`}
+              src={`https://hpfclglvfxgikexuvtwu.supabase.co/storage/v1/object/public/avatars/${encodeURIComponent(
+                user.id
+              )}/avatar.webp`}
             />
             <AvatarFallback>{user.fullName[0]}</AvatarFallback>
           </Avatar>
