@@ -15,6 +15,12 @@ export default async function EmpleadosPage({ searchParams }: { searchParams: { 
   if (error){
     console.error('Error fetching employees:', error);
   }
+  const { data: horarios } = await supabase.from('horarios').select('id, hora_entrada, hora_salida');
+  const { data: descansos } = await supabase.from('descansos').select('id, inicio_descanso, final_descanso');
+  const { data: puestos } = await supabase.from('puestos').select('id, nombre_puesto');
+  const { data: ubicaciones } = await supabase.from('config_ubicaciones').select('id, nombre_ubicacion');
+  const { data: estatuses } = await supabase.from('estatus').select('id, nombre_estatus');
+  const { data: n_empleados} = await supabase.from('vista_total_empleados').select('n_empleados');
 
   return (
     <div>
@@ -22,7 +28,14 @@ export default async function EmpleadosPage({ searchParams }: { searchParams: { 
         <h1 className="text-4xl font-bold">Empleados</h1>
       </div>
       <SearchBar />
-      {/*<AddEmployee/>*/}
+      <AddEmployee
+        horarios={horarios || []}
+        descansos={descansos || []}
+        puestos={puestos || []}
+        ubicaciones={ubicaciones || []}
+        estatuses={estatuses || []}
+        n_empleados={n_empleados || ''}
+        />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {empleados?.map(empleado => (
           <EmployeeCard

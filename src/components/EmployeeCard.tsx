@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Vista_Lista_Empleados } from "@/lib/types";
+//import { EditarPerfil } from "./EditarPerfil";
 
 export function EmployeeCard({ empleado }: { empleado: Vista_Lista_Empleados }) {
     return (
@@ -27,6 +28,7 @@ export function EmployeeCard({ empleado }: { empleado: Vista_Lista_Empleados }) 
             <div className="flex space-x-2">
               <Button variant="outline">Ver Ficha</Button>
               <Button>Editar</Button>
+              {/*<EditarPerfil*/}
             </div>
           </div>
         </CardContent>

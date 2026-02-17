@@ -1,16 +1,21 @@
-
 'use client'
 
-import * as React from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useEffect, useState, useTransition, useCallback } from 'react'
-
-import { addUser } from '@/app/(roles)/rh/empleados/actions'
-import { useToast } from '@/hooks/use-toast'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import React, { useState, useTransition } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import { addUser } from '@/app/(roles)/rh/empleados/actions';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose
+} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -18,69 +23,73 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 const UserSchema = z.object({
-  nombres: z.string().min(1, 'El nombre es requerido'),
-  a_paterno: z.string().min(1, 'El apellido paterno es requerido'),
-  a_materno: z.string().min(1, 'El apellido materno es requerido'),
-  email: z.string().email('El email no es válido').min(1, 'El email es requerido'),
-  direccion: z.string().min(1, 'La dirección es requerida'),
-  telefono1: z.string().min(1, 'Se requiere al menos un teléfono'),
-  telefono2: z.string().optional(),
-  fecha_nacimiento: z.string().min(1, 'La fecha de nacimiento es requerida'),
-  pago_dia: z.string().min(1, 'El pago por día es requerido'),
-  id_ext_horario: z.string().min(1, 'El horario es requerido'),
-  id_ext_descanso: z.string().min(1, 'El descanso es requerido'),
-  id_ext_rol: z.string().min(1, 'El rol es requerido'),
-})
+  nombres: z.string().min(1, "Nombres es requerido"),
+  a_paterno: z.string().min(1, "Apellido Paterno es requerido"),
+  a_materno: z.string().min(1, "Apellido Materno es requerido"),
+  fecha_nacimiento: z.string().min(1, "Fecha de nacimiento es requerida"),
+  sexo: z.enum(['true', 'false'], { required_error: 'Sexo es requerido.' }),
+  direccion: z.string().min(1, "Dirección es requerida"),
+  telefono1: z.string().min(10, "Teléfono principal debe tener 10 dígitos"),
+  telefono2: z.string().min(10, "Teléfono de emergencia debe tener 10 dígitos").optional().or(z.literal('')),
+  email: z.string().email("Email inválido"),
+  id_puesto: z.string().min(1, "Puesto es requerido"),
+  id_ubicacion: z.string().min(1, "Ubicación es requerida"),
+  id_ext_horario: z.string().min(1, "Horario es requerido"),
+  id_ext_descanso: z.string().min(1, "Descanso es requerido"),
+  id_estatus: z.string().min(1, "Estatus es requerido"),
+});
 
-type UserFormValues = z.infer<typeof UserSchema>
+type UserFormValues = z.infer<typeof UserSchema>;
 
 type Horario = {
   id: number;
-  horario_entrada: string;
-  horario_salida: string;
+  hora_entrada: string;
+  hora_salida: string;
 };
 
 type Descanso = {
   id: number;
-  descanso_inicio: string;
-  descanso_final: string;
-}
+  inicio_descanso: string;
+  final_descanso: string;
+};
 
-type Rol = {
+type Puesto = {
   id: number;
-  rol: string;
-}
+  nombre_puesto: string;
+};
+
+type Ubicacion = {
+  id: number;
+  nombre_ubicacion: string;
+};
+
+type Estatus = {
+  id: number;
+  nombre_estatus: string;
+};
 
 interface AddUserProps {
   horarios: Horario[];
   descansos: Descanso[];
-  roles: Rol[];
+  puestos: Puesto[];
+  ubicaciones: Ubicacion[];
+  estatuses: Estatus[];
+  n_empleados: string;
 }
 
-export function AddEmployee({ horarios, descansos, roles }: AddUserProps) {
+export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatuses, n_empleados }: AddUserProps) {
   const [open, setOpen] = useState(false);
-  const { toast } = useToast()
+  const { toast } = useToast();
   const [state, formAction] = React.useActionState(addUser, {
     message: '',
     errors: {},
-  })
+  });
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<UserFormValues>({
@@ -94,54 +103,31 @@ export function AddEmployee({ horarios, descansos, roles }: AddUserProps) {
       telefono1: '',
       telefono2: '',
       fecha_nacimiento: '',
-      pago_dia: '',
       id_ext_horario: '',
       id_ext_descanso: '',
-      id_ext_rol: '',
+      id_puesto: '',
+      id_ubicacion: '',
+      id_estatus: '',
     },
-  })
-
-  const handleOpenChange = useCallback((isOpen: boolean) => {
-    setOpen(isOpen);
-    if (!isOpen) {
-      form.reset();
-    }
-  }, [form]);
-
-  useEffect(() => {
-    if (state.message && !state.errors) {
-      toast({
-        title: 'Éxito',
-        description: state.message,
-      })
-      handleOpenChange(false)
-    } else if (state.message && state.errors) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: state.message,
-      })
-    }
-  }, [state, toast, handleOpenChange])
-
-  const onSubmit = (data: UserFormValues) => {
-    startTransition(() => {
-      // @ts-ignore
-      formAction(data)
-    })
-  }
+  });
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Agregar Nuevo Usuario</Button>
+        <Button>Agregar Empleado</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Agregar Nuevo Usuario</DialogTitle>
+          <DialogTitle>Agregar Nuevo Empleado</DialogTitle>
+          <DialogDescription>
+            Complete el formulario para registrar un nuevo empleado en el sistema.
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            action={formAction}
+            className="grid grid-cols-1 md:grid-cols-3 gap-4"
+          >
             <FormField
               control={form.control}
               name="nombres"
@@ -149,64 +135,68 @@ export function AddEmployee({ horarios, descansos, roles }: AddUserProps) {
                 <FormItem>
                   <FormLabel>Nombres</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="John"
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                      className="uppercase"
-                    />
+                    <Input placeholder="Juan" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="a_paterno"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Apellido Paterno</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Doe"
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                        className="uppercase"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="a_materno"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Apellido Materno</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Smith"
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                        className="uppercase"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
             <FormField
               control={form.control}
-              name="email"
+              name="a_paterno"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Apellido Paterno</FormLabel>
                   <FormControl>
-                    <Input placeholder="usuario@ejemplo.com" {...field} />
+                    <Input placeholder="Pérez" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="a_materno"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Apellido Materno</FormLabel>
+                  <FormControl>
+                    <Input placeholder="García" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="fecha_nacimiento"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fecha de Nacimiento</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="sexo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sexo</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione el sexo" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="true">Masculino</SelectItem>
+                      <SelectItem value="false">Femenino</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -218,74 +208,105 @@ export function AddEmployee({ horarios, descansos, roles }: AddUserProps) {
                 <FormItem>
                   <FormLabel>Dirección</FormLabel>
                   <FormControl>
-                    <Input placeholder="Av. Siempre Viva 123" {...field} />
+                    <Input placeholder="Calle Falsa 123" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="telefono1"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Teléfono Principal</FormLabel>
-                    <FormControl>
-                      <Input placeholder="1234567890" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="telefono2"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Teléfono Secundario (Opcional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="0987654321" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="fecha_nacimiento"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fecha de Nacimiento</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-               <FormField
-                control={form.control}
-                name="pago_dia"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Pago por Día</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="100.00" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
             <FormField
+              control={form.control}
+              name="telefono1"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Teléfono Principal</FormLabel>
+                  <FormControl>
+                    <Input placeholder="5512345678" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="telefono2"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Teléfono de Emergencia (Opcional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="5587654321" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="empleado@correo.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="id_puesto"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Puesto</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione un puesto" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {puestos.map((puesto) => (
+                        <SelectItem key={puesto.id} value={String(puesto.id)}>
+                          {puesto.nombre_puesto}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="id_ubicacion"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ubicación de Trabajo</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione una ubicación" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {ubicaciones.map((ubicacion) => (
+                        <SelectItem key={ubicacion.id} value={String(ubicacion.id)}>
+                          {ubicacion.nombre_ubicacion}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
               control={form.control}
               name="id_ext_horario"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Horario</FormLabel>
+                  <FormLabel>Turno</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -295,7 +316,7 @@ export function AddEmployee({ horarios, descansos, roles }: AddUserProps) {
                     <SelectContent>
                       {horarios.map((horario) => (
                         <SelectItem key={horario.id} value={String(horario.id)}>
-                          {`${horario.horario_entrada.slice(0,5)} - ${horario.horario_salida.slice(0,5)}`}
+                          {`${horario.hora_entrada.slice(0,5)} - ${horario.hora_salida.slice(0,5)}`}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -319,7 +340,7 @@ export function AddEmployee({ horarios, descansos, roles }: AddUserProps) {
                     <SelectContent>
                       {descansos.map((descanso) => (
                         <SelectItem key={descanso.id} value={String(descanso.id)}>
-                          {`${descanso.descanso_inicio.slice(0,5)} - ${descanso.descanso_final.slice(0,5)}`}
+                          {`${descanso.inicio_descanso.slice(0,5)} - ${descanso.final_descanso.slice(0,5)}`}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -328,22 +349,22 @@ export function AddEmployee({ horarios, descansos, roles }: AddUserProps) {
                 </FormItem>
               )}
             />
-            <FormField
+             <FormField
               control={form.control}
-              name="id_ext_rol"
+              name="id_estatus"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Rol</FormLabel>
+                  <FormLabel>Estatus</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccione un rol" />
+                        <SelectValue placeholder="Seleccione un estatus" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {roles.map((rol) => (
-                        <SelectItem key={rol.id} value={String(rol.id)}>
-                          {rol.rol}
+                      {estatuses.map((estatus) => (
+                        <SelectItem key={estatus.id} value={String(estatus.id)}>
+                          {estatus.nombre_estatus}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -352,12 +373,15 @@ export function AddEmployee({ horarios, descansos, roles }: AddUserProps) {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? 'Agregando...' : 'Agregar Usuario'}
-            </Button>
+            <DialogFooter className="md:col-span-3">
+                <DialogClose asChild>
+                    <Button type="button" variant="secondary">Cancelar</Button>
+                </DialogClose>
+                <Button type="submit">Guardar Empleado</Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
