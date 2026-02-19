@@ -2,16 +2,21 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Vista_Lista_Empleados } from "@/lib/types";
-//import { EditarPerfil } from "./EditarPerfil";
+import { EmployeeCardProps } from "@/lib/types";
+import { EditEmployee } from './EditEmployee'; // Import the new component
 
-export function EmployeeCard({ empleado }: { empleado: Vista_Lista_Empleados }) {
+
+export function EmployeeCard({ empleado, edit_empleado, avatarUrl }: EmployeeCardProps) {
     return (
       <Card>
         <CardHeader>
           <div className="flex items-center space-x-4">
             <Avatar className="w-24 h-24 mb-4">
-              <AvatarImage src={`https://hpfclglvfxgikexuvtwu.supabase.co/storage/v1/object/public/avatars/${encodeURIComponent(empleado.id)}/avatar.webp` || '@/placeholders/placeholder-profile.png'} alt={empleado.nombre_completo} />
+              {/* Added a timestamp to the URL to bypass browser cache */}
+              <AvatarImage 
+                src={avatarUrl}
+                alt={empleado.nombre_completo} 
+              />
               <AvatarFallback>{empleado.nombre_completo.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
@@ -27,8 +32,11 @@ export function EmployeeCard({ empleado }: { empleado: Vista_Lista_Empleados }) 
             <p><strong>Estatus:</strong> {empleado.estatus}</p>
             <div className="flex space-x-2">
               <Button variant="outline">Ver Ficha</Button>
-              <Button>Editar</Button>
-              {/*<EditarPerfil*/}
+              <EditEmployee 
+              empleado={empleado}
+              edit_empleado={edit_empleado} 
+              avatarUrl={avatarUrl}
+              />
             </div>
           </div>
         </CardContent>

@@ -13,6 +13,23 @@ export interface Vista_Lista_Empleados{
   estatus: string | null;
   url: string | null;
 }
+export interface Vista_Empleado_Datos_Editables {
+  id: string;
+  direccion: string | null;
+  telefonos: Telefono[];
+}
+
+export interface EmployeeCardProps {
+  empleado: Vista_Lista_Empleados;
+  edit_empleado: Vista_Empleado_Datos_Editables;
+  avatarUrl?: string;
+}
+export interface Telefono {
+  id: string;
+  tipo: 'principal' | 'emergencia';
+  numero_telefonico: string;
+  propietario: string | null;
+}
 
 export interface RolSistema {
   id: string;
