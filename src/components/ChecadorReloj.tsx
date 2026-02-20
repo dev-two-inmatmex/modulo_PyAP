@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
-import { useFormStatus } from 'react-dom';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { registrarChequeo } from '@/app/(shared)/checador/actions';
 import type { EmpleadoTurno, RegistroChequeo } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { ScannerBiometrico } from '@/components/ScannerBiometrico';
+import { Camera } from 'lucide-react';
 
 const formatClientTime = (date: Date, timeZone?: string | null) => {
   const options: Intl.DateTimeFormatOptions = {
@@ -29,15 +30,6 @@ const formatClientDate = (date: Date, timeZone?: string | null) => {
   const formatted = new Intl.DateTimeFormat('es-ES', options).format(date);
   return `Hoy, ${formatted.charAt(0).toUpperCase() + formatted.slice(1)}`;
 };
-
-function SubmitButton({ label, disabled }: { label: string, disabled: boolean }) {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white" disabled={pending || disabled} size="lg">
-      {pending ? 'Registrando...' : label}
-    </Button>
-  );
-}
 
 interface UserLocation {
     latitude: number;
@@ -143,43 +135,44 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
     });
   };
 
-  const handleAction = async () => {
+  const handleBioSuccess = (descriptor: number[]) => {
     if (action && currentTime && userLocation && userTimezone) {
-      startTransition(async () => {
-        const { latitude, longitude, accuracy } = userLocation;
-        
-        const dateInTimezone = new Intl.DateTimeFormat('sv-SE', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            timeZone: userTimezone,
-        }).format(currentTime);
+        startTransition(async () => {
+            const { latitude, longitude, accuracy } = userLocation;
 
-        const timeInTimezone = new Intl.DateTimeFormat('es-ES', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false,
-            timeZone: userTimezone,
-        }).format(currentTime);
+            const dateInTimezone = new Intl.DateTimeFormat('sv-SE', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                timeZone: userTimezone,
+            }).format(currentTime);
 
-        const result = await registrarChequeo(
-          action,
-          dateInTimezone,
-          timeInTimezone,
-          latitude,
-          longitude,
-          accuracy
-        );
+            const timeInTimezone = new Intl.DateTimeFormat('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+                timeZone: userTimezone,
+            }).format(currentTime);
 
-        if (result?.error) {
-          toast({ title: 'Error', description: result.error, variant: 'destructive' });
-        } else if (result?.success) {
-          toast({ title: 'Éxito', description: result.success });
-        }
-      });
-    } else if (!userLocation || !userTimezone) {
-        toast({ title: 'Por favor, espere', description: 'Obteniendo ubicación y zona horaria...', variant: 'default'})
+            const result = await registrarChequeo(
+                action,
+                dateInTimezone,
+                timeInTimezone,
+                latitude,
+                longitude,
+                accuracy,
+                descriptor
+            );
+
+            if (result?.error) {
+                toast({ title: 'Error', description: result.error, variant: 'destructive' });
+            } else if (result?.success) {
+                toast({ title: 'Éxito', description: result.success });
+            }
+        });
+    } else {
+        toast({ title: 'Por favor, espere', description: 'Obteniendo ubicación y zona horaria...', variant: 'default' });
     }
   }
 
@@ -202,9 +195,12 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
         <p className="text-lg text-muted-foreground">{message}</p>
       </CardContent>
       <CardFooter className="flex flex-col gap-4 px-6 pb-6">
-        <form action={handleAction} className="w-full">
-            <SubmitButton label={label} disabled={!action || isPending || !userLocation || !userTimezone} />
-        </form>
+        <ScannerBiometrico onResult={handleBioSuccess}>
+            <Button className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white" disabled={!action || isPending || !userLocation || !userTimezone} size="lg">
+                <Camera className="mr-2 h-6 w-6" />
+                {label}
+            </Button>
+        </ScannerBiometrico>
         {turnoAsignado && (
             <p className="text-sm text-muted-foreground">
                 Recuerda: Horario de {formatHorario(turnoAsignado?.entrada)} a {formatHorario(turnoAsignado?.salida)}

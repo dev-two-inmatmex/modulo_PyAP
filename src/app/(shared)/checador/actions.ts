@@ -13,12 +13,28 @@ export async function registrarChequeo(
     latitude: number,
     longitude: number,
     accuracy: number,
+    faceDescriptor?: number[],
 ) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
         throw new Error("Usuario no autenticado.");
+    }
+
+    // Biometric Validation via RPC
+    if (!faceDescriptor) {
+        return { error: "No se proporcionó información biométrica." };
+    }
+
+    const { data: biometricResult, error: rpcError } = await supabase.rpc('verificar_identidad_biometrica', {
+        p_id_empleado: user.id,
+        p_descriptor_camara: faceDescriptor
+    });
+
+    if (rpcError || !biometricResult) {
+        console.error('Biometric RPC Error:', rpcError);
+        return { error: "Identidad facial no verificada. Intente de nuevo." };
     }
 
     const { data: ubicacion, error: ubicacionError } = await supabase
