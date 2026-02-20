@@ -30,7 +30,7 @@ export async function addUser(prevState: any, formData: FormData) {
   // 1. Create user in auth.users
   const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
     email: data.email,
-    password: 'password123', 
+    password: 'password123',
     email_confirm: true,// IMPORTANT: This is insecure. Use a secure password generation method.
   });
 
@@ -42,7 +42,7 @@ export async function addUser(prevState: any, formData: FormData) {
   const userId = authData.user.id;
 
   // 2. Insert into Empleados table
-  const { error: empleadoError } = await supabase .from('empleados').insert({
+  const { error: empleadoError } = await supabase.from('empleados').insert({
     id: userId,
     nombres: data.nombres,
     apellido_paterno: data.a_paterno,
@@ -64,12 +64,14 @@ export async function addUser(prevState: any, formData: FormData) {
     supabase.from('empleado_ubicacion_chequeo').insert({ id_empleado: userId, id_ubicaciones: data.id_ubicacion }),
     supabase.from('empleado_turno').insert({ id_empleado: userId, id_horario: data.id_ext_horario, id_descanso: data.id_ext_descanso, Lunes: true, Martes: true, Miercoles: true, Jueves: true, Viernes: true, Sabado: true }),
     supabase.from('empleado_estatus').insert({ id_empleado: userId, id_estatus: data.id_estatus }),
-    supabase.from('empleado_telefonos').insert({ id_empleado: userId, numero_telefonico: data.telefono1, tipo: 'principal', propietario: 'Propio'  }),
+    supabase.from('empleado_telefonos').insert({ id_empleado: userId, numero_telefonico: data.telefono1, tipo: 'principal', propietario: 'Propio' }),
   ];
-  
+
   if (data.telefono2) {
-    inserts.push(supabase.from('empleado_telefonos').insert({ id_empleado: userId, numero_telefonico: data.telefono2, tipo: 'emergencia', 
-      propietario: data.propietario_telefono2}));
+    inserts.push(supabase.from('empleado_telefonos').insert({
+      id_empleado: userId, numero_telefonico: data.telefono2, tipo: 'emergencia',
+      propietario: data.propietario_telefono2
+    }));
   }
 
   const results = await Promise.all(inserts);
@@ -78,7 +80,7 @@ export async function addUser(prevState: any, formData: FormData) {
   if (errors.length > 0) {
     console.error('Errors inserting employee details:', errors);
     // Rollback needed for all previous inserts
-    return { message: `Error al insertar detalles del empleado: ${errors.map(e=>e?.message).join(', ')}` };
+    return { message: `Error al insertar detalles del empleado: ${errors.map(e => e?.message).join(', ')}` };
   }
 
   revalidatePath('/(roles)/rh/empleados');
@@ -86,7 +88,7 @@ export async function addUser(prevState: any, formData: FormData) {
 }
 export async function updateEmployeeAddress(employeeId: string, newAddress: string) {
   const supabase = await createClient();
-  
+
   const { error } = await supabase
     .from('empleados')
     .update({ direccion: newAddress })
@@ -103,127 +105,96 @@ export async function updateEmployeeAddress(employeeId: string, newAddress: stri
 // Action to update employee's phone numbers
 export async function updateEmployeePhones(employeeId: string, phone1: string, phone2?: string, propietario_telefono2?: string) {
   const supabase = await createClient();
+  const { error: err1 } = await supabase
+    .from('empleado_telefonos')
+    .upsert({
+      id_empleado: employeeId,
+      tipo: 'principal',
+      numero_telefonico: phone1,
+      propietario: 'Propio'
+    }, { onConflict: 'id_empleado, tipo' });
 
-  // First, remove existing phone numbers for the employee
-  /*const { error: deleteError } = await supabase
+  // 2. Actualizar/Insertar el teléfono de emergencia si existe
+  if (phone2) {
+    await supabase
       .from('empleado_telefonos')
-      .delete()
-      .eq('id_empleado', employeeId);
-
-  if (deleteError) {
-      return { success: false, message: `Error al limpiar teléfonos antiguos: ${deleteError.message}` };
-  }
-
-  // Prepare new phone records
-  const phoneRecords = [];
-  if (phone1) {
-      phoneRecords.push({ 
-          id_empleado: employeeId, 
-          numero_telefonico: phone1, 
-          tipo: 'principal', 
-          propietario: 'Propio' 
-      });
-  }
-  if (phone2 && propietario_telefono2) {
-      phoneRecords.push({ 
-          id_empleado: employeeId, 
-          numero_telefonico: phone2, 
-          tipo: 'emergencia', 
-          propietario: propietario_telefono2 
-      });
-  }
-
-  // Insert the new records
-  if (phoneRecords.length > 0) {
-      const { error: insertError } = await supabase
-          .from('empleado_telefonos')
-          .insert(phoneRecords);
-
-      if (insertError) {
-          return { success: false, message: `Error al actualizar los teléfonos: ${insertError.message}` };
-      }
-  }*/
-      const { error: err1 } = await supabase
-      .from('empleado_telefonos')
-      .upsert({ 
-        id_empleado: employeeId, 
-        tipo: 'principal', 
-        numero_telefonico: phone1,
-        propietario: 'Propio' 
+      .upsert({
+        id_empleado: employeeId,
+        tipo: 'emergencia',
+        numero_telefonico: phone2,
+        propietario: propietario_telefono2
       }, { onConflict: 'id_empleado, tipo' });
-  
-    // 2. Actualizar/Insertar el teléfono de emergencia si existe
-    if (phone2) {
-      await supabase
-        .from('empleado_telefonos')
-        .upsert({ 
-          id_empleado: employeeId, 
-          tipo: 'emergencia', 
-          numero_telefonico: phone2,
-          propietario: propietario_telefono2 
-        }, { onConflict: 'id_empleado, tipo' });
-    }
-      revalidatePath('/(roles)/rh/empleados');
-      return { success: true, message: "Teléfonos actualizados con éxito." };
+  }
+  revalidatePath('/(roles)/rh/empleados');
+  return { success: true, message: "Teléfonos actualizados con éxito." };
 }
 
 // Action to upload and update avatar
 export async function updateAvatar(formData: FormData) {
-    const supabase = await createClient();
-    const file = formData.get('avatar') as File;
-    const employeeId = formData.get('employeeId') as string;
+  const supabase = await createClient();
+  const file = formData.get('avatar') as Blob;
+  const employeeId = formData.get('employeeId') as string;
+  const faceDescriptor = formData.get('faceDescriptor') as string;
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    // 1. Procesamiento con Sharp (WebP + Redimensionar)
+    const optimizedImage = await sharp(buffer)
+      .resize(400, 400, { fit: 'cover' })
+      .webp({ quality: 80 })
+      .toBuffer();
 
-    if (!file || !employeeId) {
-        return { success: false, message: "Datos insuficientes para actualizar el avatar." };
-    }
-
+    // 2. Subida al Storage (Estructura de carpeta)
     const filePath = `${employeeId}/avatar.webp`;
+    const { error: storageError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, optimizedImage, {
+        contentType: 'image/webp',
+        upsert: true
+      });
 
-    try {
-        const processedImage = await sharp(await file.arrayBuffer())
-            .resize(400, 400)
-            .webp({ quality: 80 })
-            .toBuffer();
+    if (storageError) throw storageError;
 
-        const { error } = await supabase.storage
-            .from('avatars')
-            .upload(filePath, processedImage, {
-                cacheControl: '3600',
-                contentType: 'image/webp',
-                upsert: true,
-            });
+    // 3. Guardar Descriptor Facial en JSONB
+    // Usamos upsert para actualizar si ya existe un registro para este empleado
+    const { error: dbError } = await supabase
+      .from('empleado_datos_biometricos')
+      .upsert({
+        id_empleado: employeeId,
+        descriptor_facial: JSON.parse(faceDescriptor), // Convertimos el string a objeto JSON
+        creado_el: new Date().toISOString()
+      }, { onConflict: 'id_empleado' });
 
-        if (error) {
-            return { success: false, message: `Error al subir la imagen: ${error.message}` };
-        }
+    if (dbError) throw dbError;
 
-        revalidatePath('/(roles)/rh/empleados');
-        return { success: true, message: "Avatar actualizado con éxito." };
-    } catch (error) {
-        return { success: false, message: `Error al procesar la imagen: ${(error as Error).message}` };
-    }
+    revalidatePath('/rh/empleados');
+    return { success: true, message: 'Avatar y biometría actualizados correctamente' };
+
+  } catch (e: any) {
+    console.error('Error en updateAvatar:', e);
+    return { success: false, message: e.message };
+  }
 }
 
 export async function getEmployeeDetails(employeeId: string) {
   const supabase = await createClient();
   try {
-      const { data, error } = await supabase
-          .from('empleados')
-          .select(`
+    const { data, error } = await supabase
+      .from('empleados')
+      .select(`
               *,
               telefonos:empleado_telefonos(*)
           `)
-          .eq('id', employeeId)
-          .single();
+      .eq('id', employeeId)
+      .single();
 
-      if (error) {
-          console.error('Error fetching employee details:', error);
-          throw new Error(error.message);
-      }
-      
-      return { success: true, data };
+    if (error) {
+      console.error('Error fetching employee details:', error);
+      throw new Error(error.message);
+    }
+
+    return { success: true, data };
 
   } catch (error: any) {
-      return { success: false, message: error.message, data: null };
+    return { success: false, message: error.message, data: null };
   }
 }
