@@ -8,8 +8,8 @@ const config = {
   face: { 
     enabled: true, 
     detector: { return: true },
-    mesh: { enabled: false },      // DESACTIVAR para evitar el error 404 de facemesh
-    iris: { enabled: false },
+    mesh: { enabled: true },      // DESACTIVAR para evitar el error 404 de facemesh
+    iris: { enabled: true },
     description: { enabled: true }, // ACTIVAR para el face_descriptor
     emotion: { enabled: false },    // DESACTIVAR para evitar el error 404 de emotion
   },

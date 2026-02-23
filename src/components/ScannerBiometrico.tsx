@@ -21,12 +21,12 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
 
   const startCamera = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
           width: { ideal: 640 },
           height: { ideal: 480 },
-          facingMode: 'user' 
-        } 
+          facingMode: 'user'
+        }
       });
       streamRef.current = stream;
       if (videoRef.current) {
@@ -62,10 +62,10 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
 
   const captureFrame = async () => {
     if (!videoRef.current || videoRef.current.readyState < 2) return;
-    
+
     setIsScanning(true);
     setFeedback('Analizando rostro...');
-    
+
     /*const canvas = document.createElement('canvas');
     canvas.width = videoRef.current.videoWidth;
     canvas.height = videoRef.current.videoHeight;
@@ -99,51 +99,51 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
 
     worker.postMessage({ imageBitmap }, [imageBitmap]);*/
     const video = videoRef.current;
-  const canvas = document.createElement('canvas');
-  
-  // Usamos un tamaño cuadrado para que coincida con el entrenamiento de la IA
-  canvas.width = 400;
-  canvas.height = 400;
-  const ctx = canvas.getContext('2d');
-  /*
-  // Calculamos el centro para recortar un cuadrado del flujo de video
-  const size = Math.min(video.videoWidth, video.videoHeight);
-  const x = (video.videoWidth - size) / 2;
-  const y = (video.videoHeight - size) / 2;
+    const canvas = document.createElement('canvas');
 
-  ctx?.drawImage(video, x, y, size, size, 0, 0, 400, 400);
-  */
-  if (ctx) {
-    // --- SOLUCIÓN AL EFECTO ESPEJO ---
-    // Movemos el contexto al borde derecho y escalamos a -1 en X para invertir
-    ctx.translate(400, 0);
-    ctx.scale(-1, 1);
-    
+    // Usamos un tamaño cuadrado para que coincida con el entrenamiento de la IA
+    canvas.width = 400;
+    canvas.height = 400;
+    const ctx = canvas.getContext('2d');
+
+    // Calculamos el centro para recortar un cuadrado del flujo de video
     const size = Math.min(video.videoWidth, video.videoHeight);
     const x = (video.videoWidth - size) / 2;
     const y = (video.videoHeight - size) / 2;
 
-    ctx.drawImage(video, x, y, size, size, 0, 0, 400, 400);
-  }
-  const imageBitmap = await createImageBitmap(canvas);
-  const worker = new Worker('/workers/human-worker.js', { type: 'module' });
+    ctx?.drawImage(video, x, y, size, size, 0, 0, 400, 400);
 
-  worker.onmessage = (e) => {
-    const { success, descriptor, error } = e.data;
-    worker.terminate();
+    /*if (ctx) {
+      // --- SOLUCIÓN AL EFECTO ESPEJO ---
+      // Movemos el contexto al borde derecho y escalamos a -1 en X para invertir
+      ctx.translate(400, 0);
+      ctx.scale(-1, 1);
+      
+      const size = Math.min(video.videoWidth, video.videoHeight);
+      const x = (video.videoWidth - size) / 2;
+      const y = (video.videoHeight - size) / 2;
+  
+      ctx.drawImage(video, x, y, size, size, 0, 0, 400, 400);
+    }*/
+    const imageBitmap = await createImageBitmap(canvas);
+    const worker = new Worker('/workers/human-worker.js', { type: 'module' });
 
-    if (success && descriptor) {
-      console.log("Descriptor generado por cámara:", descriptor); // Revisa esto en F12
-    onResult(descriptor);
-    setOpen(false);
-    } else {
-      setFeedback(error || 'Rostro no detectado.');
-      setIsScanning(false);
-      toast({ variant: 'destructive', title: 'Error de IA', description: error });
-    }
-  };
+    worker.onmessage = (e) => {
+      const { success, descriptor, error } = e.data;
+      worker.terminate();
 
-  worker.postMessage({ imageBitmap }, [imageBitmap]);
+      if (success && descriptor) {
+        //console.log("Descriptor generado por cámara:", descriptor);
+        onResult(descriptor);
+        setOpen(false);
+      } else {
+        setFeedback(error || 'Rostro no detectado.');
+        setIsScanning(false);
+        toast({ variant: 'destructive', title: 'Error de IA', description: error });
+      }
+    };
+
+    worker.postMessage({ imageBitmap }, [imageBitmap]);
   };
 
   return (
@@ -160,8 +160,8 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
           </div>
         </div>
         <div className="text-center text-sm text-muted-foreground min-h-[24px] flex items-center justify-center gap-2">
-            {isScanning && <RefreshCw className="h-4 w-4 animate-spin" />}
-            <span>{feedback}</span>
+          {isScanning && <RefreshCw className="h-4 w-4 animate-spin" />}
+          <span>{feedback}</span>
         </div>
         <div className="flex flex-col gap-2">
           <Button onClick={captureFrame} disabled={isScanning} size="lg" className="w-full">
