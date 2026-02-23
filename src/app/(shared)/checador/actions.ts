@@ -48,8 +48,8 @@ export async function registrarChequeo(
     /*if (biometricResult>=0.6){
         return {error: `Identidad no verificada. (Distancia: ${biometricResult.toFixed(4)})` };
     }*/
-   const score = biometricResult as number;
-    if (biometricResult > 0.45) { // Umbral para distancia de Coseno
+    const score = biometricResult as number;
+    if (biometricResult > 0.35) { // Umbral para distancia de Coseno
         return { error: `Identidad no verificada. (Score: ${score.toFixed(4)})` };
     }
 
