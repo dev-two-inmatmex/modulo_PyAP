@@ -17,7 +17,6 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
   const [feedback, setFeedback] = useState('Alinee su rostro en el centro.');
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const workerRef = useRef<Worker | null>(null);
   const { toast } = useToast();
 
   const startCamera = useCallback(async () => {
@@ -35,7 +34,7 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
       }
     } catch (error) {
       console.error("Error accessing camera: ", error);
-      toast({ variant: 'destructive', title: 'Error de Cámara', description: 'No se pudo acceder a la cámara. Revise los permisos.' });
+      toast({ variant: 'destructive', title: 'Error de Cámara', description: 'No se pudo acceder a la cámara.' });
       setOpen(false);
     }
   }, [toast]);
@@ -46,7 +45,7 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
       streamRef.current = null;
     }
     if (videoRef.current) {
-        videoRef.current.srcObject = null;
+      videoRef.current.srcObject = null;
     }
   }, []);
 
@@ -55,41 +54,96 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
       startCamera();
     } else {
       stopCamera();
+      setIsScanning(false);
+      setFeedback('Alinee su rostro en el centro.');
     }
     return () => stopCamera();
   }, [open, startCamera, stopCamera]);
 
-  useEffect(() => {
-    workerRef.current = new Worker('/workers/human-worker.js', { type: 'module' });
-    workerRef.current.onmessage = (e) => {
-      const { success, descriptor, error } = e.data;
-      if (success && descriptor) {
-        setFeedback('¡Rostro capturado con éxito!');
-        onResult(descriptor);
-        setOpen(false);
-      } else {
-        setFeedback(error || 'Intente de nuevo. Rostro no detectado.');
-        setIsScanning(false); // Permitir reintentar
-      }
-    };
-    return () => {
-      workerRef.current?.terminate();
-    };
-  }, [onResult]);
-
   const captureFrame = async () => {
     if (!videoRef.current || videoRef.current.readyState < 2) return;
+    
     setIsScanning(true);
-    setFeedback('Procesando...');
-
-    const canvas = document.createElement('canvas');
+    setFeedback('Analizando rostro...');
+    
+    /*const canvas = document.createElement('canvas');
     canvas.width = videoRef.current.videoWidth;
     canvas.height = videoRef.current.videoHeight;
     const ctx = canvas.getContext('2d');
     ctx?.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
     const imageBitmap = await createImageBitmap(canvas);
 
-    workerRef.current?.postMessage({ imageBitmap }, [imageBitmap]);
+    const worker = new Worker('/workers/human-worker.js', { type: 'module' });
+
+    worker.onmessage = (e) => {
+      const { success, descriptor, error } = e.data;
+      worker.terminate();
+
+      if (success && descriptor) {
+        setFeedback('¡Rostro verificado!');
+        onResult(descriptor);
+        setOpen(false);
+      } else {
+        setFeedback(error || 'Rostro no detectado.');
+        setIsScanning(false); 
+        toast({ variant: 'destructive', title: 'Aviso', description: error });
+      }
+    };
+
+    worker.onerror = (err) => {
+      worker.terminate();
+      setIsScanning(false);
+      setFeedback('Error en el procesamiento.');
+      console.error("Worker error:", err);
+    };
+
+    worker.postMessage({ imageBitmap }, [imageBitmap]);*/
+    const video = videoRef.current;
+  const canvas = document.createElement('canvas');
+  
+  // Usamos un tamaño cuadrado para que coincida con el entrenamiento de la IA
+  canvas.width = 400;
+  canvas.height = 400;
+  const ctx = canvas.getContext('2d');
+  /*
+  // Calculamos el centro para recortar un cuadrado del flujo de video
+  const size = Math.min(video.videoWidth, video.videoHeight);
+  const x = (video.videoWidth - size) / 2;
+  const y = (video.videoHeight - size) / 2;
+
+  ctx?.drawImage(video, x, y, size, size, 0, 0, 400, 400);
+  */
+  if (ctx) {
+    // --- SOLUCIÓN AL EFECTO ESPEJO ---
+    // Movemos el contexto al borde derecho y escalamos a -1 en X para invertir
+    ctx.translate(400, 0);
+    ctx.scale(-1, 1);
+    
+    const size = Math.min(video.videoWidth, video.videoHeight);
+    const x = (video.videoWidth - size) / 2;
+    const y = (video.videoHeight - size) / 2;
+
+    ctx.drawImage(video, x, y, size, size, 0, 0, 400, 400);
+  }
+  const imageBitmap = await createImageBitmap(canvas);
+  const worker = new Worker('/workers/human-worker.js', { type: 'module' });
+
+  worker.onmessage = (e) => {
+    const { success, descriptor, error } = e.data;
+    worker.terminate();
+
+    if (success && descriptor) {
+      console.log("Descriptor generado por cámara:", descriptor); // Revisa esto en F12
+    onResult(descriptor);
+    setOpen(false);
+    } else {
+      setFeedback(error || 'Rostro no detectado.');
+      setIsScanning(false);
+      toast({ variant: 'destructive', title: 'Error de IA', description: error });
+    }
+  };
+
+  worker.postMessage({ imageBitmap }, [imageBitmap]);
   };
 
   return (
@@ -105,16 +159,19 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
             <div className="w-2/3 h-5/6 border-4 border-dashed border-white/50 rounded-full" />
           </div>
         </div>
-        <p className="text-center text-sm text-muted-foreground min-h-[20px]">
-            {isScanning ? <RefreshCw className="mx-auto h-5 w-5 animate-spin" /> : feedback}
-        </p>
-        <Button onClick={captureFrame} disabled={isScanning} size="lg">
-          <Camera className="mr-2 h-5 w-5" />
-          Escanear Rostro
-        </Button>
-        <DialogClose asChild>
-            <Button variant="outline">Cancelar</Button>
-        </DialogClose>
+        <div className="text-center text-sm text-muted-foreground min-h-[24px] flex items-center justify-center gap-2">
+            {isScanning && <RefreshCw className="h-4 w-4 animate-spin" />}
+            <span>{feedback}</span>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Button onClick={captureFrame} disabled={isScanning} size="lg" className="w-full">
+            <Camera className="mr-2 h-5 w-5" />
+            Escanear Rostro
+          </Button>
+          <DialogClose asChild>
+            <Button variant="outline" className="w-full">Cancelar</Button>
+          </DialogClose>
+        </div>
       </DialogContent>
     </Dialog>
   );
