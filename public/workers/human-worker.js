@@ -40,9 +40,7 @@ self.onmessage = async (e) => {
         const faceScore = face.boxScore || 0;
         const gestures =face.gestures || [];
         
-
-        console.log(`Liveness: ${livenessScore.toFixed(2)}, Face Score: ${faceScore.toFixed(2)}`);
-        
+        //console.log(`Liveness: ${livenessScore.toFixed(2)}, Face Score: ${faceScore.toFixed(2)}`);
         
         if (livenessScore < 0.90) {
           return self.postMessage({
