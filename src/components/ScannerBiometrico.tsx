@@ -19,7 +19,7 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
   const streamRef = useRef<MediaStream | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
-  
+
 
   const stopCamera = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -53,26 +53,32 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
       const worker = new Worker('/workers/human-worker.js', { type: 'module' });
 
       worker.onmessage = (e) => {
-        const { success, descriptor } = e.data;
+        const { success, descriptor, error } = e.data;
         worker.terminate();
+
         if (success && descriptor) {
           onResult(descriptor);
           setOpen(false);
         } else {
           setIsScanning(false);
-          setFeedback('Rostro no detectado. Reintentando...');
+          setFeedback(error);
+          if (open) {
+            timeoutRef.current = setTimeout(captureFrame, 500);
+          }
         }
       };
 
       worker.onerror = () => {
         worker.terminate();
         setIsScanning(false);
+        if (open) timeoutRef.current = setTimeout(captureFrame, 3000);
       };
 
-      worker.postMessage({ imageBitmap }, [imageBitmap]);
+      worker.postMessage({ imageBitmap, mode: 'live' }, [imageBitmap]);
     } catch (error) {
       console.error("Error en procesamiento:", error);
       setIsScanning(false);
+      if (open) timeoutRef.current = setTimeout(captureFrame, 3000);
     }
   }, [isScanning, onResult, open]);
 
@@ -88,7 +94,7 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
         .then(s => {
           streamRef.current = s;
           if (videoRef.current) videoRef.current.srcObject = s;
-          timeoutRef.current = setTimeout(captureFrame, 1000); // Primer intento al segundo de abrir
+          timeoutRef.current = setTimeout(captureFrame, 1200); // Primer intento al segundo de abrir
         })
 
         .catch((err) => {
@@ -122,8 +128,8 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
         <div className="text-center text-sm text-muted-foreground min-h-[60px] flex flex-col items-center justify-center gap-2">
           {isScanning ? (
             <>
-              /*<RefreshCw className="h-5 w-5 animate-spin text-green-600" />*/
-              <span className="font-semibold text-green-600">Analizando...</span>
+              <RefreshCw className="h-5 w-5 animate-spin text-green-600" />
+              <span className="font-semibold text-green-600 italic">¡Parpadee ahora para verificar!</span>
             </>
           ) : (
             <div className="flex flex-col items-center">

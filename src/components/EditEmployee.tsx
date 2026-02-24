@@ -149,7 +149,7 @@ function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: V
       const imageBitmap = await createImageBitmap(canvas);
       // 2. Ejecutar el Worker (Hilo secundario)
       const worker = new Worker('/workers/human-worker.js', { type: 'module' });
-      worker.postMessage({ imageBitmap, employeeId: edit_empleado.id }, [imageBitmap]);
+      worker.postMessage({ imageBitmap, employeeId: edit_empleado.id, mode: 'static' }, [imageBitmap]);
       worker.onmessage = async (e) => {
         const { success, descriptor, employeeId, error } = e.data;
         worker.terminate();

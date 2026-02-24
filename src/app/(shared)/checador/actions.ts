@@ -26,16 +26,6 @@ export async function registrarChequeo(
     if (!faceDescriptor) {
         return { error: "No se proporcionó información biométrica." };
     }
-
-    /*const { data: biometricResult, error: rpcError } = await supabase.rpc('verificar_identidad_biometrica', {
-        id_empleado_param: user.id,
-        descriptor_param: faceDescriptor
-    });
-
-    if (rpcError || !biometricResult) {
-        console.error('Biometric RPC Error:', rpcError);
-        return { error: "Identidad facial no verificada. Intente de nuevo." };
-    }*/
     const { data: biometricResult, error: rpcError } = await supabase.rpc('verificar_identidad_biometrica', {
         id_empleado_param: user.id,
         descriptor_param: faceDescriptor
@@ -44,10 +34,8 @@ export async function registrarChequeo(
         console.error('Biometric RPC Error:', rpcError);
         return { error: "Error en el servidor de biometría." };
     }
+    
     console.log('distancia biometrica:', biometricResult);
-    /*if (biometricResult>=0.6){
-        return {error: `Identidad no verificada. (Distancia: ${biometricResult.toFixed(4)})` };
-    }*/
     const score = biometricResult as number;
     if (biometricResult > 0.35) { // Umbral para distancia de Coseno
         return { error: `Identidad no verificada. (Score: ${score.toFixed(4)})` };
