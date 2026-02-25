@@ -145,7 +145,7 @@ export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatus
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Agregar Empleado</Button>
+        <Button className='bg-green-600 hover:bg-green-700 text-white'>Agregar Empleado</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-4xl">
         <DialogHeader>

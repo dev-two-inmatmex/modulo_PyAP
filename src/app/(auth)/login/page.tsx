@@ -4,7 +4,6 @@ import * as React from 'react'
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { login } from './actions'
-
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -22,7 +21,7 @@ import { Terminal } from 'lucide-react'
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <Button className="w-full" type="submit" disabled={pending}>
+    <Button className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white" type="submit" disabled={pending}>
       {pending ? 'Iniciando sesión...' : 'Iniciar Sesión'}
     </Button>
   )

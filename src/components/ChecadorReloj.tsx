@@ -202,9 +202,14 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
             </Button>
         </ScannerBiometrico>
         {turnoAsignado && (
+            <>
             <p className="text-sm text-muted-foreground">
                 Recuerda: Horario de {formatHorario(turnoAsignado?.entrada)} a {formatHorario(turnoAsignado?.salida)}
             </p>
+            <p className="text-sm text-muted-foreground">
+                Recuerda: Descanso de {formatHorario(turnoAsignado?.salida_descanso)} a {formatHorario(turnoAsignado?.regreso_descanso)}
+            </p>
+            </>
         )}
       </CardFooter>
     </Card>

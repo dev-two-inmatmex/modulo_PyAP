@@ -112,6 +112,7 @@ export async function registrarChequeo(
     if (insertError) {
         console.error(`Error inserting ${action}:`, insertError);
         const friendlyAction = action.replace(/_/g, ' ');
+        revalidatePath('/checador');
         return { error: `Error al registrar ${friendlyAction}.` };
     }
 

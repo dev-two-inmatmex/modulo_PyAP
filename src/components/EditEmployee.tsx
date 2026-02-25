@@ -80,7 +80,7 @@ export function EditEmployee({ empleado, avatarUrl }: { empleado: Vista_Lista_Em
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Editar</Button>
+        <Button className=' bg-green-600 hover:bg-green-700 text-white'>Editar</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

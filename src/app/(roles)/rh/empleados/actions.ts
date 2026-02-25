@@ -32,6 +32,9 @@ export async function addUser(prevState: any, formData: FormData) {
     email: data.email,
     password: 'password123',
     email_confirm: true,// IMPORTANT: This is insecure. Use a secure password generation method.
+    user_metadata: {
+      requires_password_change: true // <- Aquí está la clave
+    }
   });
 
   if (authError || !authData.user) {
@@ -98,7 +101,7 @@ export async function updateEmployeeAddress(employeeId: string, newAddress: stri
     return { success: false, message: `Error al actualizar la dirección: ${error.message}` };
   }
 
-  revalidatePath('/(roles)/rh/empleados');
+  //revalidatePath('/(roles)/rh/empleados');
   return { success: true, message: "Dirección actualizada con éxito." };
 }
 
@@ -125,7 +128,7 @@ export async function updateEmployeePhones(employeeId: string, phone1: string, p
         propietario: propietario_telefono2
       }, { onConflict: 'id_empleado, tipo' });
   }
-  revalidatePath('/(roles)/rh/empleados');
+  //revalidatePath('/(roles)/rh/empleados');
   return { success: true, message: "Teléfonos actualizados con éxito." };
 }
 
@@ -166,7 +169,7 @@ export async function updateAvatar(formData: FormData) {
 
     if (dbError) throw dbError;
 
-    revalidatePath('/rh/empleados');
+    revalidatePath('/(roles)/rh/empleados');
     return { success: true, message: 'Avatar y biometría actualizados correctamente' };
 
   } catch (e: any) {

@@ -46,6 +46,23 @@ export async function middleware(request: NextRequest) {
 
   // 3. CASO: USUARIO LOGUEADO
   if (user) {
+    const requiereCambioPassword = user.user_metadata?.requires_password_change === true
+    const isUpdateRoute = pathname === '/actualizar-password'
+    
+    if (requiereCambioPassword) {
+      // Si requiere cambio y no está en la página de actualización, lo forzamos
+      if (!isUpdateRoute) {
+        url.pathname = '/actualizar-password'
+        return syncCookiesAndRedirect(request, url)
+      }
+      // Si ya está en la ruta de actualizar, lo dejamos pasar sin cargar roles ni RBAC
+      return response
+    } else if (isUpdateRoute) {
+      // Si NO requiere cambio e intenta entrar a actualizar la contraseña, lo mandamos al perfil
+      url.pathname = '/perfil'
+      return syncCookiesAndRedirect(request, url)
+    }
+    
     if (pathname === '/login' || pathname === '/') {
       url.pathname = '/perfil'
       return syncCookiesAndRedirect(request, url)

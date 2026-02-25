@@ -20,7 +20,7 @@ export default async function RootLayout({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
+  
   if (!user) {
     return (
       <html lang="es" suppressHydrationWarning>
