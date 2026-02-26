@@ -65,7 +65,7 @@ export async function addUser(prevState: any, formData: FormData) {
   const inserts = [
     supabase.from('empleado_puesto').insert({ id_empleado: userId, id_puesto: data.id_puesto, fecha_inicio: new Date().toISOString().split('T')[0] }),
     supabase.from('empleado_ubicacion_chequeo').insert({ id_empleado: userId, id_ubicaciones: data.id_ubicacion }),
-    supabase.from('empleado_turno').insert({ id_empleado: userId, id_horario: data.id_ext_horario, id_descanso: data.id_ext_descanso, Lunes: true, Martes: true, Miercoles: true, Jueves: true, Viernes: true, Sabado: true }),
+    supabase.from('empleado_turno').insert({ id_empleado: userId, id_horario: data.id_ext_horario, id_descanso: data.id_ext_descanso, lunes: true, martes: true, miercoles: true, jueves: true, viernes: true, sabado: true }),
     supabase.from('empleado_estatus').insert({ id_empleado: userId, id_estatus: data.id_estatus }),
     supabase.from('empleado_telefonos').insert({ id_empleado: userId, numero_telefonico: data.telefono1, tipo: 'principal', propietario: 'Propio' }),
   ];

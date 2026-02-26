@@ -24,7 +24,7 @@ const formatClientTime = (date: Date, timeZone?: string | null) => {
 
 const formatClientDate = (date: Date, timeZone?: string | null) => {
   const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
-    if (timeZone) {
+  if (timeZone) {
     options.timeZone = timeZone;
   }
   const formatted = new Intl.DateTimeFormat('es-ES', options).format(date);
@@ -32,9 +32,9 @@ const formatClientDate = (date: Date, timeZone?: string | null) => {
 };
 
 interface UserLocation {
-    latitude: number;
-    longitude: number;
-    accuracy: number;
+  latitude: number;
+  longitude: number;
+  accuracy: number;
 }
 
 export function ChecadorReloj({ registros, turnoAsignado }: { registros: RegistroChequeo[], turnoAsignado: EmpleadoTurno | undefined }) {
@@ -137,42 +137,44 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
 
   const handleBioSuccess = (descriptor: number[]) => {
     if (action && currentTime && userLocation && userTimezone) {
-        startTransition(async () => {
-            const { latitude, longitude, accuracy } = userLocation;
+      startTransition(async () => {
+        const { latitude, longitude, accuracy } = userLocation;
 
-            const dateInTimezone = new Intl.DateTimeFormat('sv-SE', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                timeZone: userTimezone,
-            }).format(currentTime);
+        const dateInTimezone = new Intl.DateTimeFormat('sv-SE', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          timeZone: userTimezone,
+        }).format(currentTime);
 
-            const timeInTimezone = new Intl.DateTimeFormat('es-ES', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false,
-                timeZone: userTimezone,
-            }).format(currentTime);
+        const timeInTimezone = new Intl.DateTimeFormat('es-ES', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+          timeZone: userTimezone,
+        }).format(currentTime);
 
-            const result = await registrarChequeo(
-                action,
-                dateInTimezone,
-                timeInTimezone,
-                latitude,
-                longitude,
-                accuracy,
-                descriptor
-            );
+        const result = await registrarChequeo(
+          action,
+          dateInTimezone,
+          timeInTimezone,
+          latitude,
+          longitude,
+          accuracy,
+          descriptor,
+          turnoAsignado?.entrada,
+          turnoAsignado?.regreso_descanso
+        );
 
-            if (result?.error) {
-                toast({ title: 'Error', description: result.error, variant: 'destructive' });
-            } else if (result?.success) {
-                toast({ title: 'Éxito', description: result.success });
-            }
-        });
+        if (result?.error) {
+          toast({ title: 'Error', description: result.error, variant: 'destructive' });
+        } else if (result?.success) {
+          toast({ title: 'Éxito', description: result.success });
+        }
+      });
     } else {
-        toast({ title: 'Por favor, espere', description: 'Obteniendo ubicación y zona horaria...', variant: 'default' });
+      toast({ title: 'Por favor, espere', description: 'Obteniendo ubicación y zona horaria...', variant: 'default' });
     }
   }
 
@@ -196,20 +198,20 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
       </CardContent>
       <CardFooter className="flex flex-col gap-4 px-6 pb-6">
         <ScannerBiometrico onResult={handleBioSuccess}>
-            <Button className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white" disabled={!action || isPending || !userLocation || !userTimezone} size="lg">
-                <Camera className="mr-2 h-6 w-6" />
-                {label}
-            </Button>
+          <Button className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white" disabled={!action || isPending || !userLocation || !userTimezone} size="lg">
+            <Camera className="mr-2 h-6 w-6" />
+            {label}
+          </Button>
         </ScannerBiometrico>
         {turnoAsignado && (
-            <>
+          <>
             <p className="text-sm text-muted-foreground">
-                Recuerda: Horario de {formatHorario(turnoAsignado?.entrada)} a {formatHorario(turnoAsignado?.salida)}
+              Recuerda: Horario de {formatHorario(turnoAsignado?.entrada)} a {formatHorario(turnoAsignado?.salida)}
             </p>
             <p className="text-sm text-muted-foreground">
-                Recuerda: Descanso de {formatHorario(turnoAsignado?.salida_descanso)} a {formatHorario(turnoAsignado?.regreso_descanso)}
+              Recuerda: Descanso de {formatHorario(turnoAsignado?.salida_descanso)} a {formatHorario(turnoAsignado?.regreso_descanso)}
             </p>
-            </>
+          </>
         )}
       </CardFooter>
     </Card>

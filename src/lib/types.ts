@@ -60,6 +60,7 @@ export interface RegistroChequeo {
   latitud: number;
   longitud: number;
   exactitud_geografica: number;
+  estatus_puntualidad?: 'Puntual' | 'Retraso Leve' | 'Retraso Grave' | null;
 }
 
 // A reconstructed object representing all check-ins for the day, for UI purposes.

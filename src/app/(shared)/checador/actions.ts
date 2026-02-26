@@ -14,6 +14,8 @@ export async function registrarChequeo(
     longitude: number,
     accuracy: number,
     faceDescriptor?: number[],
+    turnoEntrada?: string | null,
+    turnoRegresoDescanso?: string | null
 ) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -83,21 +85,75 @@ export async function registrarChequeo(
 
     // Business logic for checking order of actions
     if (action === 'entrada' && lastAction) {
+        revalidatePath('/checador');
         return { error: "Ya has registrado tu entrada hoy." };
     }
     if (action === 'salida_descanso' && lastAction !== 'entrada') {
+        revalidatePath('/checador');
         return { error: "Debes registrar tu entrada para poder salir a descanso." };
     }
     if (action === 'regreso_descanso' && lastAction !== 'salida_descanso') {
+        revalidatePath('/checador');
         return { error: "Debes registrar tu salida a descanso para poder regresar." };
     }
     if (action === 'salida' && lastAction !== 'regreso_descanso') {
+        revalidatePath('/checador');
         return { error: "Debes registrar tu regreso de descanso para poder registrar tu salida." };
     }
     if (lastAction === 'salida') {
+        revalidatePath('/checador');
         return { error: "Ya has completado todos tus registros del día." };
     }
 
+    let estatus_puntualidad = null;
+
+    const calcularEstatus = (horaRegistro: string, horaEsperada: string) => {
+        const [regH, regM] = horaRegistro.split(':').map(Number);
+        const [espH, espM] = horaEsperada.split(':').map(Number);
+
+        // Convertimos a minutos totales
+        const regMinutes = (regH * 60) + regM;
+        const espMinutes = (espH * 60) + espM;
+
+        let diffMinutes = regMinutes - espMinutes;
+
+        // Ajuste en caso de turnos nocturnos
+        if (diffMinutes > 12 * 60) diffMinutes -= 24 * 60;
+        if (diffMinutes < -12 * 60) diffMinutes += 24 * 60;
+
+        if (diffMinutes <= 0) return "Puntual";
+        if (diffMinutes <= 15) return "Retraso Leve";
+        return "Retraso Grave";
+    };
+
+    if (action === 'entrada' && turnoEntrada) {
+        estatus_puntualidad = calcularEstatus(timeWithoutTimezone, turnoEntrada);
+    } else if (action === 'regreso_descanso' && turnoRegresoDescanso) {
+        estatus_puntualidad = calcularEstatus(timeWithoutTimezone, turnoRegresoDescanso);
+    }
+
+    /*if (action === 'entrada' && turnoEntrada) {
+        const [turnoH, turnoM] = turnoEntrada.split(':').map(Number);
+        const [regH, regM] = timeWithoutTimezone.split(':').map(Number);
+        // Convertimos ambas horas a minutos totales desde la medianoche
+        const regMinutes = (regH * 60) + regM;
+        const turnoMinutes = (turnoH * 60) + turnoM;
+
+        let diffMinutes = regMinutes - turnoMinutes;
+
+        // Ajuste en caso de turnos nocturnos que cruzan la medianoche (opcional pero recomendado)
+        if (diffMinutes > 12 * 60) diffMinutes -= 24 * 60;
+        if (diffMinutes < -12 * 60) diffMinutes += 24 * 60;
+
+        if (diffMinutes <= 0) {
+            estatus_puntualidad = "Puntual";
+        } else if (diffMinutes <= 15) {
+            estatus_puntualidad = "Retraso Leve";
+        } else {
+            estatus_puntualidad = "Retraso Grave";
+        }
+
+    }*/
     // Insert the new record
     const { error: insertError } = await supabase.from("registro_checador").insert({
         id_empleado: user.id,
@@ -107,6 +163,7 @@ export async function registrarChequeo(
         latitud: latitude,
         longitud: longitude,
         exactitud_geografica: accuracy,
+        estatus_puntualidad: estatus_puntualidad
     });
 
     if (insertError) {

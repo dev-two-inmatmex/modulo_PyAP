@@ -1,6 +1,6 @@
 'use client'
-
-import React, { useState, useEffect, useRef } from 'react';
+// Al principio del archivo
+import React, { useState, useEffect, useRef, startTransition } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -100,6 +100,7 @@ export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatus
       propietario_telefono2: '',
       fecha_nacimiento: '',
       fecha_ingreso: '',
+      sexo: 'false',
       id_ext_horario: '',
       id_ext_descanso: '',
       id_puesto: '',
@@ -120,11 +121,20 @@ export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatus
     }
   }, [nombresValue, n_empleados, setValue]);
 
-  const handleFormSubmit = () => {
-    if (formRef.current) {
-      const formData = new FormData(formRef.current);
+  const handleFormSubmit = (data: UserFormValues) => {
+    const formData = new FormData();
+    
+    // Mapeamos los datos al FormData
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, value.toString());
+      }
+    });
+
+    // Envolvemos la ejecución en una transición de React
+    startTransition(() => {
       formAction(formData);
-    }
+    });
   };
 
   useEffect(() => {
@@ -183,7 +193,7 @@ export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatus
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="email@generado.com" {...field} disabled />
+                    <Input placeholder="email@generado.com" {...field} readOnly />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
