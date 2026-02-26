@@ -106,21 +106,21 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
     const tieneRegresoDescanso = registros.some(r => r.tipo_registro === 'regreso_descanso');
     const tieneSalida = registros.some(r => r.tipo_registro === 'salida');
     if (!tieneEntrada) {
-      return { action: 'entrada' as const, label: 'Entrada', message: 'No has checado entrada' };
+      return { action: 'entrada' as const, label: 'Entrada', message: 'No has checado entrada', canLeaveEarly: false };
     }
     if (!tieneSalidaDescanso) {
-      return { action: 'salida_descanso' as const, label: 'Salida a Descanso', message: 'Turno iniciado' };
+      return { action: 'salida_descanso' as const, label: 'Salida a Descanso', message: 'Turno iniciado', canLeaveEarly: true };
     }
     if (!tieneRegresoDescanso) {
-      return { action: 'regreso_descanso' as const, label: 'Regreso de Descanso', message: 'En descanso' };
+      return { action: 'regreso_descanso' as const, label: 'Regreso de Descanso', message: 'En descanso', canLeaveEarly: true };
     }
     if (!tieneSalida) {
-      return { action: 'salida' as const, label: 'Salida', message: 'Turno reanudado' };
+      return { action: 'salida' as const, label: 'Salida', message: 'Turno reanudado', canLeaveEarly: false };
     }
-    return { action: null, label: 'Turno Terminado', message: 'Has completado tu turno de hoy' };
+    return { action: null, label: 'Turno Terminado', message: 'Has completado tu turno de hoy', canLeaveEarly: false };
   };
 
-  const { action, label, message } = getChequeoState();
+  const { action, label, message, canLeaveEarly } = getChequeoState();
 
   const formatHorario = (timeStr: string | null | undefined) => {
     if (!timeStr) return '';
@@ -135,8 +135,8 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
     });
   };
 
-  const handleBioSuccess = (descriptor: number[]) => {
-    if (action && currentTime && userLocation && userTimezone) {
+  const handleBioSuccess = (descriptor: number[], actionToPerform: 'entrada' | 'salida_descanso' | 'regreso_descanso' | 'salida') => {
+    if (actionToPerform && currentTime && userLocation && userTimezone) {
       startTransition(async () => {
         const { latitude, longitude, accuracy } = userLocation;
 
@@ -156,7 +156,7 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
         }).format(currentTime);
 
         const result = await registrarChequeo(
-          action,
+          actionToPerform,
           dateInTimezone,
           timeInTimezone,
           latitude,
@@ -164,7 +164,8 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
           accuracy,
           descriptor,
           turnoAsignado?.entrada,
-          turnoAsignado?.regreso_descanso
+          turnoAsignado?.regreso_descanso,
+          turnoAsignado?.salida
         );
 
         if (result?.error) {
@@ -197,12 +198,31 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
         <p className="text-lg text-muted-foreground">{message}</p>
       </CardContent>
       <CardFooter className="flex flex-col gap-4 px-6 pb-6">
-        <ScannerBiometrico onResult={handleBioSuccess}>
+        {/*<ScannerBiometrico onResult={handleBioSuccess}>
           <Button className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white" disabled={!action || isPending || !userLocation || !userTimezone} size="lg">
             <Camera className="mr-2 h-6 w-6" />
             {label}
           </Button>
-        </ScannerBiometrico>
+        </ScannerBiometrico>*/}
+        {/* BOTÓN PRINCIPAL */}
+        {action && (
+          <ScannerBiometrico onResult={(desc) => handleBioSuccess(desc, action)}>
+            <Button className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white" disabled={isPending || !userLocation || !userTimezone} size="lg">
+              <Camera className="mr-2 h-6 w-6" />
+              {label}
+            </Button>
+          </ScannerBiometrico>
+        )}
+
+        {/* BOTÓN SECUNDARIO (Salida Anticipada) */}
+        {canLeaveEarly && (
+          <ScannerBiometrico onResult={(desc) => handleBioSuccess(desc, 'salida')}>
+            <Button variant="destructive" className="w-full text-lg py-6" disabled={isPending || !userLocation || !userTimezone} size="lg">
+              <Camera className="mr-2 h-6 w-6" />
+              Terminar Turno (Salida Anticipada)
+            </Button>
+          </ScannerBiometrico>
+        )}
         {turnoAsignado && (
           <>
             <p className="text-sm text-muted-foreground">

@@ -3,8 +3,13 @@ import { EmployeeCard } from '@/components/EmployeeCard';
 import { AddEmployee } from '@/components/AddEmployee'
 import { SearchBar } from '@/components/SearchBar';
 
-export default async function EmpleadosPage({ searchParams }: { searchParams: { query?: string } }) {
-  const query = searchParams?.query || '';
+export default async function EmpleadosPage({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ query?: string }> 
+}) {
+  const resolvedParams = await searchParams;
+  const query = resolvedParams.query || '';
   const supabase = await createClient();
   const { data: empleados, error } = await supabase
     .from('vista_lista_empleados')
