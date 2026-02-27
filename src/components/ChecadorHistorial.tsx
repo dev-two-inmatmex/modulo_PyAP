@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { RegistroChequeo } from "@/lib/types";
+import type { RegistroChequeo } from "@/services/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 

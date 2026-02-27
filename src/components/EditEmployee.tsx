@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Vista_Lista_Empleados, Vista_Empleado_Datos_Editables, Telefono, EmployeeCardProps } from '@/lib/types';
+import { Vista_Lista_Empleados, Vista_Empleado_Datos_Editables, Telefono, EmployeeCardProps } from '@/services/types';
 import { getEmployeeDetails, updateEmployeeAddress, updateEmployeePhones, updateAvatar } from '@/app/(roles)/rh/empleados/actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from "@/components/ui/skeleton";

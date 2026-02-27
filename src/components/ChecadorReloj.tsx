@@ -4,10 +4,11 @@ import { useState, useEffect, useTransition } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { registrarChequeo } from '@/app/(shared)/checador/actions';
-import type { EmpleadoTurno, RegistroChequeo } from '@/lib/types';
+import type { EmpleadoTurno, RegistroChequeo } from '@/services/types';
 import { useToast } from '@/hooks/use-toast';
 import { ScannerBiometrico } from '@/components/ScannerBiometrico';
 import { Camera } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 const formatClientTime = (date: Date, timeZone?: string | null) => {
   const options: Intl.DateTimeFormatOptions = {
@@ -37,11 +38,20 @@ interface UserLocation {
   accuracy: number;
 }
 
-export function ChecadorReloj({ registros, turnoAsignado }: { registros: RegistroChequeo[], turnoAsignado: EmpleadoTurno | undefined }) {
+export function ChecadorReloj({ 
+  registros, 
+  turnoAsignado,
+  userId // <-- NUEVO
+}: { 
+  registros: RegistroChequeo[], 
+  turnoAsignado: EmpleadoTurno | undefined,
+  userId: string 
+}) {
   const [serverDateTime, setServerDateTime] = useState<Date | null>(null);
   const [userTimezone, setUserTimezone] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [registrosLocales, setRegistrosLocales] = useState<RegistroChequeo[]>(registros);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -64,6 +74,10 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
 
     return () => clearInterval(timerId);
   }, []);
+
+  useEffect(() => {
+    setRegistrosLocales(registros);
+  }, [registros]);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -95,29 +109,107 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
     );
   }, [toast]);
 
+  useEffect(() => {
+    let supabase: any = null;
+    let channel: any = null;
+    const setupRealtime = async () => {
+      // Solución al Error 1: Hacemos el await aquí adentro
+      /*supabase = await createClient();
+
+      channel = supabase
+        .channel('realtime-checador')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'registro_checador',
+            filter: `id_empleado=eq.${userId}`,
+          },
+          // Solución al Error 2: Le ponemos explícitamente ": any" al payload
+          (payload: any) => {
+            console.log('¡Nuevo registro detectado en tiempo real!', payload);
+            const nuevoRegistro = payload.new as RegistroChequeo;
+            
+            setRegistrosLocales((prev) => {
+              if (prev.some(r => r.id === nuevoRegistro.id)) return prev;
+              return [...prev, nuevoRegistro];
+            });
+          }
+        )
+        .subscribe((status: any) => {
+          console.log("Estado de Realtime:", status);
+        });*/
+        supabase = await createClient();
+      
+        // 1. Verificamos que el userId no esté llegando vacío
+        console.log("Iniciando Realtime. Mi User ID es:", userId); 
+  
+        channel = supabase
+        .channel('realtime-checador-pruebas')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT', // Ponlo solo en INSERT para no distraernos con los deletes
+            schema: 'public',
+            table: 'registro_checador',
+            // filter: `id_empleado=eq.${userId}`, // <-- COMENTA ESTA LÍNEA OTRA VEZ
+          },
+          (payload: any) => {
+            console.log('¡LLEGÓ UN INSERT!', payload);
+          }
+        )
+          .subscribe((status: string) => {
+            console.log("Estado de Realtime:", status);
+          });
+      };
+
+    // 3. Ejecutamos la función asíncrona
+    setupRealtime();
+
+    // 4. Función de limpieza
+    return () => {
+      // Solución al Error 3: Asegurarnos de que supabase y channel ya existan antes de borrarlos
+      if (supabase && channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [userId]);
   const currentTime = serverDateTime;
 
   const getChequeoState = () => {
-    if (!registros || registros.length === 0) {
+    /*if (!registros || registros.length === 0) {
       return { action: 'entrada' as const, label: 'Entrada', message: 'No has checado entrada' };
+    }*/
+      if (!registrosLocales || registrosLocales.length === 0) {
+        return { action: 'entrada' as const, label: 'Entrada', message: 'No has checado entrada', canLeaveEarly: false };
+      }
+    
+    const tieneEntrada = registrosLocales.some(r => r.tipo_registro === 'entrada');
+    const tieneSalidaDescanso = registrosLocales.some(r => r.tipo_registro === 'salida_descanso');
+    const tieneRegresoDescanso = registrosLocales.some(r => r.tipo_registro === 'regreso_descanso');
+    const tieneSalida = registrosLocales.some(r => r.tipo_registro === 'salida');
+    if (tieneSalida) {
+      return { action: null, label: 'Turno Terminado', message: 'Has completado tu turno de hoy', canLeaveEarly: false };
     }
-    const tieneEntrada = registros.some(r => r.tipo_registro === 'entrada');
-    const tieneSalidaDescanso = registros.some(r => r.tipo_registro === 'salida_descanso');
-    const tieneRegresoDescanso = registros.some(r => r.tipo_registro === 'regreso_descanso');
-    const tieneSalida = registros.some(r => r.tipo_registro === 'salida');
+
+    // 2. Si no ha entrado
     if (!tieneEntrada) {
       return { action: 'entrada' as const, label: 'Entrada', message: 'No has checado entrada', canLeaveEarly: false };
     }
+    
+    // 3. Si ya entró, pero no ha salido a descanso
     if (!tieneSalidaDescanso) {
-      return { action: 'salida_descanso' as const, label: 'Salida a Descanso', message: 'Turno iniciado', canLeaveEarly: true };
+      return { action: 'salida_descanso' as const, label: 'Salida a Descanso', message: 'Turno iniciado', canLeaveEarly: true }; 
     }
+    
+    // 4. Si ya salió a descanso, pero no ha regresado
     if (!tieneRegresoDescanso) {
-      return { action: 'regreso_descanso' as const, label: 'Regreso de Descanso', message: 'En descanso', canLeaveEarly: true };
+      return { action: 'regreso_descanso' as const, label: 'Regreso de Descanso', message: 'En descanso', canLeaveEarly: true }; 
     }
-    if (!tieneSalida) {
-      return { action: 'salida' as const, label: 'Salida', message: 'Turno reanudado', canLeaveEarly: false };
-    }
-    return { action: null, label: 'Turno Terminado', message: 'Has completado tu turno de hoy', canLeaveEarly: false };
+    
+    // 5. Si ya regresó de descanso (y sabemos que no tiene salida por la regla #1)
+    return { action: 'salida' as const, label: 'Salida', message: 'Turno reanudado', canLeaveEarly: false };
   };
 
   const { action, label, message, canLeaveEarly } = getChequeoState();
@@ -198,12 +290,6 @@ export function ChecadorReloj({ registros, turnoAsignado }: { registros: Registr
         <p className="text-lg text-muted-foreground">{message}</p>
       </CardContent>
       <CardFooter className="flex flex-col gap-4 px-6 pb-6">
-        {/*<ScannerBiometrico onResult={handleBioSuccess}>
-          <Button className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white" disabled={!action || isPending || !userLocation || !userTimezone} size="lg">
-            <Camera className="mr-2 h-6 w-6" />
-            {label}
-          </Button>
-        </ScannerBiometrico>*/}
         {/* BOTÓN PRINCIPAL */}
         {action && (
           <ScannerBiometrico onResult={(desc) => handleBioSuccess(desc, action)}>

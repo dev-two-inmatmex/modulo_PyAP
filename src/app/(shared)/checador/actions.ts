@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { calcularDistanciaMetros } from '@/lib/geo';
+import { calcularDistanciaMetros } from '@/utils/geo';
 
 type ChequeoAction = 'entrada' | 'salida_descanso' | 'regreso_descanso' | 'salida';
 

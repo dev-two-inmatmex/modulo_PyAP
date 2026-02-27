@@ -2,7 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Empleado } from "@/lib/types";
+import { Empleado } from "@/services/types";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
