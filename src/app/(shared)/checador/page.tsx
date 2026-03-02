@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { ChecadorReloj } from "@/components/ChecadorReloj";
-import { ChecadorHistorial } from "@/components/ChecadorHistorial";
+import { ChecadorReloj } from "@/components/page_components/checador/ChecadorReloj";
+import { ChecadorHistorial } from "@/components/page_components/checador/ChecadorHistorial";
 import type { RegistroChequeo} from "@/services/types";
 
 export default async function ChecadorPage() {
@@ -41,7 +41,7 @@ export default async function ChecadorPage() {
         <ChecadorReloj registros={registros} turnoAsignado={empleadoTurnoRel} userId={user.id} />
       </div>
       <div className="md:col-span-2">
-        <ChecadorHistorial registros={registros} />
+        <ChecadorHistorial registros={registros} userId={user.id}/>
       </div>
     </div>
   );

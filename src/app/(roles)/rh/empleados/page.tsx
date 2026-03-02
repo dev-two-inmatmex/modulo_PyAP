@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { EmployeeCard } from '@/components/EmployeeCard';
-import { AddEmployee } from '@/components/AddEmployee'
+import { EmployeeCard } from '@/components/page_components/empleados/EmployeeCard';
+import { AddEmployee } from '@/components/page_components/empleados/AddEmployee'
 import { SearchBar } from '@/components/SearchBar';
 
 export default async function EmpleadosPage({ 

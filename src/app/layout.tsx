@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
 import Header from "@/components/Header";
 import { Toaster } from "@/components/ui/toaster";
+import { SupabaseProvider } from '@/components/providers/SupabaseProvider';
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -20,7 +21,7 @@ export default async function RootLayout({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  
+
   if (!user) {
     return (
       <html lang="es" suppressHydrationWarning>
@@ -37,8 +38,10 @@ export default async function RootLayout({
           />
         </head>
         <body className="font-body antialiased">
-          {children}
-          <Toaster />
+          <SupabaseProvider>
+            {children}
+            <Toaster />
+          </SupabaseProvider>
         </body>
       </html>
     );
@@ -68,7 +71,7 @@ export default async function RootLayout({
 
   return (
     <html lang="es" suppressHydrationWarning>
-       <head>
+      <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -81,14 +84,16 @@ export default async function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <SidebarProvider>
-          <AppSidebar userRoles={roles} user={userData} />
-          <SidebarInset>
-            <Header />
-            <main className="flex-1 p-4 sm:p-6 bg-muted/30">{children}</main>
-          </SidebarInset>
-        </SidebarProvider>
-        <Toaster />
+        <SupabaseProvider>
+          <SidebarProvider>
+            <AppSidebar userRoles={roles} user={userData} />
+            <SidebarInset>
+              <Header />
+              <main className="flex-1 p-4 sm:p-6 bg-muted/30">{children}</main>
+            </SidebarInset>
+          </SidebarProvider>
+          <Toaster />
+        </SupabaseProvider>
       </body>
     </html>
   );

@@ -129,7 +129,7 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
           {isScanning ? (
             <>
               <RefreshCw className="h-5 w-5 animate-spin text-green-600" />
-              <span className="font-semibold text-green-600 italic">¡Parpadee ahora para verificar!</span>
+              <span className="font-semibold text-green-600 italic">Por favor, parpadee o muévase ligeramente.</span>
             </>
           ) : (
             <div className="flex flex-col items-center">

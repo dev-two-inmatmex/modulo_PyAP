@@ -1,3 +1,4 @@
+'use client';
 import {
   Table,
   TableBody,
@@ -8,6 +9,7 @@ import {
 } from "@/components/ui/table"
 import type { RegistroChequeo } from "@/services/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRealtimeChecadorRegistrosUsuario } from '@/hooks/useRealtimeChecadorRegistrosUsuario';
 
 
 function formatTimestamp(timestamp: string | null | undefined): string {
@@ -25,7 +27,8 @@ function formatTimestamp(timestamp: string | null | undefined): string {
     }
 }
 
-export function ChecadorHistorial({ registros }: { registros: RegistroChequeo[] }) {
+export function ChecadorHistorial({ registros, userId }: { registros: RegistroChequeo[], userId: string }) {
+    const registrosLocales = useRealtimeChecadorRegistrosUsuario(registros, userId);
     return (
         <Card className="shadow-lg">
             <CardHeader>
@@ -41,8 +44,8 @@ export function ChecadorHistorial({ registros }: { registros: RegistroChequeo[] 
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {registros?.map((registro, index) => (
-                                <TableRow key={index}>
+                            {registrosLocales?.map((registro) => (
+                                <TableRow key={registro?.id}>
                                 <TableCell>{formatTimestamp(registro?.registro)}</TableCell>
                                 <TableCell>{registro?.tipo_registro}</TableCell>
                                 </TableRow>
