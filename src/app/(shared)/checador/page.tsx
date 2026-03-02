@@ -35,10 +35,15 @@ export default async function ChecadorPage() {
 
   if (horarioError) console.error("Error fetching horario:", horarioError.message);
 
+  const { data: ubicaciones } = await supabase
+    .from('config_ubicaciones')
+    .select('id, nombre_ubicacion, latitud, longitud, radio_permitido, tipo')
+    .eq("tipo", 'produccion');
+  
   return (
     <div className="container mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
       <div className="md:col-span-1 flex justify-center">
-        <ChecadorReloj registros={registros} turnoAsignado={empleadoTurnoRel} userId={user.id} />
+        <ChecadorReloj registros={registros} turnoAsignado={empleadoTurnoRel} userId={user.id} ubicacionesValidas={ubicaciones || []}/>
       </div>
       <div className="md:col-span-2">
         <ChecadorHistorial registros={registros} userId={user.id}/>

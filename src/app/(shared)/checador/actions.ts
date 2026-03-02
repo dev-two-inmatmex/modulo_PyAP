@@ -10,6 +10,7 @@ export async function registrarChequeo(
     action: ChequeoAction,
     dateWithTimezone: string,
     timeWithoutTimezone: string,
+    id_ubicacion: number,
     latitude: number,
     longitude: number,
     accuracy: number,
@@ -42,27 +43,6 @@ export async function registrarChequeo(
     const score = biometricResult as number;
     if (biometricResult > 0.38) { // Umbral para distancia de Coseno
         return { error: `Identidad no verificada. (Score: ${score.toFixed(4)})` };
-    }
-
-    const { data: ubicacion, error: ubicacionError } = await supabase
-        .from('vista_empleado_ubicacion_chequeo')
-        .select('latitud, longitud, radio_permitido')
-        .eq('id', user.id)
-        .single();
-
-    if (ubicacionError) {
-        console.error("Error fetching location:", ubicacionError);
-        return { error: "No se pudo verificar la ubicación del empleado." };
-    }
-
-    if (!ubicacion) {
-        return { error: "No tienes una ubicación de chequeo asignada." };
-    }
-
-    const distancia = calcularDistanciaMetros(latitude, longitude, ubicacion.latitud, ubicacion.longitud);
-
-    if (distancia > ubicacion.radio_permitido) {
-        return { error: `Estás a ${distancia.toFixed(0)} metros de tu ubicación de chequeo. No puedes registrar.` };
     }
 
     const today = dateWithTimezone;
@@ -147,6 +127,7 @@ export async function registrarChequeo(
         fecha: today,
         registro: timeWithoutTimezone,
         tipo_registro: action,
+        id_ubicacion: id_ubicacion,
         latitud: latitude,
         longitud: longitude,
         exactitud_geografica: accuracy,

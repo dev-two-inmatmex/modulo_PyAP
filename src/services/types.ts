@@ -71,3 +71,11 @@ export interface Turno {
   regreso_descanso: string | null;
   salida: string | null;
 }
+export interface ConfigUbicacion {
+  id: number;
+  nombre_ubicacion: string;
+  latitud: number;
+  longitud: number;
+  radio_permitido: number;
+  tipo: string;
+}

@@ -4,13 +4,13 @@ import { useState, useEffect, useTransition } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { registrarChequeo } from '@/app/(shared)/checador/actions';
-import type { EmpleadoTurno, RegistroChequeo } from '@/services/types';
+import type { EmpleadoTurno, RegistroChequeo, ConfigUbicacion } from '@/services/types';
 import { useToast } from '@/hooks/use-toast';
 import { ScannerBiometrico } from '@/components/ScannerBiometrico';
-import { Camera } from 'lucide-react';
-import { useSupabase } from '@/components/providers/SupabaseProvider';
+import { Camera, MapPin } from 'lucide-react';
 import { useRealtimeChecadorRegistrosUsuario } from '@/hooks/useRealtimeChecadorRegistrosUsuario';
 
+import { calcularDistanciaMetros, calcularRumbo } from '@/utils/geo';
 const formatClientTime = (date: Date, timeZone?: string | null) => {
   const options: Intl.DateTimeFormatOptions = {
     hour: '2-digit',
@@ -42,17 +42,21 @@ interface UserLocation {
 export function ChecadorReloj({
   registros,
   turnoAsignado,
-  userId // <-- NUEVO
+  userId, // <-- NUEVO
+  ubicacionesValidas
 }: {
   registros: RegistroChequeo[],
   turnoAsignado: EmpleadoTurno | undefined,
-  userId: string
+  userId: string,
+  ubicacionesValidas: ConfigUbicacion[]
 }) {
   const [serverDateTime, setServerDateTime] = useState<Date | null>(null);
   const [userTimezone, setUserTimezone] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
+  const [ubicacionDetectada, setUbicacionDetectada] = useState<ConfigUbicacion | null>(null);
+  const [guiaUbicacion, setGuiaUbicacion] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  
+
   const registrosLocales = useRealtimeChecadorRegistrosUsuario(registros, userId);
   const { toast } = useToast();
 
@@ -77,9 +81,6 @@ export function ChecadorReloj({
     return () => clearInterval(timerId);
   }, []);
 
-  /*useEffect(() => {
-    setRegistrosLocales(registros);
-  }, [registros]);*/
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -110,44 +111,51 @@ export function ChecadorReloj({
       { enableHighAccuracy: true, timeout: 10000 }
     );
   }, [toast]);
-  /*const { supabase } = useSupabase();
-  useEffect(() => {
-    const channel = supabase
-      .channel('realtime-checador')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'registro_checador',
-          filter: `id_empleado=eq.${userId}`, // Tu filtro seguro
-        },
-        (payload: any) => {
-          console.log('Realtime Event:', payload.eventType);
 
-          if (payload.eventType === 'INSERT') {
-            const nuevoRegistro = payload.new as RegistroChequeo;
-            setRegistrosLocales((prev) => {
-              if (prev.some(r => r.id === nuevoRegistro.id)) return prev;
-              return [...prev, nuevoRegistro];
-            });
-          }
-
-          if (payload.eventType === 'DELETE') {
-            const idBorrado = payload.old.id;
-            setRegistrosLocales((prev) => prev.filter(r => r.id !== idBorrado));
-          }
-        }
-      )
-      .subscribe((status: string) => {
-        console.log("Estado de Realtime:", status);
-      });
-    // 4. Función de limpieza
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [supabase, userId]);*/
   const currentTime = serverDateTime;
+  useEffect(() => {
+    if (userLocation && ubicacionesValidas.length > 0) {
+      let encontrada: ConfigUbicacion | null = null;
+      let masCercana: ConfigUbicacion | null = null;
+      let distanciaMinima = Infinity;
+
+      for (const ubi of ubicacionesValidas) {
+        const distancia = calcularDistanciaMetros(userLocation.latitude, userLocation.longitude, ubi.latitud, ubi.longitud);
+        
+        // Si está dentro de alguna, nos detenemos
+        if (distancia <= ubi.radio_permitido) {
+          encontrada = ubi;
+          break;
+        }
+
+        // Si no, vamos guardando cuál es la que le queda más cerca
+        if (distancia < distanciaMinima) {
+          distanciaMinima = distancia;
+          masCercana = ubi;
+        }
+      }
+
+      setUbicacionDetectada(encontrada);
+
+      // Si no encontró ninguna válida, calculamos la guía hacia la más cercana
+      if (!encontrada && masCercana) {
+        const metrosFaltantes = Math.ceil(distanciaMinima - masCercana.radio_permitido);
+        const direccion = calcularRumbo(
+          userLocation.latitude, 
+          userLocation.longitude, 
+          masCercana.latitud, 
+          masCercana.longitud
+        );
+        
+        // ¡Aquí está la magia! Solo agregamos el nombre de la ubicación al string
+        setGuiaUbicacion(
+          `Acércate ${metrosFaltantes}m al ${direccion} para entrar en el rango de ${masCercana.nombre_ubicacion}`
+        );
+      } else {
+        setGuiaUbicacion(null);
+      }
+    }
+  }, [userLocation, ubicacionesValidas]);
 
   const getChequeoState = () => {
     if (!registrosLocales || registrosLocales.length === 0) {
@@ -197,7 +205,7 @@ export function ChecadorReloj({
   };
 
   const handleBioSuccess = (descriptor: number[], actionToPerform: 'entrada' | 'salida_descanso' | 'regreso_descanso' | 'salida') => {
-    if (actionToPerform && currentTime && userLocation && userTimezone) {
+    if (actionToPerform && currentTime && userLocation && userTimezone && ubicacionDetectada) {
       startTransition(async () => {
         const { latitude, longitude, accuracy } = userLocation;
 
@@ -221,6 +229,7 @@ export function ChecadorReloj({
           dateInTimezone,
           timeInTimezone,
           latitude,
+          ubicacionDetectada.id,
           longitude,
           accuracy,
           descriptor,
@@ -256,13 +265,30 @@ export function ChecadorReloj({
         </CardTitle>
       </CardHeader>
       <CardContent className="text-center">
+      {userLocation ? (
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border ${
+            ubicacionDetectada 
+              ? 'bg-green-100 text-green-800 border-green-300' 
+              : 'bg-orange-100 text-orange-800 border-orange-300'
+          }`}>
+            <MapPin className="h-4 w-4" />
+            {ubicacionDetectada 
+              ? ubicacionDetectada.nombre_ubicacion 
+              : guiaUbicacion || 'Fuera de rango'}
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-500 border">
+            <MapPin className="h-4 w-4 animate-pulse" />
+            Buscando GPS...
+          </div>
+        )}
         <p className="text-lg text-muted-foreground">{message}</p>
       </CardContent>
       <CardFooter className="flex flex-col gap-4 px-6 pb-6">
         {/* BOTÓN PRINCIPAL */}
         {action && (
           <ScannerBiometrico onResult={(desc) => handleBioSuccess(desc, action)}>
-            <Button className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white" disabled={isPending || !userLocation || !userTimezone} size="lg">
+            <Button className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white" disabled={isPending || !userLocation || !userTimezone || !ubicacionDetectada} size="lg">
               <Camera className="mr-2 h-6 w-6" />
               {label}
             </Button>
@@ -272,9 +298,9 @@ export function ChecadorReloj({
         {/* BOTÓN SECUNDARIO (Salida Anticipada) */}
         {canLeaveEarly && (
           <ScannerBiometrico onResult={(desc) => handleBioSuccess(desc, 'salida')}>
-            <Button variant="destructive" className="w-full text-lg py-6" disabled={isPending || !userLocation || !userTimezone} size="lg">
+            <Button variant="destructive" className="w-full text-lg py-6" disabled={isPending || !userLocation || !userTimezone || !ubicacionDetectada} size="lg">
               <Camera className="mr-2 h-6 w-6" />
-              Terminar Turno (Salida Anticipada)
+              Salida Anticipada
             </Button>
           </ScannerBiometrico>
         )}
