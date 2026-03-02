@@ -2,7 +2,6 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { calcularDistanciaMetros } from '@/utils/geo';
 
 type ChequeoAction = 'entrada' | 'salida_descanso' | 'regreso_descanso' | 'salida';
 
@@ -44,6 +43,27 @@ export async function registrarChequeo(
     if (biometricResult > 0.38) { // Umbral para distancia de Coseno
         return { error: `Identidad no verificada. (Score: ${score.toFixed(4)})` };
     }
+
+    /*const { data: ubicacion, error: ubicacionError } = await supabase
+        .from('vista_empleado_ubicacion_chequeo')
+        .select('latitud, longitud, radio_permitido')
+        .eq('id', user.id)
+        .single();
+
+    if (ubicacionError) {
+        console.error("Error fetching location:", ubicacionError);
+        return { error: "No se pudo verificar la ubicación del empleado." };
+    }
+
+    if (!ubicacion) {
+        return { error: "No tienes una ubicación de chequeo asignada." };
+    }
+
+    const distancia = calcularDistanciaMetros(latitude, longitude, ubicacion.latitud, ubicacion.longitud);
+
+    if (distancia > ubicacion.radio_permitido) {
+        return { error: `Estás a ${distancia.toFixed(0)} metros de tu ubicación de chequeo. No puedes registrar.` };
+    }*/
 
     const today = dateWithTimezone;
 
@@ -136,9 +156,10 @@ export async function registrarChequeo(
 
     if (insertError) {
         console.error(`Error inserting ${action}:`, insertError);
+        console.log('error', insertError);
         const friendlyAction = action.replace(/_/g, ' ');
         //revalidatePath('/checador');
-        return { error: `Error al registrar ${friendlyAction}.` };
+        return { error: `Error al registrar ${friendlyAction} ${insertError}.`};
     }
 
     const friendlyAction = action.replace(/_/g, ' ');

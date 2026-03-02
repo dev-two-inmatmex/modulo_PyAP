@@ -38,7 +38,7 @@ export default async function ChecadorPage() {
   const { data: ubicaciones } = await supabase
     .from('config_ubicaciones')
     .select('id, nombre_ubicacion, latitud, longitud, radio_permitido, tipo')
-    .eq("tipo", 'produccion');
+    /*.eq("tipo", 'produccion')*/;
   
   return (
     <div className="container mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
