@@ -111,6 +111,45 @@ export function ChecadorReloj({
       { enableHighAccuracy: true, timeout: 10000 }
     );
   }, [toast]);
+  
+  useEffect(() => {
+    // 1. Verificamos que el navegador/celular soporte GPS
+    if (!navigator.geolocation) {
+      console.error("El navegador no soporta geolocalización");
+      return;
+    }
+
+    // 2. Configuramos el GPS en "Modo Deportivo" (Alto rendimiento)
+    const opcionesGPS = {
+      enableHighAccuracy: true, // Fuerza a encender el chip GPS (usa más batería, pero es exacto)
+      timeout: 10000,           // Le damos 10 segundos para responder antes de lanzar error
+      maximumAge: 0             // 0 = No uses ubicaciones guardadas en caché, dame la real AHORA
+    };
+
+    // 3. watchPosition se queda "escuchando" cada vez que el usuario da un paso
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        // Cada vez que el celular detecta movimiento, actualiza tu estado al instante
+        setUserLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        });
+      },
+      (error) => {
+        console.error("Error obteniendo la ubicación:", error.message);
+        // Opcional: Podrías mostrar un toast aquí si el usuario denegó el permiso
+      },
+      opcionesGPS
+    );
+
+    // 4. MUY IMPORTANTE: Limpieza
+    // Cuando el empleado cambia de página o cierra el componente, apagamos el GPS
+    // para no drenarle la batería al celular en segundo plano.
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
+  }, []);
 
   const currentTime = serverDateTime;
   useEffect(() => {
