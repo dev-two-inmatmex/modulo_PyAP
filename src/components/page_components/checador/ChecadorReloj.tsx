@@ -125,7 +125,7 @@ export function ChecadorReloj({
         // Si está dentro de alguna, nos detenemos
         if (distancia <= ubi.radio_permitido) {
           encontrada = ubi;
-          break;
+          //break;
         }
 
         // Si no, vamos guardando cuál es la que le queda más cerca

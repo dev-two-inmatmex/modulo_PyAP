@@ -34,7 +34,6 @@ export function EmployeeCard({ empleado, edit_empleado, avatarUrl }: EmployeeCar
               <Button variant="outline">Ver Ficha</Button>
               <EditEmployee 
               empleado={empleado}
-              edit_empleado={edit_empleado} 
               avatarUrl={avatarUrl}
               />
             </div>
