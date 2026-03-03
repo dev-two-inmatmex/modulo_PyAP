@@ -11,7 +11,6 @@ export default function LogoutButton() {
   const [isPending, startTransition] = useTransition();
   const { state } = useSidebar();
 
-
   return (
     <Button
       variant="ghost"

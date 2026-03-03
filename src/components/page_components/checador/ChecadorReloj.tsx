@@ -12,6 +12,7 @@ import { useRealtimeChecadorRegistrosUsuario } from '@/hooks/useRealtimeChecador
 import { useRealtimeReloj } from '@/hooks/useRealtimeReloj';
 import { useGeocerca } from '@/hooks/useGeoCerca';
 import { IndicadorUbicacion } from '@/components/IndicadorUbicacion';
+import { BotonMantenido } from '@/components/MantenidoButton';
 
 export function ChecadorReloj({
   registros,
@@ -102,12 +103,28 @@ export function ChecadorReloj({
       <CardFooter className="flex flex-col gap-4 px-6 pb-6">
         {/* BOTÓN PRINCIPAL */}
         {action && (
-          <ScannerBiometrico onResult={(desc) => handleBioSuccess(desc, action)}>
+          /*<ScannerBiometrico onResult={(desc) => handleBioSuccess(desc, action)}>
             <Button className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white" disabled={isPending || !userLocation || !ubicacionDetectada} size="lg">
               <Camera className="mr-2 h-6 w-6" />
               {label}
             </Button>
-          </ScannerBiometrico>
+          </ScannerBiometrico>*/
+          (action === 'entrada' || action === 'salida') ? (
+            <ScannerBiometrico onResult={(desc) => handleBioSuccess(desc, action)}>
+              <Button className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white" disabled={isPending || !userLocation || !ubicacionDetectada} size="lg">
+                <Camera className="mr-2 h-6 w-6" /> {label}
+              </Button>
+            </ScannerBiometrico>
+          ) : (
+            // 2. Condición: Si es descanso, usamos el botón de mantener pulsado
+            <BotonMantenido 
+              label={label}
+              disabled={isPending || !userLocation || !ubicacionDetectada}
+              // Le mandamos un arreglo vacío [] porque no hay biometría esta vez
+              onComplete={() => handleBioSuccess([], action)}
+              segundos={5} 
+            />
+          )
         )}
 
         {/* BOTÓN SECUNDARIO (Salida Anticipada) */}

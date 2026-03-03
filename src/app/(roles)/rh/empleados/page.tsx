@@ -74,7 +74,6 @@ export default async function EmpleadosPage({
           <EmployeeCard
             key={empleado.id}
             empleado={empleado}
-            edit_empleado={edit_empleado}
             avatarUrl={avatarUrl}
           />
         )})}

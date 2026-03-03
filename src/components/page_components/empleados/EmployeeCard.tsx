@@ -6,7 +6,7 @@ import { EmployeeCardProps } from "@/services/types";
 import { EditEmployee } from './EditEmployee'; // Import the new component
 
 
-export function EmployeeCard({ empleado, edit_empleado, avatarUrl }: EmployeeCardProps) {
+export function EmployeeCard({ empleado, avatarUrl }: EmployeeCardProps) {
     return (
       <Card>
         <CardHeader>

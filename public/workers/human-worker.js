@@ -40,9 +40,10 @@ self.onmessage = async (e) => {
         const faceScore = face.boxScore || 0;
         const gestures =face.gestures || [];
         
-        //console.log(`Liveness: ${livenessScore.toFixed(2)}, Face Score: ${faceScore.toFixed(2)}`);
+        console.log(`Liveness: ${livenessScore.toFixed(2)}`);
         
-        if (livenessScore < 0.90) {
+        //if (livenessScore < 0.90) {
+          if (livenessScore < 0.75) {
           return self.postMessage({
             success: false,
             error: 'Detección de vida insuficiente. Asegúrese de tener buena iluminación frontal.'

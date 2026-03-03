@@ -24,9 +24,10 @@ export async function registrarChequeo(
     if (!user) {
         throw new Error("Usuario no autenticado.");
     }
+    const requiereBiometria = action === 'entrada' || action === 'salida';
 
     // Biometric Validation via RPC
-    if (!faceDescriptor) {
+    /*if (!faceDescriptor) {
         return { error: "No se proporcionó información biométrica." };
     }
     const { data: biometricResult, error: rpcError } = await supabase.rpc('verificar_identidad_biometrica', {
@@ -42,7 +43,7 @@ export async function registrarChequeo(
     const score = biometricResult as number;
     if (biometricResult > 0.38) { // Umbral para distancia de Coseno
         return { error: `Identidad no verificada. (Score: ${score.toFixed(4)})` };
-    }
+    }*/
 
     /*const { data: ubicacion, error: ubicacionError } = await supabase
         .from('vista_empleado_ubicacion_chequeo')
@@ -65,6 +66,32 @@ export async function registrarChequeo(
         return { error: `Estás a ${distancia.toFixed(0)} metros de tu ubicación de chequeo. No puedes registrar.` };
     }*/
 
+    if (requiereBiometria) {
+        // Si es entrada o salida, EXIGIMOS el rostro
+        if (!faceDescriptor || faceDescriptor.length === 0) {
+            return { error: "Se requiere escaneo facial para registrar tu entrada o salida." };
+        }
+        const { data: biometricResult, error: rpcError } = await supabase.rpc('verificar_identidad_biometrica', {
+            id_empleado_param: user.id,
+            descriptor_param: faceDescriptor
+        });
+        if (rpcError || biometricResult === null) {
+            console.error('Biometric RPC Error:', rpcError);
+            return { error: "Error en el servidor de biometría." };
+        }
+    
+        console.log('distancia biometrica:', biometricResult);
+        const score = biometricResult as number;
+        if (biometricResult > 0.38) { // Umbral para distancia de Coseno
+            return { error: `Identidad no verificada. (Score: ${score.toFixed(4)})` };
+        }
+
+    } else {
+        // Si es un descanso (salida_descanso o regreso_descanso)
+        // Opcional: Puedes poner un console.log para depurar
+        console.log(`Chequeo de ${action} omitiendo biometría por regla de negocio.`);
+    }
+
     const today = dateWithTimezone;
 
     // Find latest record for today to validate the action
@@ -86,25 +113,26 @@ export async function registrarChequeo(
 
     // Business logic for checking order of actions
     if (action === 'entrada' && lastAction) {
-        revalidatePath('/checador');
+        //revalidatePath('/checador');
         return { error: "Ya has registrado tu entrada hoy." };
     }
     if (action === 'salida_descanso' && lastAction !== 'entrada') {
-        revalidatePath('/checador');
+        //revalidatePath('/checador');
         return { error: "Debes registrar tu entrada para poder salir a descanso." };
     }
     if (action === 'regreso_descanso' && lastAction !== 'salida_descanso') {
-        revalidatePath('/checador');
+        //revalidatePath('/checador');
         return { error: "Debes registrar tu salida a descanso para poder regresar." };
     }
 
     if (action === 'salida') {
         if (!lastAction) {
-            return { error: "Debes registrar tu entrada antes de registrar tu salida." };}
+            return { error: "Debes registrar tu entrada antes de registrar tu salida." };
+        }
         if (lastAction === 'salida') {
             return { error: "Ya has completado todos tus registros del día." };
         }
-        revalidatePath('/checador');
+        //revalidatePath('/checador');
     }
 
     let estatus_puntualidad = null;
@@ -159,7 +187,7 @@ export async function registrarChequeo(
         console.log('error', insertError);
         const friendlyAction = action.replace(/_/g, ' ');
         //revalidatePath('/checador');
-        return { error: `Error al registrar ${friendlyAction} ${insertError}.`};
+        return { error: `Error al registrar ${friendlyAction} ${insertError}.` };
     }
 
     const friendlyAction = action.replace(/_/g, ' ');

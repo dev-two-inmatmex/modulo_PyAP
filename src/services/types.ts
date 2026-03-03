@@ -21,7 +21,7 @@ export interface Vista_Empleado_Datos_Editables {
 
 export interface EmployeeCardProps {
   empleado: Vista_Lista_Empleados;
-  edit_empleado: Vista_Empleado_Datos_Editables;
+  //edit_empleado: Vista_Empleado_Datos_Editables;
   avatarUrl?: string;
 }
 export interface Telefono {
