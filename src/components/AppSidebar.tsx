@@ -34,9 +34,9 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import LogoutButton from './LogOutButton';
 import { useState } from 'react';
+import { UserAvatar } from './reutilizables/UserAvatar';
 
 interface NavItem {
   label: string;
@@ -69,22 +69,23 @@ const navItems: NavItem[] = [
     icon: Briefcase,
     roles: ['Dirección', 'Administrador'],
   },
-  { label: 'Recursos Humanos', href: '/rh', icon: ClipboardList, roles: ['RH','Administrador'],
+  {
+    label: 'Recursos Humanos', href: '/rh', icon: ClipboardList, roles: ['RH', 'Administrador'],
     subItems: [
       {
         label: 'Empleados',
         href: '/rh/empleados',
         icon: Users,
-        roles: ['RH','Administrador'],
+        roles: ['RH', 'Administrador'],
       },
     ],
-   },
+  },
   { label: 'Supervisor', href: '/supervisor', icon: Eye, roles: ['Supervisor', 'Administrador'] },
 ];
 
 interface AppSidebarProps {
   userRoles: string[];
-  user: User & { fullName: string };
+  user: User & { fullName: string; avatarUrl?: string };
 }
 
 export default function AppSidebar({ userRoles, user }: AppSidebarProps) {
@@ -106,17 +107,17 @@ export default function AppSidebar({ userRoles, user }: AppSidebarProps) {
   };
 
   const handleCollapsibleToggle = (label: string) => {
-    setOpenCollapsibles(prev => 
+    setOpenCollapsibles(prev =>
       prev.includes(label) ? prev.filter(item => item !== label) : [...prev, label]
     );
   };
-  
+
   return (
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2">
-            <Building className="size-6 text-primary"/>
-            <span className="text-lg font-semibold">INMATMEX</span>
+          <Building className="size-6 text-primary" />
+          <span className="text-lg font-semibold">INMATMEX</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -138,34 +139,34 @@ export default function AppSidebar({ userRoles, user }: AppSidebarProps) {
                 ) : (
                   <Collapsible open={openCollapsibles.includes(item.label)} onOpenChange={() => handleCollapsibleToggle(item.label)}>
                     <CollapsibleTrigger asChild>
-                       <SidebarMenuButton
+                      <SidebarMenuButton
                         isActive={isNavItemActive(item)}
                         className="justify-between"
                       >
-                         <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2">
                           <item.icon />
                           <span>{item.label}</span>
-                         </div>
+                        </div>
                         <ChevronDown className={cn("size-4 transition-transform", openCollapsibles.includes(item.label) && "rotate-180")} />
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
-                       {sidebarState === 'expanded' && (
-                         <SidebarMenuSub>
+                      {sidebarState === 'expanded' && (
+                        <SidebarMenuSub>
                           {item.subItems.map(
                             (subItem) =>
                               hasAccess(subItem.roles) && (
                                 <SidebarMenuSubItem key={subItem.label}>
                                   <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
                                     <Link href={subItem.href}>
-                                        <span>{subItem.label}</span>
+                                      <span>{subItem.label}</span>
                                     </Link>
                                   </SidebarMenuSubButton>
                                 </SidebarMenuSubItem>
                               )
                           )}
                         </SidebarMenuSub>
-                       )}
+                      )}
                     </CollapsibleContent>
                   </Collapsible>
                 )}
@@ -176,14 +177,11 @@ export default function AppSidebar({ userRoles, user }: AppSidebarProps) {
       </SidebarContent>
       <SidebarFooter>
         <div className="flex items-center gap-3">
-          <Avatar className="h-9 w-9">
-            <AvatarImage
-              src={`https://hpfclglvfxgikexuvtwu.supabase.co/storage/v1/object/public/avatars/${encodeURIComponent(
-                user.id
-              )}/avatar.webp`}
-            />
-            <AvatarFallback>{user.fullName[0]}</AvatarFallback>
-          </Avatar>
+          <UserAvatar
+            url={user.avatarUrl}
+            name={user.fullName}
+            className="w-9 h-9"
+          />
           <div className="flex flex-col text-sm overflow-hidden">
             <span className="font-semibold truncate">{user.fullName}</span>
             <span className="text-muted-foreground text-xs truncate">

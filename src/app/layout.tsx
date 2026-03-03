@@ -7,6 +7,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { SupabaseProvider } from '@/components/providers/SupabaseProvider';
 import "./globals.css";
 
+import { getAvatarsMap } from '@/utils/storage';
+
 export const metadata: Metadata = {
   title: "Sistema INMATMEX",
   description: "Proyecto Cerebro V2",
@@ -63,10 +65,14 @@ export default async function RootLayout({
   const fullName = empleado
     ? `${empleado.nombres} ${empleado.apellido_paterno} ${empleado.apellido_materno}`.trim()
     : "Usuario";
+  
+  const avatares = await getAvatarsMap([user.id]);
+  const avatarUrl = avatares[user.id];
 
   const userData = {
     ...user,
     fullName,
+    avatarUrl
   };
 
   return (

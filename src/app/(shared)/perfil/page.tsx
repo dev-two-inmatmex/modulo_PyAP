@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Empleado } from "@/services/types";
-
+import { getAvatarsMap } from "@/utils/storage";
+import { UserAvatar } from "@/components/reutilizables/UserAvatar";
 export default async function ProfilePage() {
   const supabase = await createClient();
   const { data: { user }} = await supabase.auth.getUser();
@@ -23,19 +24,27 @@ export default async function ProfilePage() {
     return <div className="p-4 text-red-500">Error al cargar los datos del perfil.</div>;
   }
 
+  const avatares = await getAvatarsMap([user.id]);
+  const miAvatarUrl = avatares[user.id];
+
   const roleNames: string[] = user.user_metadata.roles || [];
   
-  const fullName = empleado ? `${empleado.nombres} ${empleado.apellido_paterno} ${empleado.apellido_materno}`.trim() : 'Usuario';
+  const nombreCompleto = empleado ? `${empleado.nombres} ${empleado.apellido_paterno} ${empleado.apellido_materno}`: 'Usuario';
   
   return (
     <div className="flex items-start justify-center p-4">
       <div className="w-full max-w-md bg-card rounded-2xl shadow-lg p-8 border">
         <div className="flex flex-col items-center text-center">
-          <Avatar className="w-24 h-24 mb-4">
+          {/*<Avatar className="w-24 h-24 mb-4">
             <AvatarImage src={`https://hpfclglvfxgikexuvtwu.supabase.co/storage/v1/object/public/avatars/${encodeURIComponent(user.id)}/avatar.webp`} />
             <AvatarFallback>{fullName[0]}</AvatarFallback>
-          </Avatar>
-          <h1 className="text-2xl font-bold text-foreground">{fullName}</h1>
+          </Avatar>*/}
+          <UserAvatar 
+          url={miAvatarUrl} 
+          name={nombreCompleto} 
+          className="w-40 h-40 text-5xl shadow-lg mb-6" 
+        />
+          <h1 className="text-2xl font-bold text-foreground">{nombreCompleto}</h1>
           <p className="text-sm text-muted-foreground mt-1">{user.email}</p>
 
           <div className="mt-4 w-full border-t border-border pt-4">
