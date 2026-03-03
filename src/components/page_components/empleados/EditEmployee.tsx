@@ -35,6 +35,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from "@/components/ui/skeleton";
 import Cropper, { ReactCropperElement } from "react-cropper";
 import "cropperjs/dist/cropper.css";
+import {useAnalizadorFacial} from '@/hooks/useAnalizadorFacial';
+
 // Zod Schemas
 const AddressSchema = z.object({
   direccion: z.string().min(1, "La dirección es requerida"),
@@ -105,8 +107,9 @@ function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: V
   const { toast } = useToast();
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  //const [isProcessing, setIsProcessing] = useState(false);
   const cropperRef = useRef<ReactCropperElement>(null);
+  const { analyzeFace, isProcessing } = useAnalizadorFacial();
 
   const addressForm = useForm({ resolver: zodResolver(AddressSchema), defaultValues: { direccion: edit_empleado.direccion || '' } });
   const phoneForm = useForm({
@@ -139,8 +142,26 @@ function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: V
   const handleAvatarSubmit = async () => {
     const cropper = cropperRef.current?.cropper;
     if (!cropper) return;
-
-    setIsProcessing(true);
+    
+    const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
+    const { success, blob, descriptor } = await analyzeFace(canvas, edit_empleado.id);
+    if (success && blob && descriptor) {
+      const formData = new FormData();
+      formData.append('avatar', blob);
+      formData.append('employeeId', edit_empleado.id);
+      formData.append('faceDescriptor', JSON.stringify(descriptor));
+      
+      const result = await updateAvatar(formData);
+      
+      if (result.success) {
+        toast({ title: "Éxito", description: "Perfil y datos faciales actualizados." });
+        setOpen(false);
+      } else {
+        toast({ variant: "destructive", title: "Error", description: result.message });
+      }
+    }
+  
+    /*setIsProcessing(true);
     //toast({ title: "Analizando rostro", description: "La IA está trabajando en segundo plano..." });
     const loadingToast = toast({ title: "Procesando", description: "Analizando rostro y optimizando imagen..." });
     try {
@@ -179,14 +200,14 @@ function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: V
       worker.onerror = (err) => {
         console.error("Worker error:", err);
         setIsProcessing(false);
-        toast({ variant: "destructive", title: "Error", description: /*"Fallo en el hilo de procesamiento."*/err.message });
+        toast({ variant: "destructive", title: "Error", description: /*"Fallo en el hilo de procesamiento."err.message });
       };
 
     } catch (err) {
       console.error(err);
       setIsProcessing(false);
       toast({ variant: "destructive", title: "Error", description: "Error procesando la IA facial." });
-    }
+    }*/
 
   };
 

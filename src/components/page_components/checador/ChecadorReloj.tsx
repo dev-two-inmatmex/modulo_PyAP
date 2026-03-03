@@ -6,13 +6,13 @@ import { Button } from '@/components/ui/button';
 import { registrarChequeo } from '@/app/(shared)/checador/actions';
 import type { EmpleadoTurno, RegistroChequeo, ConfigUbicacion } from '@/services/types';
 import { useToast } from '@/hooks/use-toast';
-import { ScannerBiometrico } from '@/components/ScannerBiometrico';
+import { ScannerBiometrico } from '@/components/reutilizables/ScannerBiometrico';
 import { Camera } from 'lucide-react';
 import { useRealtimeChecadorRegistrosUsuario } from '@/hooks/useRealtimeChecadorRegistrosUsuario';
 import { useRealtimeReloj } from '@/hooks/useRealtimeReloj';
 import { useGeocerca } from '@/hooks/useGeoCerca';
-import { IndicadorUbicacion } from '@/components/IndicadorUbicacion';
-import { BotonMantenido } from '@/components/MantenidoButton';
+import { IndicadorUbicacion } from '@/components/reutilizables/IndicadorUbicacion';
+import { BotonMantenido } from '@/components/reutilizables/MantenidoButton';
 
 export function ChecadorReloj({
   registros,

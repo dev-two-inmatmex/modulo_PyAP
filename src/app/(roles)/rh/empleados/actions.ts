@@ -8,6 +8,7 @@ import sharp from 'sharp';
 export async function addUser(prevState: any, formData: FormData) {
   const supabase = await createClient();
   const supabaseAdmin = createAdminClient();
+  
 
   const data = {
     nombres: formData.get('nombres') as string,

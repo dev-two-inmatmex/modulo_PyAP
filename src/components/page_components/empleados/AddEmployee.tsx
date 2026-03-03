@@ -24,6 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { SelectField } from '@/components/reutilizables/SelectField';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
@@ -46,14 +47,14 @@ const UserSchema = z.object({
   id_ext_descanso: z.string().min(1, "Descanso es requerido"),
   id_estatus: z.string().min(1, "Estatus es requerido"),
 }).refine(data => {
-    // Si hay un teléfono de emergencia, el propietario es requerido.
-    if (data.telefono2 && !data.propietario_telefono2) {
-        return false;
-    }
-    return true;
+  // Si hay un teléfono de emergencia, el propietario es requerido.
+  if (data.telefono2 && !data.propietario_telefono2) {
+    return false;
+  }
+  return true;
 }, {
-    message: "Debe especificar el propietario del teléfono de emergencia",
-    path: ["propietario_telefono2"],
+  message: "Debe especificar el propietario del teléfono de emergencia",
+  path: ["propietario_telefono2"],
 });
 
 type UserFormValues = z.infer<typeof UserSchema>;
@@ -80,7 +81,7 @@ interface ActionState {
 
 const removeAccents = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatuses, n_empleados }: AddUserProps ) {
+export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatuses, n_empleados }: AddUserProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
@@ -123,7 +124,7 @@ export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatus
 
   const handleFormSubmit = (data: UserFormValues) => {
     const formData = new FormData();
-    
+
     // Mapeamos los datos al FormData
     Object.entries(data).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -139,17 +140,17 @@ export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatus
 
   useEffect(() => {
     if (state.message) {
-        const isError = /error|inválido/i.test(state.message);
-        if (isError) {
-            toast({ variant: 'destructive', title: 'Error', description: state.message });
-            
-        } else {
-            toast({ title: 'Éxito', description: state.message });
-            setOpen(false);
-            form.reset();
-        }
+      const isError = /error|inválido/i.test(state.message);
+      if (isError) {
+        toast({ variant: 'destructive', title: 'Error', description: state.message });
+
+      } else {
+        toast({ title: 'Éxito', description: state.message });
+        setOpen(false);
+        form.reset();
+      }
     }
-}, [state, form, toast, setOpen]);
+  }, [state, form, toast, setOpen]);
 
 
   return (
@@ -199,10 +200,40 @@ export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatus
                 </FormItem>
               )}
             />
-            <FormField control={form.control} name="id_puesto" render={({ field }) => (<FormItem><FormLabel>Puesto</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Seleccione un puesto" /></SelectTrigger></FormControl><SelectContent>{puestos.map((puesto) => (<SelectItem key={puesto.id} value={String(puesto.id)}>{puesto.nombre_puesto}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="id_ubicacion" render={({ field }) => (<FormItem><FormLabel>Ubicación de Trabajo</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Seleccione una ubicación" /></SelectTrigger></FormControl><SelectContent>{ubicaciones.map((ubicacion) => (<SelectItem key={ubicacion.id} value={String(ubicacion.id)}>{ubicacion.nombre_ubicacion}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="id_ext_horario" render={({ field }) => (<FormItem><FormLabel>Horario</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Seleccione un horario" /></SelectTrigger></FormControl><SelectContent>{horarios.map((horario) => (<SelectItem key={horario.id} value={String(horario.id)}>{`${horario.hora_entrada.slice(0, 5)} - ${horario.hora_salida.slice(0, 5)}`}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="id_ext_descanso" render={({ field }) => (<FormItem><FormLabel>Descanso</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Seleccione un descanso" /></SelectTrigger></FormControl><SelectContent>{descansos.map((descanso) => (<SelectItem key={descanso.id} value={String(descanso.id)}>{`${descanso.inicio_descanso.slice(0, 5)} - ${descanso.fin_descanso.slice(0, 5)}`}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)} />
+            <SelectField
+              control={form.control}
+              name="id_puesto"
+              label="Puesto"
+              placeholder="Seleccione un puesto"
+              options={puestos.map(p => ({ id: p.id, label: p.nombre_puesto }))}
+            />
+            <SelectField
+              control={form.control}
+              name="id_ubicacion"
+              label="Ubicación de Trabajo"
+              placeholder="Seleccione una ubicación"
+              options={ubicaciones.map(ubi => ({ id: ubi.id, label: ubi.nombre_ubicacion }))}
+            />
+            <SelectField
+              control={form.control}
+              name="id_ext_horario"
+              label="Ubicación de Trabajo"
+              placeholder="Seleccione un horario"
+              options={horarios.map((horario) => ({
+                id: horario.id,
+                label: `${horario.hora_entrada.slice(0, 5)} - ${horario.hora_salida.slice(0, 5)}`
+              }))}
+            />
+            <SelectField
+              control={form.control}
+              name="id_ext_descanso"
+              label="Descanso"
+              placeholder="Seleccione un descanso"
+              options={descansos.map((descanso) => ({
+                id: descanso.id,
+                label: `${descanso.inicio_descanso.slice(0, 5)} - ${descanso.fin_descanso.slice(0, 5)}`
+              }))}
+            />
             <FormField control={form.control} name="id_estatus" render={({ field }) => (<FormItem><FormLabel>Estatus</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Seleccione un estatus" /></SelectTrigger></FormControl><SelectContent>{estatuses.map((estatus) => (<SelectItem key={estatus.id} value={String(estatus.id)}>{estatus.nombre_estatus}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)} />
 
             <DialogFooter className="md:col-span-3">
