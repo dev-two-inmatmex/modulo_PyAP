@@ -1,7 +1,6 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Empleado } from "@/services/types";
 import { getAvatarsMap } from "@/utils/storage";
 import { UserAvatar } from "@/components/reutilizables/UserAvatar";
@@ -35,10 +34,6 @@ export default async function ProfilePage() {
     <div className="flex items-start justify-center p-4">
       <div className="w-full max-w-md bg-card rounded-2xl shadow-lg p-8 border">
         <div className="flex flex-col items-center text-center">
-          {/*<Avatar className="w-24 h-24 mb-4">
-            <AvatarImage src={`https://hpfclglvfxgikexuvtwu.supabase.co/storage/v1/object/public/avatars/${encodeURIComponent(user.id)}/avatar.webp`} />
-            <AvatarFallback>{fullName[0]}</AvatarFallback>
-          </Avatar>*/}
           <UserAvatar 
           url={miAvatarUrl} 
           name={nombreCompleto} 
