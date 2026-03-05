@@ -188,11 +188,11 @@ export async function registrarChequeo(
         console.error(`Error inserting ${action}:`, insertError);
         console.log('error', insertError);
         const friendlyAction = action.replace(/_/g, ' ');
-        //revalidatePath('/checador');
+        revalidatePath('/checador');
         return { error: `Error al registrar ${friendlyAction} ${insertError}.` };
     }
 
     const friendlyAction = action.replace(/_/g, ' ');
-    //revalidatePath('/checador');
+    revalidatePath('/checador');
     return { success: `Se ha registrado tu ${friendlyAction} con éxito.` };
 }
