@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { ConfigUbicacion } from '@/services/types';
 import { calcularDistanciaMetros, calcularRumbo } from '@/utils/geo';
+import { useToast } from '@/hooks/use-toast';
 
 export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
     const [userLocation, setUserLocation] = useState<any | null>(null);
     const [ubicacionDetectada, setUbicacionDetectada] = useState<ConfigUbicacion | null>(null);
     const [guiaUbicacion, setGuiaUbicacion] = useState<string | null>(null);
     const [errorGps, setErrorGps] = useState<string | null>(null);
+    const { toast } = useToast();
 
     useEffect(() => {
         // 1. Verificamos que el navegador/celular soporte GPS
@@ -25,6 +27,7 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
         // 3. watchPosition se queda "escuchando" cada vez que el usuario da un paso
         const watchId = navigator.geolocation.watchPosition(
           (position) => {
+            setErrorGps(null);
             // Cada vez que el celular detecta movimiento, actualiza tu estado al instante
             setUserLocation({
               latitude: position.coords.latitude,
@@ -34,7 +37,24 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
           },
           (error) => {
             console.error("Error obteniendo la ubicación:", error.message);
-            // Opcional: Podrías mostrar un toast aquí si el usuario denegó el permiso
+            
+            let mensajeAmigable = "Error desconocido de GPS.";
+            switch(error.code) {
+              case error.PERMISSION_DENIED:
+                mensajeAmigable = "Permiso denegado. Autoriza el GPS en tu navegador.";
+                break;
+              case error.POSITION_UNAVAILABLE:
+                mensajeAmigable = "Señal GPS no disponible o apagada. Enciende tu ubicación.";
+                break;
+              case error.TIMEOUT:
+                mensajeAmigable = "Tiempo de espera agotado buscando señal.";
+                break;
+            }
+
+            setErrorGps(mensajeAmigable);
+            
+            // Opcional: También puedes mostrar el toast aquí
+            toast({ title: 'Atención', description: mensajeAmigable, variant: 'destructive' });
           },
           opcionesGPS
         );

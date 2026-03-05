@@ -29,7 +29,7 @@ export function ChecadorReloj({
   const { toast } = useToast();
   const registrosLocales = useRealtimeChecadorRegistrosUsuario(registros, userId);
   const {
-    userLocation, ubicacionDetectada, guiaUbicacion, estaEnRango
+    userLocation, ubicacionDetectada, guiaUbicacion, estaEnRango, errorGps
   } = useGeocerca(ubicacionesValidas);
   const { horaMinutos, segundos, fechaFormateada, formatHorario, getFormatosBD } = useRealtimeReloj(userLocation);
 
@@ -97,8 +97,6 @@ export function ChecadorReloj({
           userLocation.accuracy,
           descriptor,
           horaEsperada,
-          /*turnoAsignado?.entrada,
-          turnoAsignado?.regreso_descanso, turnoAsignado?.salida*/
         );
 
         if (result?.error) toast({ title: 'Error', description: result.error, variant: 'destructive' });

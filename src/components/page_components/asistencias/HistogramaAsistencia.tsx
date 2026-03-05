@@ -57,9 +57,6 @@ export function HistogramaAsistencia() {
 
       registros?.forEach(reg => {
         const fecha = reg.fecha;
-        // Agrupamos por la HORA en la que llegaron (Ej. '07:15:00' -> '07:00')
-        // Si tienes 'hora_esperada' en tu vista, es MEJOR usar esa para las barras
-        //const horaBloque = reg.hora_esperada.slice(0, 3) + '00';
         const horaBloque = reg.hora_esperada; 
 
         if (!agrupadoPorDia[fecha]) {
