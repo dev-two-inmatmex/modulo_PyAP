@@ -29,7 +29,7 @@ export function ChecadorReloj({
   const { toast } = useToast();
   const registrosLocales = useRealtimeChecadorRegistrosUsuario(registros, userId);
   const {
-    userLocation, ubicacionDetectada, guiaUbicacion, estaEnRango, errorGps
+    userLocation, ubicacionDetectada, guiaUbicacion, estaEnRango, errorGps, reintentarGps
   } = useGeocerca(ubicacionesValidas);
   const { horaMinutos, segundos, fechaFormateada, formatHorario, getFormatosBD } = useRealtimeReloj(userLocation);
 
@@ -121,6 +121,8 @@ export function ChecadorReloj({
           ubicacionDetectada={ubicacionDetectada?.nombre_ubicacion}
           guiaUbicacion={guiaUbicacion}
           buscando={!userLocation}
+          errorGps={errorGps}
+          onRetry={reintentarGps}
         />
 
         <p className="text-lg text-muted-foreground">{message}</p>
