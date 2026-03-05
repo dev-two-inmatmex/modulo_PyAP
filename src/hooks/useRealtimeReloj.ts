@@ -9,21 +9,48 @@ export function useRealtimeReloj(userLocation?: { latitude: number; longitude: n
     const [hasFetchedTz, setHasFetchedTz] = useState(false);
 
     useEffect(() => {
+        let desfase = 0; // Guardará la diferencia de tiempo entre el servidor y el dispositivo local
+
         const fetchServerTime = async () => {
             try {
                 const response = await fetch('/api/time');
                 const data = await response.json();
-                setServerDateTime(new Date(data.serverTime));
+
+                const serverTime = new Date(data.serverTime).getTime();
+                const localTime = Date.now(); // Hora local exacta en este milisegundo
+
+                // Calculamos el desfase (ej. si el server va 2 segs adelantado, desfase = 2000)
+                desfase = serverTime - localTime;
+
+                setServerDateTime(new Date(serverTime));
             } catch (error) {
                 console.error('Failed to fetch server time:', error);
+                desfase = 0; // Si falla la API, confiamos en la hora local del dispositivo
                 setServerDateTime(new Date());
             }
         };
+
         fetchServerTime();
+
+        // El reloj en tiempo real
         const timerId = setInterval(() => {
-            setServerDateTime(prevTime => prevTime ? new Date(prevTime.getTime() + 1000) : null);
+            // En lugar de sumar +1000ms al valor anterior, tomamos la hora local ACTUAL 
+            // y le sumamos el desfase que calculamos al principio. ¡Imposible que se atrase!
+            setServerDateTime(new Date(Date.now() + desfase));
         }, 1000);
-        return () => clearInterval(timerId);
+
+        // ¡NUEVO! Resincronizar cuando el usuario vuelve a abrir la app o desbloquea el celular
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                fetchServerTime(); // Volvemos a preguntar al servidor para estar 100% seguros
+            }
+        };
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            clearInterval(timerId);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
     }, []);
 
     useEffect(() => {

@@ -122,7 +122,6 @@ export function ChecadorReloj({
           guiaUbicacion={guiaUbicacion}
           buscando={!userLocation}
           errorGps={errorGps}
-          onRetry={reintentarGps}
         />
 
         <p className="text-lg text-muted-foreground">{message}</p>

@@ -22,7 +22,7 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
 
   // Centralizamos el manejo de errores para limpiar estados y traducir el mensaje
   const manejarErrorGps = useCallback((error: GeolocationPositionError) => {
-    console.error("Error obteniendo la ubicación:", error.message);
+    //console.error("Error obteniendo la ubicación:", error.message);
     setUserLocation(null);
     setUbicacionDetectada(null);
     setGuiaUbicacion(null);
