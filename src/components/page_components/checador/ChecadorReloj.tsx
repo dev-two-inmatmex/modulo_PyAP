@@ -138,7 +138,8 @@ export function ChecadorReloj({
           </ScannerBiometrico>*/
           (action === 'entrada' || action === 'salida') ? (
             <ScannerBiometrico onResult={(desc) => handleBioSuccess(desc, action)}>
-              <Button className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white" disabled={isPending || !userLocation || !ubicacionDetectada || !!errorGps} size="lg">
+              <Button className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white"
+              disabled={isPending || !userLocation || !ubicacionDetectada} size="lg">
                 <Camera className="mr-2 h-6 w-6" /> {label}
               </Button>
             </ScannerBiometrico>
@@ -146,7 +147,7 @@ export function ChecadorReloj({
             // 2. Condición: Si es descanso, usamos el botón de mantener pulsado
             <BotonMantenido
               label={label}
-              disabled={isPending || !userLocation || !ubicacionDetectada || !!errorGps}
+              disabled={isPending || !userLocation || !ubicacionDetectada }
               // Le mandamos un arreglo vacío [] porque no hay biometría esta vez
               onComplete={() => handleBioSuccess([], action)}
               segundos={5}
