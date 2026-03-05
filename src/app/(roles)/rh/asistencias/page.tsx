@@ -3,9 +3,9 @@ import { RelojAsistencia } from "@/components/page_components/asistencias/RelojA
 import { PorcentajeAsistencia } from "@/components/page_components/asistencias/PorcentajeAsistencia";
 import { HistogramaAsistencia } from "@/components/page_components/asistencias/HistogramaAsistencia";
 import { TablasTurnos } from "@/components/page_components/asistencias/TablasTurnos";
-import { getAvatarsMap } from "@/utils/storage"; // <-- IMPORTANTE: Agregar esto
+import { getAvatarsMap } from "@/utils/storage";
 
-export default async function AsistenciasDashboardPage() {
+export default async function AsistenciasPage() {
   const supabase = await createClient();
 
   // 1. Fetch de los turnos y empleados esperados para hoy

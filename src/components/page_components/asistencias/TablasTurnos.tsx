@@ -87,7 +87,7 @@ export function TablasTurnos({ turnos, avatarUrls, asistencias }: TablasTurnosPr
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1">
+    <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-1">
       {turnos.map((turno) => {
         const llegaron = turno.detalles_empleados.filter(e => asistencias[e.empleado_id]).length;
         return (
