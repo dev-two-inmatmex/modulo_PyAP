@@ -14,9 +14,10 @@ export async function registrarChequeo(
     longitude: number,
     accuracy: number,
     faceDescriptor?: number[],
-    turnoEntrada?: string | null,
+    horaEsperada?: string | null
+    /*turnoEntrada?: string | null,
     turnoRegresoDescanso?: string | null,
-    turnoSalida?: string | null
+    turnoSalida?: string | null*/
 ) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -147,20 +148,20 @@ export async function registrarChequeo(
         return diffMinutes;
     };
 
-    if (action === 'entrada' && turnoEntrada) {
-        const diff = calcularDiffMinutos(timeWithoutTimezone, turnoEntrada);
+    if (action === 'entrada' && horaEsperada) {
+        const diff = calcularDiffMinutos(timeWithoutTimezone, horaEsperada);
         if (diff <= 0) estatus_puntualidad = "Puntual";
         else if (diff <= 10) estatus_puntualidad = "Retraso Leve";
         else estatus_puntualidad = "Retraso Grave";
 
-    } else if (action === 'regreso_descanso' && turnoRegresoDescanso) {
-        const diff = calcularDiffMinutos(timeWithoutTimezone, turnoRegresoDescanso);
+    } else if (action === 'regreso_descanso' && horaEsperada) {
+        const diff = calcularDiffMinutos(timeWithoutTimezone, horaEsperada);
         if (diff <= 0) estatus_puntualidad = "Puntual";
         else if (diff <= 10) estatus_puntualidad = "Retraso Leve";
         else estatus_puntualidad = "Retraso Grave";
 
-    } else if (action === 'salida' && turnoSalida) {
-        const diff = calcularDiffMinutos(timeWithoutTimezone, turnoSalida);
+    } else if (action === 'salida' && horaEsperada) {
+        const diff = calcularDiffMinutos(timeWithoutTimezone, horaEsperada);
         // Si los minutos son negativos, significa que salió antes de su hora oficial
         if (diff < 0) {
             estatus_puntualidad = "Salida Anticipada";
@@ -179,7 +180,8 @@ export async function registrarChequeo(
         latitud: latitude,
         longitud: longitude,
         exactitud_geografica: accuracy,
-        estatus_puntualidad: estatus_puntualidad
+        estatus_puntualidad: estatus_puntualidad,
+        hora_esperada: horaEsperada,
     });
 
     if (insertError) {

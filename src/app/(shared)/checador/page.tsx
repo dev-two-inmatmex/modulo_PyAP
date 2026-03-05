@@ -5,9 +5,7 @@ import type { RegistroChequeo} from "@/services/types";
 
 export default async function ChecadorPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const {data: { user }} = await supabase.auth.getUser();
 
   if (!user) {
     return <div>Usuario no autenticado</div>;

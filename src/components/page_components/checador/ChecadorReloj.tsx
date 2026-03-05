@@ -64,28 +64,55 @@ export function ChecadorReloj({
   const { action, label, message, canLeaveEarly } = getChequeoState();
 
   const handleBioSuccess = (descriptor: number[], actionToPerform: 'entrada' | 'salida_descanso' | 'regreso_descanso' | 'salida') => {
-      const formatos = getFormatosBD();
-      if (actionToPerform && formatos && userLocation && ubicacionDetectada) {
-        startTransition(async () => {
-          const { dateInTimezone, timeInTimezone } = formatos;
-          const result = await registrarChequeo(
-            actionToPerform, dateInTimezone, timeInTimezone, ubicacionDetectada.id,
-            userLocation.latitude, userLocation.longitude, userLocation.accuracy,
-            descriptor, turnoAsignado?.entrada, turnoAsignado?.regreso_descanso, turnoAsignado?.salida
-          );
-  
-          if (result?.error) toast({ title: 'Error', description: result.error, variant: 'destructive' });
-          else if (result?.success) toast({ title: 'Éxito', description: result.success });
-        });
-      } else {
-        toast({ title: 'Cargando', description: 'Obteniendo ubicación y zona horaria...', variant: 'default' });
-      }
+    const formatos = getFormatosBD();
+    if (actionToPerform && formatos && userLocation && ubicacionDetectada) {
+      startTransition(async () => {
+        const { dateInTimezone, timeInTimezone } = formatos;
+
+        let horaEsperada = null;
+        if (turnoAsignado) {
+          switch (actionToPerform) {
+            case 'entrada':
+              horaEsperada = turnoAsignado.entrada;
+              break;
+            case 'salida_descanso':
+              horaEsperada = turnoAsignado.salida_descanso;
+              break;
+            case 'regreso_descanso':
+              horaEsperada = turnoAsignado.regreso_descanso;
+              break;
+            case 'salida':
+              horaEsperada = turnoAsignado.salida;
+              break;
+          }
+        }
+
+        const result = await registrarChequeo(
+          actionToPerform,
+          dateInTimezone,
+          timeInTimezone,
+          ubicacionDetectada.id,
+          userLocation.latitude,
+          userLocation.longitude,
+          userLocation.accuracy,
+          descriptor,
+          horaEsperada,
+          /*turnoAsignado?.entrada,
+          turnoAsignado?.regreso_descanso, turnoAsignado?.salida*/
+        );
+
+        if (result?.error) toast({ title: 'Error', description: result.error, variant: 'destructive' });
+        else if (result?.success) toast({ title: 'Éxito', description: result.success });
+      });
+    } else {
+      toast({ title: 'Cargando', description: 'Obteniendo ubicación y zona horaria...', variant: 'default' });
     }
+  }
 
   return (
     <Card className="w-full max-w-sm mx-auto shadow-lg border-2">
       <CardHeader className="text-center pb-2">
-      <CardDescription className="text-lg text-foreground/80">{fechaFormateada}</CardDescription>
+        <CardDescription className="text-lg text-foreground/80">{fechaFormateada}</CardDescription>
         <CardTitle className="text-7xl font-bold tracking-tighter text-green-700">
           {horaMinutos}<span className="text-4xl font-medium ml-2">{segundos}</span>
         </CardTitle>
@@ -117,12 +144,12 @@ export function ChecadorReloj({
             </ScannerBiometrico>
           ) : (
             // 2. Condición: Si es descanso, usamos el botón de mantener pulsado
-            <BotonMantenido 
+            <BotonMantenido
               label={label}
               disabled={isPending || !userLocation || !ubicacionDetectada}
               // Le mandamos un arreglo vacío [] porque no hay biometría esta vez
               onComplete={() => handleBioSuccess([], action)}
-              segundos={5} 
+              segundos={5}
             />
           )
         )}
