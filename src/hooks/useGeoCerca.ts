@@ -55,7 +55,7 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
     // 2. Configuramos el GPS en "Modo Deportivo" (Alto rendimiento)
     const opcionesGPS = {
       enableHighAccuracy: true, // Fuerza a encender el chip GPS (usa más batería, pero es exacto)
-      timeout: 10000,           // Le damos 10 segundos para responder antes de lanzar error
+      timeout: 5000,           // Le damos 10 segundos para responder antes de lanzar error
       maximumAge: 0             // 0 = No uses ubicaciones guardadas en caché, dame la real AHORA
     };
 
@@ -113,7 +113,7 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
         // Si está dentro de alguna, nos detenemos
         if (distancia <= ubi.radio_permitido) {
           encontrada = ubi;
-          //break;
+          break;
         }
 
         // Si no, vamos guardando cuál es la que le queda más cerca
