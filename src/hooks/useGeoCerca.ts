@@ -92,7 +92,7 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
         setErrorGps(mensajeAmigable);
 
         // Opcional: También puedes mostrar el toast aquí
-        toast({ title: 'Atención', description: mensajeAmigable, variant: 'destructive' });
+        //toast({ title: 'Atención', description: mensajeAmigable, variant: 'destructive' });
       },
       opcionesGPS
     );
@@ -181,7 +181,7 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
 
     return () => clearInterval(pingGps);
   }, []);
-  
+
   return {
     userLocation,
     ubicacionDetectada,
