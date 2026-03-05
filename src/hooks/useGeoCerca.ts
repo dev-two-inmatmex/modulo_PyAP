@@ -29,6 +29,23 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
   }, [reintentarGps]);
 
   useEffect(() => {
+    let intervalo: NodeJS.Timeout;
+
+    // Si tenemos un error de GPS (ej. está apagado), iniciamos un temporizador
+    if (errorGps) {
+        intervalo = setInterval(() => {
+            console.log("Buscando señal GPS en segundo plano...");
+            reintentarGps(); // Forzamos el reinicio del watchPosition
+        }, 5000); // 5000 milisegundos = 5 segundos
+    }
+
+    // Limpieza: Si el GPS ya se conectó (errorGps es null) o el componente se desmonta, apagamos el temporizador
+    return () => {
+        if (intervalo) clearInterval(intervalo);
+    };
+}, [errorGps, reintentarGps]);
+
+  useEffect(() => {
     // 1. Verificamos que el navegador/celular soporte GPS
     if (!navigator.geolocation) {
       console.error("El navegador no soporta geolocalización");
