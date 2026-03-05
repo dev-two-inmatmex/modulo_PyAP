@@ -92,7 +92,7 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
         setErrorGps(mensajeAmigable);
 
         // Opcional: También puedes mostrar el toast aquí
-        //toast({ title: 'Atención', description: mensajeAmigable, variant: 'destructive' });
+        toast({ title: 'Atención', description: mensajeAmigable, variant: 'destructive' });
       },
       opcionesGPS
     );
@@ -113,7 +113,7 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
         // Si está dentro de alguna, nos detenemos
         if (distancia <= ubi.radio_permitido) {
           encontrada = ubi;
-          break;
+          //break;
         }
 
         // Si no, vamos guardando cuál es la que le queda más cerca
