@@ -11,176 +11,135 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
   const [intento, setIntento] = useState(0);
   const { toast } = useToast();
 
-  // NUEVO: Función que podemos llamar desde el botón
+  // --- 1. UTILIDADES INTERNAS ---
+
+  // Reinicia los estados y dispara el useEffect de geolocalización
   const reintentarGps = useCallback(() => {
     setErrorGps(null);
     setGuiaUbicacion(null);
-    setIntento(prev => prev + 1); // Al cambiar este número, el useEffect de abajo se reinicia
+    setIntento(prev => prev + 1);
   }, []);
 
+  // Centralizamos el manejo de errores para limpiar estados y traducir el mensaje
+  const manejarErrorGps = useCallback((error: GeolocationPositionError) => {
+    console.error("Error obteniendo la ubicación:", error.message);
+    setUserLocation(null);
+    setUbicacionDetectada(null);
+    setGuiaUbicacion(null);
+
+    let mensajeAmigable = "Error desconocido de GPS.";
+    switch (error.code) {
+      case error.PERMISSION_DENIED:
+        mensajeAmigable = "Permiso denegado. Autoriza el GPS.";
+        break;
+      case error.POSITION_UNAVAILABLE:
+        mensajeAmigable = "Señal GPS apagada o sin alcance.";
+        break;
+      case error.TIMEOUT:
+        mensajeAmigable = "Tiempo agotado buscando señal.";
+        break;
+    }
+    setErrorGps(mensajeAmigable);
+  }, []);
+
+  // --- 2. EFECTOS DE CICLO DE VIDA ---
+
+  // Efecto A: Reintentar al regresar a la pestaña
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        reintentarGps();
-      }
+      if (document.visibilityState === 'visible') reintentarGps();
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [reintentarGps]);
 
+  // Efecto B: Reintento en segundo plano si hay error
   useEffect(() => {
-    let intervalo: NodeJS.Timeout;
+    if (!errorGps) return; // Solo hacemos polling si hay error
 
-    // Si tenemos un error de GPS (ej. está apagado), iniciamos un temporizador
-    if (errorGps) {
-      intervalo = setInterval(() => {
-        console.log("Buscando señal GPS en segundo plano...");
-        reintentarGps(); // Forzamos el reinicio del watchPosition
-      }, 5000); // 5000 milisegundos = 5 segundos
-    }
+    const intervalo = setInterval(() => {
+      console.log("Reintentando conexión GPS en segundo plano...");
+      reintentarGps();
+    }, 5000);
 
-    // Limpieza: Si el GPS ya se conectó (errorGps es null) o el componente se desmonta, apagamos el temporizador
-    return () => {
-      if (intervalo) clearInterval(intervalo);
-    };
+    return () => clearInterval(intervalo);
   }, [errorGps, reintentarGps]);
 
+  // Efecto C: El "Perro Guardián" (Watchdog) para celulares
   useEffect(() => {
-    // 1. Verificamos que el navegador/celular soporte GPS
+    const pingGps = setInterval(() => {
+      if (!navigator.geolocation) return;
+
+      navigator.geolocation.getCurrentPosition(
+        () => { /* Todo bien, no hacemos nada */ },
+        (error) => manejarErrorGps(error),
+        { enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }
+      );
+    }, 5000);
+
+    return () => clearInterval(pingGps);
+  }, [manejarErrorGps]);
+
+  // --- 3. EFECTOS PRINCIPALES DE GEOLOCALIZACIÓN ---
+
+  // El núcleo: Escuchar cambios de ubicación (watchPosition)
+  useEffect(() => {
     if (!navigator.geolocation) {
-      console.error("El navegador no soporta geolocalización");
+      setErrorGps("El navegador no soporta geolocalización");
       return;
     }
 
-    // 2. Configuramos el GPS en "Modo Deportivo" (Alto rendimiento)
-    const opcionesGPS = {
-      enableHighAccuracy: true, // Fuerza a encender el chip GPS (usa más batería, pero es exacto)
-      timeout: 5000,           // Le damos 10 segundos para responder antes de lanzar error
-      maximumAge: 0             // 0 = No uses ubicaciones guardadas en caché, dame la real AHORA
-    };
+    const opcionesGPS = { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 };
 
-    // 3. watchPosition se queda "escuchando" cada vez que el usuario da un paso
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
         setErrorGps(null);
-        // Cada vez que el celular detecta movimiento, actualiza tu estado al instante
         setUserLocation({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           accuracy: position.coords.accuracy,
         });
       },
-      (error) => {
-        console.error("Error obteniendo la ubicación:", error.message);
-        setUserLocation(null);
-        setUbicacionDetectada(null);
-        setGuiaUbicacion(null);
-
-        let mensajeAmigable = "Error desconocido de GPS.";
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            mensajeAmigable = "Permiso denegado. Autoriza el GPS en tu navegador o enciende tu ubicación.";
-            break;
-          case error.POSITION_UNAVAILABLE:
-            mensajeAmigable = "Señal GPS no disponible o apagada. Enciende tu ubicación.";
-            break;
-          case error.TIMEOUT:
-            mensajeAmigable = "Tiempo de espera agotado buscando señal.";
-            break;
-        }
-
-        setErrorGps(mensajeAmigable);
-
-        // Opcional: También puedes mostrar el toast aquí
-        //toast({ title: 'Atención', description: mensajeAmigable, variant: 'destructive' });
-      },
+      (error) => manejarErrorGps(error),
       opcionesGPS
     );
-    return () => {
-      navigator.geolocation.clearWatch(watchId);
-    };
-  }, [intento]);
 
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [intento, manejarErrorGps]);
+
+  // Calcular la geocerca (Distancia y Guía)
   useEffect(() => {
-    if (userLocation && ubicacionesValidas.length > 0) {
-      let encontrada: ConfigUbicacion | null = null;
-      let masCercana: ConfigUbicacion | null = null;
-      let distanciaMinima = Infinity;
+    if (!userLocation || ubicacionesValidas.length === 0) return;
 
-      for (const ubi of ubicacionesValidas) {
-        const distancia = calcularDistanciaMetros(userLocation.latitude, userLocation.longitude, ubi.latitud, ubi.longitud);
+    let encontrada: ConfigUbicacion | null = null;
+    let masCercana: ConfigUbicacion | null = null;
+    let distanciaMinima = Infinity;
 
-        // Si está dentro de alguna, nos detenemos
-        if (distancia <= ubi.radio_permitido) {
-          encontrada = ubi;
-          //break;
-        }
+    for (const ubi of ubicacionesValidas) {
+      const distancia = calcularDistanciaMetros(userLocation.latitude, userLocation.longitude, ubi.latitud, ubi.longitud);
 
-        // Si no, vamos guardando cuál es la que le queda más cerca
-        if (distancia < distanciaMinima) {
-          distanciaMinima = distancia;
-          masCercana = ubi;
-        }
+      if (distancia <= ubi.radio_permitido) {
+        encontrada = ubi;
       }
 
-      setUbicacionDetectada(encontrada);
-
-      // Si no encontró ninguna válida, calculamos la guía hacia la más cercana
-      if (!encontrada && masCercana) {
-        const metrosFaltantes = Math.ceil(distanciaMinima - masCercana.radio_permitido);
-        const direccion = calcularRumbo(
-          userLocation.latitude,
-          userLocation.longitude,
-          masCercana.latitud,
-          masCercana.longitud
-        );
-
-        // ¡Aquí está la magia! Solo agregamos el nombre de la ubicación al string
-        setGuiaUbicacion(
-          `Acércate ${metrosFaltantes}m al ${direccion} para entrar en el rango de ${masCercana.nombre_ubicacion}`
-        );
-      } else {
-        setGuiaUbicacion(null);
+      if (distancia < distanciaMinima) {
+        distanciaMinima = distancia;
+        masCercana = ubi;
       }
     }
+
+    setUbicacionDetectada(encontrada);
+
+    if (!encontrada && masCercana) {
+      const metrosFaltantes = Math.ceil(distanciaMinima - masCercana.radio_permitido);
+      const direccion = calcularRumbo(
+        userLocation.latitude, userLocation.longitude, masCercana.latitud, masCercana.longitud
+      );
+      setGuiaUbicacion(`Acércate ${metrosFaltantes}m al ${direccion} para entrar en el rango de ${masCercana.nombre_ubicacion}`);
+    } else {
+      setGuiaUbicacion(null);
+    }
   }, [userLocation, ubicacionesValidas]);
-
-  useEffect(() => {
-    const pingGps = setInterval(() => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          () => {
-            // Si responde bien, no hacemos nada. 
-            // El watchPosition principal se encarga de actualizar las coordenadas.
-          },
-          (error) => {
-            // ¡Ajá! El celular apagó el GPS en silencio. Lo atrapamos aquí.
-            setUserLocation(null);
-            setUbicacionDetectada(null);
-            setGuiaUbicacion(null);
-
-            let mensajeAmigable = "Error desconocido de GPS.";
-            switch (error.code) {
-              case error.PERMISSION_DENIED:
-                mensajeAmigable = "Permiso denegado. Autoriza el GPS.";
-                break;
-              case error.POSITION_UNAVAILABLE:
-                mensajeAmigable = "Señal GPS apagada o sin alcance.";
-                break;
-              case error.TIMEOUT:
-                mensajeAmigable = "Tiempo agotado buscando señal.";
-                break;
-            }
-            setErrorGps(mensajeAmigable);
-          },
-          // Le damos solo 3 segundos para responder a este ping rápido
-          { enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }
-        );
-      }
-    }, 5000); // Se ejecuta cada 5 segundos
-
-    return () => clearInterval(pingGps);
-  }, []);
 
   return {
     userLocation,
