@@ -72,6 +72,9 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
       },
       (error) => {
         console.error("Error obteniendo la ubicación:", error.message);
+        setUserLocation(null);
+        setUbicacionDetectada(null);
+        setGuiaUbicacion(null);
 
         let mensajeAmigable = "Error desconocido de GPS.";
         switch (error.code) {
