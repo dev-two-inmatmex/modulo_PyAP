@@ -33,17 +33,17 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
 
     // Si tenemos un error de GPS (ej. está apagado), iniciamos un temporizador
     if (errorGps) {
-        intervalo = setInterval(() => {
-            console.log("Buscando señal GPS en segundo plano...");
-            reintentarGps(); // Forzamos el reinicio del watchPosition
-        }, 5000); // 5000 milisegundos = 5 segundos
+      intervalo = setInterval(() => {
+        console.log("Buscando señal GPS en segundo plano...");
+        reintentarGps(); // Forzamos el reinicio del watchPosition
+      }, 5000); // 5000 milisegundos = 5 segundos
     }
 
     // Limpieza: Si el GPS ya se conectó (errorGps es null) o el componente se desmonta, apagamos el temporizador
     return () => {
-        if (intervalo) clearInterval(intervalo);
+      if (intervalo) clearInterval(intervalo);
     };
-}, [errorGps, reintentarGps]);
+  }, [errorGps, reintentarGps]);
 
   useEffect(() => {
     // 1. Verificamos que el navegador/celular soporte GPS
@@ -145,6 +145,43 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
     }
   }, [userLocation, ubicacionesValidas]);
 
+  useEffect(() => {
+    const pingGps = setInterval(() => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          () => {
+            // Si responde bien, no hacemos nada. 
+            // El watchPosition principal se encarga de actualizar las coordenadas.
+          },
+          (error) => {
+            // ¡Ajá! El celular apagó el GPS en silencio. Lo atrapamos aquí.
+            setUserLocation(null);
+            setUbicacionDetectada(null);
+            setGuiaUbicacion(null);
+
+            let mensajeAmigable = "Error desconocido de GPS.";
+            switch (error.code) {
+              case error.PERMISSION_DENIED:
+                mensajeAmigable = "Permiso denegado. Autoriza el GPS.";
+                break;
+              case error.POSITION_UNAVAILABLE:
+                mensajeAmigable = "Señal GPS apagada o sin alcance.";
+                break;
+              case error.TIMEOUT:
+                mensajeAmigable = "Tiempo agotado buscando señal.";
+                break;
+            }
+            setErrorGps(mensajeAmigable);
+          },
+          // Le damos solo 3 segundos para responder a este ping rápido
+          { enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }
+        );
+      }
+    }, 5000); // Se ejecuta cada 5 segundos
+
+    return () => clearInterval(pingGps);
+  }, []);
+  
   return {
     userLocation,
     ubicacionDetectada,
