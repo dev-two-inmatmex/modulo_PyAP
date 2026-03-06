@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { SupabaseClient, Session, AuthChangeEvent } from '@supabase/supabase-js';
 
@@ -18,6 +19,8 @@ export function SupabaseProviderClient({ children }: { children: React.ReactNode
   const [supabase] = useState(() => createClient());
   const [session, setSession] = useState<Session | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const router = useRouter();
+
 
   useEffect(() => {
     // 3. Cargamos la sesión UNA SOLA VEZ al montar la aplicación
@@ -34,13 +37,14 @@ export function SupabaseProviderClient({ children }: { children: React.ReactNode
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
         (_event: AuthChangeEvent, session: Session | null) => {
           setSession(session);
+          router.refresh();
         }
       );
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [supabase, router]);
 
   // Evitamos renderizar la app hasta que Supabase esté 100% "despierto" y con los tokens listos
   if (!isReady) {
@@ -58,7 +62,7 @@ export function SupabaseProviderClient({ children }: { children: React.ReactNode
 export const useSupabase = () => {
   const context = useContext(SupabaseContext);
   if (context === undefined) {
-    throw new Error('useSupabase debe usarse dentro de un SupabaseProvider');
+    throw new Error('useSupabase debe usarse dentro de un SupabaseProviderClient');
   }
   return context;
 };
