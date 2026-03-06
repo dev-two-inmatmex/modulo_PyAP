@@ -99,8 +99,8 @@ export function UbicacionesTab({ ubicacionInicial, onFinished }: UbicacionesTabP
           <Label htmlFor="radius-slider">Radio del área ({radius} metros)</Label>
           <Slider
             id="radius-slider"
-            min={50}
-            max={1000}
+            min={30}
+            max={100}
             step={10}
             value={[radius]}
             onValueChange={(value) => setRadius(value[0])}
