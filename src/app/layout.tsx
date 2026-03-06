@@ -4,7 +4,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
 import Header from "@/components/Header";
 import { Toaster } from "@/components/ui/toaster";
-import { SupabaseProvider } from '@/components/providers/SupabaseProvider';
+import { SupabaseProviderClient } from '@/components/providers/SupabaseProviderClient';
 import "./globals.css";
 
 import { getAvatarsMap } from '@/utils/storage';
@@ -20,11 +20,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const {data: { user }} = await supabase.auth.getUser();
+  const requiereCambioPassword = user?.user_metadata?.requires_password_change === true
+  if (!user || requiereCambioPassword) {
     return (
       <html lang="es" suppressHydrationWarning>
         <head>
@@ -40,10 +38,10 @@ export default async function RootLayout({
           />
         </head>
         <body className="font-body antialiased">
-          <SupabaseProvider>
+          <SupabaseProviderClient>
             {children}
             <Toaster />
-          </SupabaseProvider>
+          </SupabaseProviderClient>
         </body>
       </html>
     );
@@ -90,7 +88,7 @@ export default async function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <SupabaseProvider>
+        <SupabaseProviderClient>
           <SidebarProvider>
             <AppSidebar userRoles={roles} user={userData} />
             <SidebarInset>
@@ -99,7 +97,7 @@ export default async function RootLayout({
             </SidebarInset>
           </SidebarProvider>
           <Toaster />
-        </SupabaseProvider>
+        </SupabaseProviderClient>
       </body>
     </html>
   );

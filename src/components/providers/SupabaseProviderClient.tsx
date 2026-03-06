@@ -13,7 +13,7 @@ type SupabaseContextType = {
 // 2. Creamos el contexto
 const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
 
-export function SupabaseProvider({ children }: { children: React.ReactNode }) {
+export function SupabaseProviderClient({ children }: { children: React.ReactNode }) {
   // Inicializamos el cliente una sola vez
   const [supabase] = useState(() => createClient());
   const [session, setSession] = useState<Session | null>(null);

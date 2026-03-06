@@ -1,6 +1,6 @@
 // src/hooks/useRealtimeAsistencia.ts
 import { useState, useEffect } from 'react';
-import { useSupabase } from '@/components/providers/SupabaseProvider'; // Ajusta la ruta a tu Provider
+import { useSupabase } from '@/components/providers/SupabaseProviderClient'; // Ajusta la ruta a tu Provider
 import type { RegistroChequeo } from '@/services/types';
 
 export function useRealtimeAsistencia(registrosIniciales: RegistroChequeo[]) {

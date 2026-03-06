@@ -29,7 +29,7 @@ import {
   ClipboardList,
   Eye,
   ChevronDown,
-  Building,
+  Building, Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -56,9 +56,9 @@ const navItems: NavItem[] = [
     roles: ['Administrador'],
     subItems: [
       {
-        label: 'Personal',
-        href: '/administracion/personal',
-        icon: Users,
+        label: 'Configuraciones',
+        href: '/administracion/configuraciones',
+        icon: Settings,
         roles: ['Administrador'],
       },
     ],
