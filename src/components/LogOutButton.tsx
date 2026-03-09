@@ -20,8 +20,6 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 export default function LogoutButton() {
-  //const [isPending, startTransition] = useTransition();
-  //const { state } = useSidebar();
   const { supabase } = useSupabase();
   const router = useRouter();
   const handleLogout = async () => {

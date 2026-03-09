@@ -33,10 +33,22 @@ export default async function ChecadorPage() {
 
   if (horarioError) console.error("Error fetching horario:", horarioError.message);
 
-  const { data: ubicaciones } = await supabase
+  const isAdmin = user.user_metadata?.is_admin === true;
+
+  let queryUbicaciones = supabase
+    .from('config_ubicaciones')
+    .select('id, nombre_ubicacion, latitud, longitud, radio_permitido, tipo');
+
+  if (!isAdmin) {
+    queryUbicaciones = queryUbicaciones.eq("tipo", 'produccion');
+  }
+  const { data: ubicaciones} = await queryUbicaciones;
+
+
+  /*const { data: ubicaciones } = await supabase
     .from('config_ubicaciones')
     .select('id, nombre_ubicacion, latitud, longitud, radio_permitido, tipo')
-    .eq("tipo", 'produccion');
+    .eq("tipo", 'produccion');*/
   
   return (
     <div className="container mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
