@@ -25,7 +25,7 @@ export default function LogoutButton() {
   const { supabase } = useSupabase();
   const router = useRouter();
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' });
     router.refresh();
   };
   /*return (
