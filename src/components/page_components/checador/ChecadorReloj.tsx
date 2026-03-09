@@ -149,7 +149,7 @@ export function ChecadorReloj({
               disabled={isPending || !userLocation || !ubicacionDetectada }
               // Le mandamos un arreglo vacío [] porque no hay biometría esta vez
               onComplete={() => handleBioSuccess([], action)}
-              segundos={5}
+              segundos={2}
             />
           )
         )}
