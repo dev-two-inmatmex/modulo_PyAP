@@ -35,6 +35,7 @@ export default function DirectorioEmpleados({
   const [busqueda, setBusqueda] = useState('');
   const [filtroPuesto, setFiltroPuesto] = useState('all');
   const [filtroArea, setFiltroArea] = useState('all');
+  const [filtroEstatus, setFiltroEstatus] = useState('all');
   const [orden, setOrden] = useState('asc');
   const [paginaActual, setPaginaActual] = useState(1);
 
@@ -60,6 +61,11 @@ export default function DirectorioEmpleados({
         (empleado) => empleado.area === filtroArea
       );
     }
+    if (filtroEstatus !== 'all') {
+      empleadosResult = empleadosResult.filter(
+        (empleado) => empleado.estatus === filtroEstatus
+      );
+    }
 
     empleadosResult.sort((a, b) => {
       if (orden === 'asc') {
@@ -71,7 +77,7 @@ export default function DirectorioEmpleados({
     });
 
     return empleadosResult;
-  }, [busqueda, filtroPuesto, filtroArea, orden, empleados]);
+  }, [busqueda, filtroPuesto, filtroArea, filtroEstatus,  orden, empleados]);
 
   const paginatedEmpleados = useMemo(() => {
     const startIndex = (paginaActual - 1) * ITEMS_PER_PAGE;
@@ -83,7 +89,7 @@ export default function DirectorioEmpleados({
 
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
         <Input
           placeholder="Buscar por nombre..."
           value={busqueda}
@@ -91,7 +97,7 @@ export default function DirectorioEmpleados({
             setBusqueda(e.target.value);
             setPaginaActual(1);
           }}
-          className="md:col-span-4"
+          className="md:col-span-5"
         />
         <Select value={filtroPuesto} onValueChange={(value) => { setFiltroPuesto(value); setPaginaActual(1); }}>
           <SelectTrigger>
@@ -115,6 +121,19 @@ export default function DirectorioEmpleados({
             {areas.map((area) => (
               <SelectItem key={area.id} value={String(area.nombre_area)}>
                 {area.nombre_area}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={filtroEstatus} onValueChange={(value) => { setFiltroEstatus (value); setPaginaActual(1); }}>
+          <SelectTrigger>
+            <SelectValue placeholder="Filtrar por Estatus" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los estatus</SelectItem>
+            {estatuses.map((estatus) => (
+              <SelectItem key={estatus.id} value={String(estatus.nombre_estatus)}>
+                {estatus.nombre_estatus}
               </SelectItem>
             ))}
           </SelectContent>

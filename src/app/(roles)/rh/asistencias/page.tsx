@@ -9,7 +9,7 @@ export default async function AsistenciasPage() {
   const supabase = await createClient();
 
   // 1. Fetch de los turnos y empleados esperados para hoy
-  const { data: turnos, error: turnosError } = await supabase
+  const { data: turnos_entrada, error: turnosError } = await supabase
     .from('vista_empleados_hora_entrada')
     .select('entrada, detalles_empleados, total_personas');
 
@@ -17,9 +17,17 @@ export default async function AsistenciasPage() {
     console.error('Error fetching turnos:', turnosError);
     return <div>Error al cargar los datos de los turnos.</div>;
   }
+  const { data: empleadoTurnoRel} = await supabase
+    .from("vista_horarios_empleados")
+    .select("id, entrada, salida_descanso, regreso_descanso, salida");
 
-  const todosLosIds = turnos?.flatMap(turno => 
-    turno.detalles_empleados.map((emp: any) => emp.empleado_id)
+    const turnosCompletosMap = (empleadoTurnoRel || []).reduce((acc, curr) => {
+      acc[curr.id] = { entrada: curr.entrada, salida: curr.salida, salida_descanso: curr.salida_descanso, regreso_descanso: curr.regreso_descanso };
+      return acc;
+    }, {} as Record<string, { entrada: string; salida: string; salida_descanso: string; regreso_descanso: string }>);
+  
+  const todosLosIds = turnos_entrada?.flatMap(turno_entrada => 
+    turno_entrada.detalles_empleados.map((emp: any) => emp.empleado_id)
   ) || [];
   const avatarUrls = await getAvatarsMap(todosLosIds);
 
@@ -38,7 +46,7 @@ export default async function AsistenciasPage() {
   }, {} as Record<string, { hora: string; estatus: string; ubicacion: string; }>);
 
   const checkedInCount = registrosHoy?.length || 0;
-  const totalEmpleadosHoy = turnos?.reduce((acc, turno) => acc + turno.total_personas, 0) || 0;
+  const totalEmpleadosHoy = turnos_entrada?.reduce((acc, turno) => acc + turno.total_personas, 0) || 0;
 /*<div className="flex-1 space-y-4 p-4 md:p-8 pt-6">*/
   return (
     <div className="container space-y-4 mx-auto py-1">
@@ -63,7 +71,7 @@ export default async function AsistenciasPage() {
 
       <div className="mt-8">
         <h2 className="text-2xl font-bold tracking-tight mb-4">Asistencia por Turno</h2>
-        <TablasTurnos turnos={turnos || []} avatarUrls={avatarUrls} asistencias={asistenciasMap} />
+        <TablasTurnos turnos={turnos_entrada || []} avatarUrls={avatarUrls} asistencias={asistenciasMap} turnoCompleto={turnosCompletosMap} />
       </div>
     </div>
   );

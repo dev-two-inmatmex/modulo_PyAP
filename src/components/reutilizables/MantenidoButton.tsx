@@ -56,7 +56,7 @@ export function BotonMantenido({ label, onComplete, disabled, segundos = 5 }: Bo
     >
       {/* Esta es la barra de progreso oscura que va llenando el botón */}
       <div
-        className="absolute left-0 top-0 bottom-0 bg-blue-800 transition-all duration-100 ease-linear"
+        className="absolute left-0 top-0 bottom-0 bg-green-800 transition-all duration-100 ease-linear"
         style={{ width: `${progreso}%` }}
       />
       

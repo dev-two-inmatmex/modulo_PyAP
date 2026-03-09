@@ -7,6 +7,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
   Table,
   TableBody,
   TableCell,
@@ -18,7 +23,7 @@ import { UserAvatar } from "@/components/reutilizables/UserAvatar";
 import { Clock, CheckCircle2, AlertCircle, XCircle, MinusCircle } from "lucide-react";
 
 interface EmpleadoDetalle {
-  empleado_id: string;
+  empleado_id: number;
   nombre_completos: string;
 }
 
@@ -28,10 +33,12 @@ interface TurnoData {
   total_personas: number;
 }
 
+
 interface TablasTurnosProps {
   turnos: TurnoData[];
   avatarUrls: Record<string, string>;
   asistencias: Record<string, { hora: string; estatus: string; ubicacion: string }>;
+  turnoCompleto: Record<string, { entrada: string; salida: string; salida_descanso: string; regreso_descanso: string }>;
 }
 
 const formatearHora = (hora: string) => {
@@ -81,7 +88,7 @@ const getEstatusUI = (storedStatus: string | null) => {
   }
 };
 
-export function TablasTurnos({ turnos, avatarUrls, asistencias }: TablasTurnosProps) {
+export function TablasTurnos({ turnos, avatarUrls, asistencias, turnoCompleto }: TablasTurnosProps) {
   if (!turnos || turnos.length === 0) {
     return <p>No hay datos de turnos para mostrar.</p>;
   }
@@ -115,9 +122,10 @@ export function TablasTurnos({ turnos, avatarUrls, asistencias }: TablasTurnosPr
                 <TableBody>
                   {turno.detalles_empleados.map((empleado) => {
                     const asistencia = asistencias[empleado.empleado_id];
+                    const turnohyd = turnoCompleto[empleado.empleado_id];
                     const estatusUI = getEstatusUI(asistencia ? asistencia.estatus : null);
                     return (
-                      <TableRow key={empleado.empleado_id}>
+                      /*<TableRow key={empleado.empleado_id}>
                         <TableCell>
                           <UserAvatar
                             url={avatarUrls[empleado.empleado_id]}
@@ -138,7 +146,44 @@ export function TablasTurnos({ turnos, avatarUrls, asistencias }: TablasTurnosPr
                         <TableCell>
                           {asistencia ? asistencia.ubicacion : '--'}
                         </TableCell>
-                      </TableRow>
+                      </TableRow>*/
+                      <HoverCard openDelay={10} closeDelay={100}>
+                        <HoverCardTrigger asChild>
+                          <TableRow key={empleado.empleado_id}>
+                            <TableCell>
+                              <UserAvatar
+                                url={avatarUrls[empleado.empleado_id]}
+                                name={empleado.nombre_completos}
+                                className="w-10 h-10"
+                              />
+                            </TableCell>
+                            <TableCell>{empleado.nombre_completos}</TableCell>
+                            <TableCell className="text-slate-600 font-mono text-sm">
+                              {asistencia ? formatearHora(asistencia.hora) : '--:--'}
+                            </TableCell>
+                            <TableCell>
+                              <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold border ${estatusUI.clase}`}>
+                                {estatusUI.icono}
+                                {estatusUI.texto}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              {asistencia ? asistencia.ubicacion : '--'}
+                            </TableCell>
+                          </TableRow>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="flex w-64 flex-col gap-0.5">
+                          <div className="flex items-center gap-1">
+                            {turnohyd?.entrada && (
+                              <>
+                                <span>Entrada: {formatearHora(turnohyd.entrada)}</span>
+                                <span>salida: {formatearHora(turnohyd.salida)}</span>
+                              </>
+                              
+                              )}
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
                     );
                   })}
                 </TableBody>
