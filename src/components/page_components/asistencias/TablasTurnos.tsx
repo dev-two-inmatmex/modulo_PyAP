@@ -7,10 +7,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card"
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import {
   Table,
   TableBody,
@@ -32,7 +35,6 @@ interface TurnoData {
   detalles_empleados: EmpleadoDetalle[];
   total_personas: number;
 }
-
 
 interface TablasTurnosProps {
   turnos: TurnoData[];
@@ -147,9 +149,9 @@ export function TablasTurnos({ turnos, avatarUrls, asistencias, turnoCompleto }:
                           {asistencia ? asistencia.ubicacion : '--'}
                         </TableCell>
                       </TableRow>*/
-                      <HoverCard openDelay={10} closeDelay={100}>
-                        <HoverCardTrigger asChild>
-                          <TableRow key={empleado.empleado_id}>
+                      <Popover key={empleado.empleado_id}>
+                        <PopoverTrigger asChild>
+                          <TableRow className="cursor-pointer hover:bg-slate-50/50">
                             <TableCell>
                               <UserAvatar
                                 url={avatarUrls[empleado.empleado_id]}
@@ -171,19 +173,37 @@ export function TablasTurnos({ turnos, avatarUrls, asistencias, turnoCompleto }:
                               {asistencia ? asistencia.ubicacion : '--'}
                             </TableCell>
                           </TableRow>
-                        </HoverCardTrigger>
-                        <HoverCardContent className="flex w-64 flex-col gap-0.5">
-                          <div className="flex items-center gap-1">
-                            {turnohyd?.entrada && (
+                        </PopoverTrigger>
+                        <PopoverContent align="center">
+                          <PopoverHeader>
+                            <PopoverTitle>Turno Completo</PopoverTitle>
+                            <div >
+                            {turnohyd ? (
                               <>
-                                <span>Entrada: {formatearHora(turnohyd.entrada)}</span>
-                                <span>salida: {formatearHora(turnohyd.salida)}</span>
+                                <div >
+                                  <span>Entrada: </span>
+                                  <span>{formatearHora(turnohyd.entrada)}</span>
+                                </div>
+                                <div >
+                                  <span>Salida Descanso: </span>
+                                  <span>{formatearHora(turnohyd.salida_descanso)}</span>
+                                </div>
+                                <div >
+                                  <span>Regreso Descanso: </span>
+                                  <span>{formatearHora(turnohyd.regreso_descanso)}</span>
+                                </div>
+                                <div >
+                                  <span >Salida: </span>
+                                  <span>{formatearHora(turnohyd.salida)}</span>
+                                </div>
                               </>
-                              
-                              )}
-                          </div>
-                        </HoverCardContent>
-                      </HoverCard>
+                            ) : (
+                              <span>Sin horario asignado</span>
+                            )}
+                            </div>
+                          </PopoverHeader>
+                        </PopoverContent>
+                      </Popover>
                     );
                   })}
                 </TableBody>
