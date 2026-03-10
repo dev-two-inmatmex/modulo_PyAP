@@ -3,6 +3,7 @@ import { ChecadorReloj } from "@/components/page_components/checador/ChecadorRel
 import { ChecadorHistorial } from "@/components/page_components/checador/ChecadorHistorial";
 import type { RegistroChequeo} from "@/services/types";
 
+
 export default async function ChecadorPage() {
   const supabase = await createClient();
   const {data: { user }} = await supabase.auth.getUser();

@@ -31,7 +31,7 @@ export async function addUser(prevState: any, formData: FormData) {
   // 1. Create user in auth.users
   const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
     email: data.email,
-    password: 'password123',
+    password: 'inmatmex123',
     email_confirm: true,// IMPORTANT: This is insecure. Use a secure password generation method.
     user_metadata: {
       requires_password_change: true // <- Aquí está la clave
@@ -200,5 +200,55 @@ export async function getEmployeeDetails(employeeId: string) {
 
   } catch (error: any) {
     return { success: false, message: error.message, data: null };
+  }
+}
+
+
+export async function resetUserPassword(userId: string): Promise<{ 
+  success: boolean; 
+  tempPassword?: string; 
+  message?: string; 
+  error?: string 
+}> {
+  const supabaseAdmin = createAdminClient();
+  const tempPassword = `temp_${Math.random().toString(36).slice(-6)}A1!`
+
+  try {
+    // PASO 1: Intentamos actualizar la contraseña y el metadata
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+      userId,
+      { 
+        password: tempPassword,
+        user_metadata: { requires_password_change: true }
+      }
+    )
+    
+    // Si falla aquí, el mensaje de error dirá "Error en Auth"
+    if (updateError) {
+      console.error('Error en updateUserById:', updateError);
+      return { success: false, error: `[Error en Auth]: ${updateError.message}` }
+    }
+
+    // PASO 2: Intentamos cerrar las sesiones
+    const { error: rpcError } = await supabaseAdmin.rpc(
+      'admin_revoke_user_sessions', 
+      { target_user_id: userId }
+    )
+    
+    // Si falla aquí, el mensaje de error dirá "Error en RPC"
+    if (rpcError) {
+      console.error('Error en RPC:', rpcError);
+      return { success: false, error: `[Error en RPC]: ${rpcError.message}` }
+    }
+
+    return { 
+      success: true, 
+      tempPassword: tempPassword,
+      message: 'Contraseña reseteada y sesiones cerradas.' 
+    }
+
+  } catch (error: any) {
+    console.error('Error general:', error)
+    return { success: false, error: `[Error Inesperado]: ${error.message}` }
   }
 }

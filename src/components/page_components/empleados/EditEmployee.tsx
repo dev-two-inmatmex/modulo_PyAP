@@ -5,13 +5,15 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
+import { ShieldAlert } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose
+  DialogClose,
+  DialogDescription
 } from '@/components/ui/dialog';
 import {
   Tabs,
@@ -29,13 +31,14 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Vista_Lista_Empleados, Vista_Empleado_Datos_Editables, Telefono, EmployeeCardProps } from '@/services/types';
-import { getEmployeeDetails, updateEmployeeAddress, updateEmployeePhones, updateAvatar } from '@/app/(roles)/rh/empleados/actions';
+import { Vista_Lista_Empleados, Vista_Empleado_Datos_Editables, Telefono } from '@/services/types';
+import { getEmployeeDetails, updateEmployeeAddress, updateEmployeePhones, updateAvatar, resetUserPassword } from '@/app/(roles)/rh/empleados/actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from "@/components/ui/skeleton";
 import Cropper, { ReactCropperElement } from "react-cropper";
 import "cropperjs/dist/cropper.css";
-import {useAnalizadorFacial} from '@/hooks/useAnalizadorFacial';
+import { useAnalizadorFacial } from '@/hooks/useAnalizadorFacial';
+import { ResetPasswordButton } from '@/components/ResetPasswordButton';
 
 // Zod Schemas
 const AddressSchema = z.object({
@@ -77,7 +80,7 @@ export function EditEmployee({ empleado, avatarUrl }: { empleado: Vista_Lista_Em
       setDetailedEmployee(null);
     }
   }, [open, empleado.id, toast, detailedEmployee]);
-  
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -86,7 +89,10 @@ export function EditEmployee({ empleado, avatarUrl }: { empleado: Vista_Lista_Em
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Editar Perfil de {empleado.nombre_completo}</DialogTitle>
+          <DialogTitle>Actualizar Datos de {empleado.nombre_completo}</DialogTitle>
+          <DialogDescription>
+            Actualiza la fotografía, dirección y números de contacto del colaborador.
+          </DialogDescription>
         </DialogHeader>
         {isLoading ? (
           <div className="space-y-4 mt-4 py-4">
@@ -103,7 +109,7 @@ export function EditEmployee({ empleado, avatarUrl }: { empleado: Vista_Lista_Em
 }
 // Form Component (Internal)
 function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: Vista_Lista_Empleados, edit_empleado: Vista_Empleado_Datos_Editables, avatarUrl?: string, setOpen: (open: boolean) => void }) {
-  const [activeTab, setActiveTab] = useState("picture");
+  //const [activeTab, setActiveTab] = useState("picture");
   const { toast } = useToast();
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -142,7 +148,7 @@ function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: V
   const handleAvatarSubmit = async () => {
     const cropper = cropperRef.current?.cropper;
     if (!cropper) return;
-    
+
     const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
     const { success, blob, descriptor } = await analyzeFace(canvas, edit_empleado.id);
     if (success && blob && descriptor) {
@@ -150,9 +156,9 @@ function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: V
       formData.append('avatar', blob);
       formData.append('employeeId', edit_empleado.id);
       formData.append('faceDescriptor', JSON.stringify(descriptor));
-      
+
       const result = await updateAvatar(formData);
-      
+
       if (result.success) {
         toast({ title: "Éxito", description: "Perfil y datos faciales actualizados." });
         setOpen(false);
@@ -160,54 +166,6 @@ function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: V
         toast({ variant: "destructive", title: "Error", description: result.message });
       }
     }
-  
-    /*setIsProcessing(true);
-    //toast({ title: "Analizando rostro", description: "La IA está trabajando en segundo plano..." });
-    const loadingToast = toast({ title: "Procesando", description: "Analizando rostro y optimizando imagen..." });
-    try {
-      // 1. Obtener el recorte del Cropper
-      const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
-      const imageBitmap = await createImageBitmap(canvas);
-      // 2. Ejecutar el Worker (Hilo secundario)
-      const worker = new Worker('/workers/human-worker.js', { type: 'module' });
-      worker.postMessage({ imageBitmap, employeeId: edit_empleado.id, mode: 'static' }, [imageBitmap]);
-      worker.onmessage = async (e) => {
-        const { success, descriptor, employeeId, error } = e.data;
-        worker.terminate();
-        if (!success) {
-          toast({ variant: "destructive", title: "Error de IA", description: error });
-          setIsProcessing(false);
-          return;
-        }
-        // 3. Convertir a Blob y enviar a Server Action
-        canvas.toBlob(async (blob) => {
-          if (!blob) return;
-          const formData = new FormData();
-          formData.append('avatar', blob);
-          formData.append('employeeId', employeeId);
-          formData.append('faceDescriptor', JSON.stringify(descriptor));
-          const result = await updateAvatar(formData);
-          if (result.success) {
-            toast({ title: "Éxito", description: "Perfil y datos faciales actualizados." });
-            setOpen(false);
-          } else {
-            toast({ variant: "destructive", title: "Error", description: result.message });
-          }
-          setIsProcessing(false);
-        }, 'image/webp', 0.85);
-      };
-
-      worker.onerror = (err) => {
-        console.error("Worker error:", err);
-        setIsProcessing(false);
-        toast({ variant: "destructive", title: "Error", description: /*"Fallo en el hilo de procesamiento."err.message });
-      };
-
-    } catch (err) {
-      console.error(err);
-      setIsProcessing(false);
-      toast({ variant: "destructive", title: "Error", description: "Error procesando la IA facial." });
-    }*/
 
   };
 
@@ -231,13 +189,14 @@ function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: V
     }
   };
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab}>
-      <TabsList className="grid w-full grid-cols-3">
+    <Tabs defaultValue="picture" className="grid w-full ">
+      {/*<TabsList className="grid w-full grid-cols-3">*/}
+      <TabsList>
         <TabsTrigger value="picture">Foto</TabsTrigger>
         <TabsTrigger value="address">Dirección</TabsTrigger>
         <TabsTrigger value="phones">Teléfonos</TabsTrigger>
+        <TabsTrigger value="user">Usuario</TabsTrigger>
       </TabsList>
-
       <TabsContent value="picture" className="mt-4">
         <div className="flex flex-col items-center space-y-4">
           {!selectedFile ? (
@@ -275,7 +234,7 @@ function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: V
           <div className="flex justify-end w-full space-x-2 mt-4 border-t pt-4">
             <DialogClose asChild><Button variant="ghost">Cancelar</Button></DialogClose>
             <Button onClick={handleAvatarSubmit} disabled={!selectedFile || isProcessing}>
-            {isProcessing ? "Procesando IA..." : "Guardar Cambios"}
+              {isProcessing ? "Procesando IA..." : "Guardar Cambios"}
             </Button>
           </div>
         </div>
@@ -314,6 +273,15 @@ function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: V
             </div>
           </form>
         </Form>
+      </TabsContent>
+      <TabsContent value="user" className="mt-4">
+          <p className="text-sm text-muted-foreground mb-4">
+            Si el empleado olvidó su contraseña o sospecha que fue comprometida, puedes generar una nueva contraseña temporal. Esto cerrará todas sus sesiones activas inmediatamente.
+          </p>
+          <ResetPasswordButton
+            employeeId={edit_empleado.id}
+            employeeName={empleado.nombre_completo}
+          />
       </TabsContent>
     </Tabs>
   );

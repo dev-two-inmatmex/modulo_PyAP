@@ -1,4 +1,4 @@
-'use client';
+/*'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -59,6 +59,71 @@ export function SupabaseProviderClient({ children }: { children: React.ReactNode
 }
 
 // 5. Hook personalizado para usarlo fácilmente en cualquier componente
+export const useSupabase = () => {
+  const context = useContext(SupabaseContext);
+  if (context === undefined) {
+    throw new Error('useSupabase debe usarse dentro de un SupabaseProviderClient');
+  }
+  return context;
+};*/
+'use client';
+
+import { createContext, useContext, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import type { SupabaseClient, Session } from '@supabase/supabase-js';
+
+type SupabaseContextType = {
+  supabase: SupabaseClient;
+  session: Session | null;
+};
+
+const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
+
+export function SupabaseProviderClient({ 
+  children, 
+  serverSession 
+}: { 
+  children: React.ReactNode, 
+  serverSession: Session | null 
+}) {
+  
+  const [supabase] = useState(() => createClient());
+  // 1. Mantenemos tu estado inicial
+  const [session, setSession] = useState<Session | null>(serverSession); 
+  const router = useRouter();
+
+  // 2. NUEVO: Mantenemos el estado local sincronizado si el servidor manda una sesión nueva
+  useEffect(() => {
+    setSession(serverSession);
+  }, [serverSession]);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, newSession) => {
+        setSession(newSession);
+        
+        // 3. CORRECCIÓN: La forma más segura de saber si Next.js necesita refrescar 
+        // es comparar si el token del cliente es diferente al que tiene el servidor.
+        // Esto cubre SIGNED_IN, SIGNED_OUT, y USER_UPDATED sin causar loops infinitos.
+        if (newSession?.access_token !== serverSession?.access_token) {
+          router.refresh();
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase, serverSession, router]); // <-- Importante agregar serverSession a las dependencias
+
+  return (
+    <SupabaseContext.Provider value={{ supabase, session }}>
+      {children}
+    </SupabaseContext.Provider>
+  );
+}
+
 export const useSupabase = () => {
   const context = useContext(SupabaseContext);
   if (context === undefined) {
