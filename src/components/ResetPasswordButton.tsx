@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { AlertTriangle, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { resetUserPassword} from '@/app/(roles)/rh/empleados/actions'; // Ajusta tu ruta real
+import { resetUserPassword } from '@/app/(roles)/rh/empleados/actions'; // Ajusta tu ruta real
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,25 +30,37 @@ export function ResetPasswordButton({ employeeId, employeeName }: ResetPasswordB
   const handlePasswordReset = async () => {
     setIsResettingPassword(true);
     setTempPassword(null);
-    
-    // Llamada al Server Action
-    const result = await resetUserPassword(employeeId);
-    
-    setIsResettingPassword(false);
 
-    if (result.success && result.tempPassword) {
-      setTempPassword(result.tempPassword);
-      toast({
-        title: "Contraseña reseteada",
-        description: "Se generó una nueva contraseña temporal exitosamente.",
-        duration: 5000,
-      });
-    } else {
+    try {
+      // Llamada al Server Action
+      const result = await resetUserPassword(employeeId);
+
+      if (result.success && result.tempPassword) {
+        setTempPassword(result.tempPassword);
+        toast({
+          title: "Contraseña reseteada",
+          description: "Se generó una nueva contraseña temporal exitosamente.",
+          duration: 5000,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error al resetear",
+          description: result.error || "Ocurrió un error inesperado.",
+        });
+      }
+    } catch (error: any) {
+      // Si el servidor "explota" (ej. Error 500), cae aquí
+      console.error("Fallo crítico al llamar al servidor:", error);
       toast({
         variant: "destructive",
-        title: "Error al resetear",
-        description: result.error || "Ocurrió un error inesperado.",
+        title: "Error de Conexión o Servidor",
+        description: "Revisa los logs de tu servidor de producción.",
       });
+    } finally {
+      // El bloque finally SIEMPRE se ejecuta, haya error o no.
+      // Esto asegura que el botón deje de cargar pase lo que pase.
+      setIsResettingPassword(false);
     }
   };
 
@@ -78,8 +90,8 @@ export function ResetPasswordButton({ employeeId, employeeName }: ResetPasswordB
             Copiar
           </Button>
         </div>
-        <Button 
-          variant="link" 
+        <Button
+          variant="link"
           className="px-0 text-sm h-auto text-muted-foreground"
           onClick={() => setTempPassword(null)}
         >
@@ -105,13 +117,13 @@ export function ResetPasswordButton({ employeeId, employeeName }: ResetPasswordB
             ¿Estás absolutamente seguro?
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción generará una nueva contraseña temporal y <strong>cerrará todas las sesiones activas</strong> de {employeeName} en todos los dispositivos. 
+            Esta acción generará una nueva contraseña temporal y <strong>cerrará todas las sesiones activas</strong> de {employeeName} en todos los dispositivos.
             El empleado no podrá entrar hasta que le proporciones la nueva clave.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction 
+          <AlertDialogAction
             onClick={(e) => {
               e.preventDefault();
               handlePasswordReset();
