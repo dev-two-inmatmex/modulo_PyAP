@@ -1,44 +1,29 @@
 // src/hooks/useRealtimeAsistencia.ts
-import { useState, useEffect } from 'react';
-import { useSupabase } from '@/components/providers/SupabaseProviderClient'; // Ajusta la ruta a tu Provider
-import type { RegistroChequeo } from '@/services/types';
+'use client';
 
-export function useRealtimeAsistencia(registrosIniciales: RegistroChequeo[]) {
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSupabase } from '@/components/providers/SupabaseProviderClient';
+
+export function RealtimeAsistencias() {
   const { supabase } = useSupabase();
-  const [registros, setRegistros] = useState<RegistroChequeo[]>(registrosIniciales);
+  const router = useRouter();
 
   useEffect(() => {
-    setRegistros(registrosIniciales);
-  }, [registrosIniciales]);
-
-  useEffect(() => {
+    // Nos suscribimos a los cambios de la tabla base
     const channel = supabase
-      // Nombre de canal global para todos los que vean este panel
-      .channel('realtime-asistencia-global') 
+      .channel(`cambios-asistencias-${Math.random()}`)
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'registro_checador',
+        { 
+          event: 'INSERT', // 1. Solo escuchamos cuando se CREA un registro nuevo
+          schema: 'public', 
+          table: 'registro_checador', // <-- PON AQUÍ EL NOMBRE DE TU TABLA BASE
+          filter: 'tipo_registro=eq.entrada'
         },
-        (payload: any) => {
-          if (payload.eventType === 'INSERT') {
-            const nuevoRegistro = payload.new as RegistroChequeo;
-            setRegistros((prev) => {
-              if (prev.some((r) => r.id === nuevoRegistro.id)) return prev;
-              // Lo agregamos al principio para que los más recientes salgan arriba
-              return [nuevoRegistro, ...prev]; 
-            });
-          }
-          if (payload.eventType === 'DELETE') {
-            const idBorrado = payload.old.id;
-            setRegistros((prev) => prev.filter((r) => r.id !== idBorrado));
-          }
-          if (payload.eventType === 'UPDATE') {
-             const registroActualizado = payload.new as RegistroChequeo;
-             setRegistros((prev) => prev.map(r => r.id === registroActualizado.id ? registroActualizado : r));
-          }
+        () => {
+          // Cuando alguien checa, forzamos a Next.js a re-ejecutar el page.tsx (Server)
+          router.refresh();
         }
       )
       .subscribe();
@@ -46,7 +31,7 @@ export function useRealtimeAsistencia(registrosIniciales: RegistroChequeo[]) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase]);
+  }, [supabase, router]);
 
-  return registros;
+  return null; // Este componente no renderiza nada visualmente
 }

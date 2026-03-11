@@ -217,7 +217,7 @@ export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatus
             <SelectField
               control={form.control}
               name="id_ext_horario"
-              label="Ubicación de Trabajo"
+              label="Horario"
               placeholder="Seleccione un horario"
               options={horarios.map((horario) => ({
                 id: horario.id,
