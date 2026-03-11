@@ -12,7 +12,12 @@ export default async function ChecadorPage() {
     return <div>Usuario no autenticado</div>;
   }
 
-  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+  const today = new Intl.DateTimeFormat('sv-SE', { 
+    timeZone: 'America/Mexico_City',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(new Date());
 
   const { data: registrosDeHoy, error: registrosError } = await supabase
     .from("registro_checador")

@@ -32,7 +32,12 @@ export default async function AsistenciasPage() {
   ) || [];
   const avatarUrls = await getAvatarsMap(todosLosIds);
 
-  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+  const today = new Intl.DateTimeFormat('sv-SE', { 
+    timeZone: 'America/Mexico_City',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(new Date());
   const { data: registrosHoy, error: registrosError } = await supabase
     .from('vista_registro_checador_resumida') // <-- TU NUEVA VISTA AQUÍ
     .select('id_empleado, registro, estatus, nombre_ubicacion') // Obtenemos el ID, la hora real y el estatus pre-calculado
