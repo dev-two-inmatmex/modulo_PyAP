@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { createClient } from "@/lib/supabase/server";
 import  RelojAsistencia from "@/components/page_components/asistencias/RelojAsistencia";
 import { PorcentajeAsistencia } from "@/components/page_components/asistencias/PorcentajeAsistencia";
