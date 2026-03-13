@@ -1,11 +1,8 @@
 
 'use client';
 
-import { useTransition } from 'react';
-import { logout } from "@/app/(shared)/perfil/actions";
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
-import { useSidebar } from './ui/sidebar';
 import { useSupabase } from './providers/SupabaseProviderClient';
 import { useRouter } from 'next/navigation';
 import {
@@ -26,22 +23,6 @@ export default function LogoutButton() {
     await supabase.auth.signOut({ scope: 'local' });
     router.refresh();
   };
-  /*return (
-    <Button
-      variant="ghost"
-      size="icon"
-      className="ml-auto text-muted-foreground hover:text-foreground"
-      onClick={() => {
-        startTransition(() => {
-          logout();
-        });
-      }}
-      disabled={isPending}
-      aria-label={isPending ? 'Cerrando Sesión...' : 'Cerrar Sesión'}
-    >
-      <LogOut className="size-5" />
-    </Button>
-  );*/
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>

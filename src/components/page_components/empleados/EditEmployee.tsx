@@ -30,7 +30,7 @@ import {
   FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import {toast} from 'sonner';
 import { Vista_Lista_Empleados, Vista_Empleado_Datos_Editables, Telefono } from '@/services/types';
 import { getEmployeeDetails, updateEmployeeAddress, updateEmployeePhones, updateAvatar, resetUserPassword } from '@/app/(roles)/rh/empleados/actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -59,7 +59,6 @@ export function EditEmployee({ empleado, avatarUrl }: { empleado: Vista_Lista_Em
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [detailedEmployee, setDetailedEmployee] = useState<Vista_Empleado_Datos_Editables | null>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     if (open && !detailedEmployee) {
@@ -69,7 +68,9 @@ export function EditEmployee({ empleado, avatarUrl }: { empleado: Vista_Lista_Em
         if (result.success && result.data) {
           setDetailedEmployee(result.data as Vista_Empleado_Datos_Editables);
         } else {
-          toast({ variant: "destructive", title: "Error", description: "No se pudieron cargar los detalles del empleado." });
+          //toast({ variant: "destructive", title: "Error", description: "No se pudieron cargar los detalles del empleado." });
+          toast.error('Error', { description: "No se pudieron cargar los detalles del empleado.",
+            position: "top-center" });
           setOpen(false);
         }
         setIsLoading(false);
@@ -79,7 +80,7 @@ export function EditEmployee({ empleado, avatarUrl }: { empleado: Vista_Lista_Em
     if (!open) {
       setDetailedEmployee(null);
     }
-  }, [open, empleado.id, toast, detailedEmployee]);
+  }, [open, empleado.id, detailedEmployee]);
 
 
   return (
@@ -110,7 +111,6 @@ export function EditEmployee({ empleado, avatarUrl }: { empleado: Vista_Lista_Em
 // Form Component (Internal)
 function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: Vista_Lista_Empleados, edit_empleado: Vista_Empleado_Datos_Editables, avatarUrl?: string, setOpen: (open: boolean) => void }) {
   //const [activeTab, setActiveTab] = useState("picture");
-  const { toast } = useToast();
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   //const [isProcessing, setIsProcessing] = useState(false);
@@ -160,10 +160,12 @@ function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: V
       const result = await updateAvatar(formData);
 
       if (result.success) {
-        toast({ title: "Éxito", description: "Perfil y datos faciales actualizados." });
+        toast.success('Éxito', { description: "Perfil y datos faciales actualizados.",
+          position: "top-center" });
         setOpen(false);
       } else {
-        toast({ variant: "destructive", title: "Error", description: result.message });
+        toast.error('Error', { description: result.message,
+          position: "top-center" });
       }
     }
 
@@ -172,20 +174,26 @@ function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: V
   const onAddressSubmit = async (data: z.infer<typeof AddressSchema>) => {
     const result = await updateEmployeeAddress(edit_empleado.id, data.direccion);
     if (result.success) {
-      toast({ title: "Éxito", description: result.message });
+      toast.success('Éxito', { description: result.message,
+        position: "top-center" });
       setOpen(false);
     } else {
-      toast({ variant: "destructive", title: "Error", description: result.message });
+      toast.error('Error', { description: result.message,
+        position: "top-center" });
     }
   };
 
   const onPhoneSubmit = async (data: z.infer<typeof PhoneSchema>) => {
     const result = await updateEmployeePhones(edit_empleado.id, data.telefono1, data.telefono2, data.propietario_telefono2);
     if (result.success) {
-      toast({ title: "Éxito", description: result.message });
+      //toast({ title: "Éxito", description: result.message });
+      toast.success('Éxito', { description: result.message,
+        position: "top-center" });
       setOpen(false);
     } else {
-      toast({ variant: "destructive", title: "Error", description: result.message });
+      //toast({ variant: "destructive", title: "Error", description: result.message });
+      toast.error('Error', { description: result.message,
+        position: "top-center" });
     }
   };
   return (

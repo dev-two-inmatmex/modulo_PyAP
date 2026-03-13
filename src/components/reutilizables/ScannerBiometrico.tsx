@@ -4,7 +4,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Camera, RefreshCw } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import {toast} from 'sonner';
+
 
 interface ScannerBiometricoProps {
   onResult: (descriptor: number[]) => void;
@@ -18,7 +19,6 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { toast } = useToast();
 
 
   const stopCamera = useCallback(() => {
@@ -99,7 +99,8 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
 
         .catch((err) => {
           console.error("Error cámara:", err);
-          toast({ variant: 'destructive', title: 'Error', description: 'Cámara no disponible' });
+          toast.error('Error', { description: 'Cámara no disponible. Asegúrate de dar los permisos correspondientes.',
+            position: "top-center" });
           setOpen(false);
         });
     } else {

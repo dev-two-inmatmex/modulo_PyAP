@@ -108,10 +108,11 @@ import { createClient } from "@/lib/supabase/server";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
 import Header from "@/components/Header";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 import { SupabaseProviderClient } from '@/components/providers/SupabaseProviderClient';
 import "./globals.css";
 import { getAvatarsMap } from '@/utils/storage';
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 export const metadata: Metadata = {
   title: "Sistema INMATMEX",
@@ -124,7 +125,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const supabase = await createClient();
-  
+
   // 1. Obtenemos el usuario y la sesión en paralelo
   const [
     { data: { user } },
@@ -153,13 +154,13 @@ export default async function RootLayout({
     ]);
 
     roles = rolesData?.map((r) => r.nombre_rol) || [];
-    
+
     const fullName = empleado
       ? `${empleado.nombres} ${empleado.apellido_paterno} ${empleado.apellido_materno}`.trim()
       : "Usuario";
-    
-      const avatares = await getAvatarsMap([user.id]);
-      const avatarUrl = avatares[user.id];
+
+    const avatares = await getAvatarsMap([user.id]);
+    const avatarUrl = avatares[user.id];
 
     userData = {
       ...user,
@@ -184,28 +185,30 @@ export default async function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
+        <Toaster />
         <SupabaseProviderClient serverSession={session}>
-          
-          {/* Si NO está autenticado o requiere cambio de contraseña */}
-          {!isAuthValid ? (
-            <>
-              {children}
-              <Toaster />
-            </>
-          ) : (
-            
-          /* Si está autenticado correctamente */
-            <SidebarProvider>
-              <AppSidebar userRoles={roles} user={userData!} />
-              <SidebarInset>
-                <Header />
-                <main className="flex-1 p-4 sm:p-6 bg-muted/30">{children}</main>
-              </SidebarInset>
-              <Toaster />
-            </SidebarProvider>
-          )}
+          <TooltipProvider>
+            {/* Si NO está autenticado o requiere cambio de contraseña */}
+            {!isAuthValid ? (
+              <>
+                {children}
+                {/*<Toaster />*/}
+              </>
+            ) : (
 
+              /* Si está autenticado correctamente */
+              <SidebarProvider>
+                <AppSidebar userRoles={roles} user={userData!} />
+                <SidebarInset>
+                  <Header />
+                  <main className="flex-1 p-4 sm:p-6 bg-muted/30">{children}</main>
+                </SidebarInset>
+
+              </SidebarProvider>
+            )}
+          </TooltipProvider>
         </SupabaseProviderClient>
+
       </body>
     </html>
   );

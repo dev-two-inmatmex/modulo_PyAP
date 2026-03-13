@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export function useAnalizadorFacial() {
   const [isProcessing, setIsProcessing] = useState(false);
-  const { toast } = useToast();
 
   const analyzeFace = async (canvas: HTMLCanvasElement, employeeId: string): Promise<{ success: boolean; blob?: Blob; descriptor?: number[] }> => {
     setIsProcessing(true);
@@ -20,7 +19,11 @@ export function useAnalizadorFacial() {
           worker.terminate();
           
           if (!success) {
-            toast({ variant: "destructive", title: "Error de IA", description: error });
+            //toast({ variant: "destructive", title: "Error de IA", description: error });
+            toast.error("Error de IA", {
+                    description: error,
+                   position: "top-center"
+                  });
             resolve({ success: false });
             return;
           }
@@ -32,8 +35,12 @@ export function useAnalizadorFacial() {
 
         worker.onerror = (err) => {
           worker.terminate();
-          toast({ variant: "destructive", title: "Error", description: err.message });
+          //toast({ variant: "destructive", title: "Error", description: err.message });
           resolve({ success: false });
+          toast.error("Error", {
+            description: err.message,
+           position: "top-center"
+          });
         };
       } catch (err) {
         resolve({ success: false });

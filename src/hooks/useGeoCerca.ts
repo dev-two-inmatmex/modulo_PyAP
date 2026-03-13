@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ConfigUbicacion } from '@/services/types';
 import { calcularDistanciaMetros, calcularRumbo } from '@/utils/geo';
-import { useToast } from '@/hooks/use-toast';
+
 
 export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
   const [userLocation, setUserLocation] = useState<any | null>(null);
@@ -9,8 +9,6 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
   const [guiaUbicacion, setGuiaUbicacion] = useState<string | null>(null);
   const [errorGps, setErrorGps] = useState<string | null>(null);
   const [intento, setIntento] = useState(0);
-  const { toast } = useToast();
-
   // --- 1. UTILIDADES INTERNAS ---
 
   // Reinicia los estados y dispara el useEffect de geolocalización

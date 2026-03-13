@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Button } from '@/components/ui/button';
 import { registrarChequeo } from '@/app/(shared)/checador/actions';
 import type { EmpleadoTurno, RegistroChequeo, ConfigUbicacion } from '@/services/types';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ScannerBiometrico } from '@/components/reutilizables/ScannerBiometrico';
 import { Camera } from 'lucide-react';
 import { useRealtimeChecadorRegistrosUsuario } from '@/hooks/useRealtimeChecadorRegistrosUsuario';
@@ -26,7 +26,6 @@ export function ChecadorReloj({
   ubicacionesValidas: ConfigUbicacion[]
 }) {
   const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
   const registrosLocales = useRealtimeChecadorRegistrosUsuario(registros, userId);
   const {
     userLocation, ubicacionDetectada, guiaUbicacion, errorGps, reintentarGps
@@ -99,11 +98,14 @@ export function ChecadorReloj({
           horaEsperada,
         );
 
-        if (result?.error) toast({ title: 'Error', description: result.error, variant: 'destructive' });
-        else if (result?.success) toast({ title: 'Éxito', description: result.success });
+        if (result?.error) toast.error('Error', { description: result.error,
+          position: "top-center" });
+  else if (result?.success) toast.success('Éxito', { description: result.success,
+    position: "top-center" });
       });
     } else {
-      toast({ title: 'Cargando', description: 'Obteniendo ubicación y zona horaria...', variant: 'default' });
+      toast('Cargando', { description: 'Obteniendo ubicación y zona horaria...',
+        position: "top-center"});
     }
   }
 

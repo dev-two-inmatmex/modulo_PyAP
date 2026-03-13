@@ -1,4 +1,4 @@
-'use server';
+/*'use server';
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
@@ -44,4 +44,53 @@ export async function updatePassword(prevState: any, formData: FormData) {
     redirect('/perfil')
     return { message: "Contraseña actualizada exitosamente." };
 
+}*/
+'use server';
+
+import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
+import { redirect } from 'next/navigation';
+import { z } from "zod";
+
+const UpdatePasswordSchema = z
+    .object({
+        password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres."),
+        confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+        message: "Las contraseñas no coinciden.",
+        path: ["confirmPassword"],
+    });
+
+export async function updatePassword(prevState: any, formData: FormData) {
+    const supabase = await createClient();
+    const validatedFields = UpdatePasswordSchema.safeParse(
+        Object.fromEntries(formData.entries())
+    );
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: "Por favor, revisa los errores en el formulario.",
+        };
+    }
+
+    const { error } = await supabase.auth.updateUser({
+        password: validatedFields.data.password,
+        data: {
+            requires_password_change: false // Actualizamos la bandera en los metadatos
+        }
+    });
+
+    if (error) {
+        return {
+            message: error.message || "Error al actualizar la contraseña.",
+            errors: {}, // Mantenemos la estructura para el tipado
+        };
+    }
+
+    revalidatePath("/");
+    
+    // Nota: 'redirect' detiene la ejecución aquí. El navegador irá directamente a /perfil.
+    redirect('/perfil'); 
 }

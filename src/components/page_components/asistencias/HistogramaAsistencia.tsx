@@ -90,7 +90,7 @@ export function HistogramaAsistencia() {
   const colores = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE'];
 
   return (
-    <Card className="w-full shadow-sm">
+    <Card className="w-full shadow-xs">
       <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b pb-4 mb-4">
         <CardTitle>Histórico de Entradas</CardTitle>
         <Select value={periodo} onValueChange={setPeriodo}>

@@ -15,9 +15,6 @@ export async function registrarChequeo(
     accuracy: number,
     faceDescriptor?: number[],
     horaEsperada?: string | null
-    /*turnoEntrada?: string | null,
-    turnoRegresoDescanso?: string | null,
-    turnoSalida?: string | null*/
 ) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();

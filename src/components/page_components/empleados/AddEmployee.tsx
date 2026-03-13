@@ -27,7 +27,7 @@ import {
 import { SelectField } from '@/components/reutilizables/SelectField';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const UserSchema = z.object({
   nombres: z.string().min(1, "Nombres es requerido"),
@@ -83,7 +83,6 @@ const removeAccents = (str: string) => str.normalize("NFD").replace(/[\u0300-\u0
 
 export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatuses, n_empleados }: AddUserProps) {
   const [open, setOpen] = useState(false);
-  const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
   const [state, formAction] = React.useActionState<ActionState, FormData>(addUser, { message: '' });
@@ -142,15 +141,16 @@ export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatus
     if (state.message) {
       const isError = /error|inválido/i.test(state.message);
       if (isError) {
-        toast({ variant: 'destructive', title: 'Error', description: state.message });
-
+        toast.error('Error', { description: state.message,
+          position: "top-center" }); // Sintaxis Sonner
       } else {
-        toast({ title: 'Éxito', description: state.message });
+        toast.success('Éxito', { description: state.message,
+          position: "top-center" }); // Sintaxis Sonner
         setOpen(false);
         form.reset();
       }
     }
-  }, [state, form, toast, setOpen]);
+  }, [state, form, setOpen]);
 
 
   return (

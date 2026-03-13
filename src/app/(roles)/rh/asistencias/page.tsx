@@ -57,9 +57,8 @@ export default async function AsistenciasPage() {
 /*<div className="flex-1 space-y-4 p-4 md:p-8 pt-6">*/
   return (
     <div className="container space-y-4 mx-auto py-1">
-      
-      <h1 className="text-3xl font-bold tracking-tight mb-6">Control de Asistencias</h1>
       <RealtimeAsistencias />
+      <h1 className="text-3xl font-bold tracking-tight mb-6">Control de Asistencias</h1>
       {/* Fila Superior: Métricas Principales */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div className="col-span-1 md:col-span-2 lg:col-span-2 flex items-center justify-center p-6 bg-gray-100 dark:bg-gray-800 rounded-lg">
