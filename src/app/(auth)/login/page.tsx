@@ -116,7 +116,8 @@ export default function LoginPage() {
     if (state?.message && state.message !== 'Error de validación.') {
       toast.error('Error de Autenticación', {
         description: state.message,
-       position: "top-center" })
+       position: "top-center", style: {background: 'red',}}
+      )
     }
   }, [state])
 

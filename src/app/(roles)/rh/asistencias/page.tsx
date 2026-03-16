@@ -6,19 +6,12 @@ import { HistogramaAsistencia } from "@/components/page_components/asistencias/H
 import { TablasTurnos } from "@/components/page_components/asistencias/TablasTurnos";
 import { getAvatarsMap } from "@/utils/storage";
 import { RealtimeAsistencias } from "@/hooks/useRealtimeChecadorRegistros";
+import { getEmpleadosAgrupadosPorHoraEntrada } from "@/services/asistencias";
 
 export default async function AsistenciasPage() {
   const supabase = await createClient();
+  const turnos_entrada = await getEmpleadosAgrupadosPorHoraEntrada();
 
-  // 1. Fetch de los turnos y empleados esperados para hoy
-  const { data: turnos_entrada, error: turnosError } = await supabase
-    .from('vista_empleados_hora_entrada')
-    .select('entrada, detalles_empleados, total_personas');
-
-  if (turnosError) {
-    console.error('Error fetching turnos:', turnosError);
-    return <div>Error al cargar los datos de los turnos.</div>;
-  }
   const { data: empleadoTurnoRel} = await supabase
     .from("vista_horarios_empleados")
     .select("id, entrada, salida_descanso, regreso_descanso, salida");
@@ -58,6 +51,7 @@ export default async function AsistenciasPage() {
   return (
     <div className="container space-y-4 mx-auto py-1">
       <RealtimeAsistencias />
+      
       <h1 className="text-3xl font-bold tracking-tight mb-6">Control de Asistencias</h1>
       {/* Fila Superior: Métricas Principales */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

@@ -24,9 +24,10 @@ import {
 } from "@/components/ui/table";
 import { UserAvatar } from "@/components/reutilizables/UserAvatar";
 import { Clock, CheckCircle2, AlertCircle, XCircle, MinusCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface EmpleadoDetalle {
-  empleado_id: number;
+  empleado_id: string;
   nombre_completos: string;
 }
 
@@ -196,6 +197,11 @@ export function TablasTurnos({ turnos, avatarUrls, asistencias, turnoCompleto }:
                                   <span >Salida: </span>
                                   <span>{formatearHora(turnohyd.salida)}</span>
                                 </div>
+                                <div>
+                                  { !asistencia &&(
+                                  <Button variant="outline">Guardar Falta</Button>)}
+                                </div>
+
                               </>
                             ) : (
                               <span>Sin horario asignado</span>

@@ -4,6 +4,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSupabase } from '@/components/providers/SupabaseProviderClient';
+import { toast } from 'sonner';
 
 export function RealtimeAsistencias() {
   const { supabase } = useSupabase();
@@ -24,6 +25,8 @@ export function RealtimeAsistencias() {
         () => {
           // Cuando alguien checa, forzamos a Next.js a re-ejecutar el page.tsx (Server)
           router.refresh();
+          toast.success('Éxito', { description: "un empleado acaba de llegar",
+            position: "top-center", style: {background: 'green',}});
         }
       )
       .subscribe();
