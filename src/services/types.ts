@@ -42,6 +42,7 @@ export interface UsuarioRol {
 }
 
 export interface EmpleadoTurno {
+    id: string | null;
     entrada: string | null;
     salida_descanso: string | null;
     regreso_descanso: string | null;
@@ -73,9 +74,9 @@ export interface Turno {
 }
 export interface ConfigUbicacion {
   id: number;
-  nombre_ubicacion: string;
-  latitud: number;
-  longitud: number;
-  radio_permitido: number;
-  tipo: string;
+  nombre_ubicacion: string | null;
+  latitud: number | null;
+  longitud: number | null;
+  radio_permitido: number | null;
+  tipo: string | null;
 }

@@ -1,7 +1,7 @@
 import { AlertTriangle, MapPin, RefreshCw } from 'lucide-react';
 
 interface Props {
-  ubicacionDetectada?: string;
+  ubicacionDetectada?: string| null;
   guiaUbicacion?: string | null;
   buscando: boolean;
   errorGps?: string | null;
@@ -13,16 +13,6 @@ export function IndicadorUbicacion({ ubicacionDetectada, guiaUbicacion, buscando
       <div className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-red-100 text-red-800 border border-red-300">
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span>{errorGps}</span>
-        {/* NUEVO BOTÓN DE REINTENTO */}
-        {/*{onRetry && (
-          <button 
-            onClick={onRetry} 
-            className="ml-2 p-1 hover:bg-red-200 rounded-full transition-colors"
-            title="Reintentar GPS"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </button>
-        )}*/}
       </div>
     );
   }

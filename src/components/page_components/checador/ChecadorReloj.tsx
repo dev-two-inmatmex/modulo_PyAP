@@ -21,7 +21,7 @@ export function ChecadorReloj({
   ubicacionesValidas
 }: {
   registros: RegistroChequeo[],
-  turnoAsignado: EmpleadoTurno | undefined,
+  turnoAsignado: EmpleadoTurno| null,
   userId: string,
   ubicacionesValidas: ConfigUbicacion[]
 }) {
