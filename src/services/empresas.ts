@@ -5,11 +5,11 @@ type Empresa = Database['public']['Tables']['empresas']['Row'];
  * Obtiene todas las empresas.
  * @returns Un arreglo de empresas.
  */
-export async function getEmpresas():Promise<Empresa[]> {
+export async function getEmpresas(): Promise<Empresa[]> {
   const supabase = await createClient();
   let query = supabase
-  .from('empresas')
-  .select('*');
+    .from('empresas')
+    .select('*');
   const { data, error } = await query;
 
   if (error) {

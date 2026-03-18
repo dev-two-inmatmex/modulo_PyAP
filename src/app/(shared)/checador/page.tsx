@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ChecadorReloj } from "@/components/page_components/checador/ChecadorReloj";
 import { ChecadorHistorial } from "@/components/page_components/checador/ChecadorHistorial";
 import type { RegistroChequeo } from "@/services/types";
-
+import { getHorarioEmpleadoDelDia } from "@/services/horarios";
 
 export default async function ChecadorPage() {
   const supabase = await createClient();
@@ -19,12 +19,12 @@ export default async function ChecadorPage() {
     day: '2-digit'
   }).format(new Date());
 
-  const nombreDia = new Intl.DateTimeFormat('es-MX', {
+  /*const nombreDia = new Intl.DateTimeFormat('es-MX', {
     timeZone: 'America/Mexico_City',
     weekday: 'long'
-  }).format(new Date());
+  }).format(new Date());*/
 
-  const diaActual = nombreDia.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  //const diaActual = nombreDia.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
   const { data: registrosDeHoy, error: registrosError } = await supabase
     .from("registro_checador")
@@ -37,11 +37,18 @@ export default async function ChecadorPage() {
   }
   const registros = registrosDeHoy as unknown as RegistroChequeo[];
 
-  let empleadoTurnoRel = null;
+  const turnoDeHoy = await getHorarioEmpleadoDelDia(user.id);
+  const empleadoTurnoRel = turnoDeHoy[0];
+
+  //let empleadoTurnoRel = null;
 
   // Evitamos buscar si es 'domingo' y no tienes esa columna en tu tabla (según la imagen)
-  if (diaActual !== 'domingo') {
-    // Le decimos a Supabase: "Tráeme el turno del usuario donde la columna de hoy (ej. 'martes') sea TRUE"
+  //if (diaActual !== 'domingo') {
+
+  //Si no encuentra ningun turno de hoy, no hace nada.
+  if (empleadoTurnoRel) {
+
+    /* Le decimos a Supabase: "Tráeme el turno del usuario donde la columna de hoy (ej. 'martes') sea TRUE"
     const { data: turnoData, error: horarioError } = await supabase
       .from("empleado_turno")
       .select(`
@@ -67,7 +74,7 @@ export default async function ChecadorPage() {
         regreso_descanso: descansos.fin_descanso,
         salida: horarios.hora_salida
       };
-    }
+    }*/
 
     const isAdmin = user.user_metadata?.is_admin === true;
 

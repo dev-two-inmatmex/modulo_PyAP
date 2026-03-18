@@ -969,6 +969,7 @@ export type Database = {
       empleados_bajas_permanentes: {
         Row: {
           creado_el: string
+          creado_por: string | null
           id: number
           id_empleado: string | null
           id_usuario: string | null
@@ -978,6 +979,7 @@ export type Database = {
         }
         Insert: {
           creado_el: string
+          creado_por?: string | null
           id?: number
           id_empleado?: string | null
           id_usuario?: string | null
@@ -987,6 +989,7 @@ export type Database = {
         }
         Update: {
           creado_el?: string
+          creado_por?: string | null
           id?: number
           id_empleado?: string | null
           id_usuario?: string | null
@@ -2328,6 +2331,58 @@ export type Database = {
           salida_descanso: string | null
         }
         Relationships: []
+      }
+      vista_horarios_empleados_semanal: {
+        Row: {
+          entrada: string | null
+          id_empleado: string | null
+          jueves: boolean | null
+          lunes: boolean | null
+          martes: boolean | null
+          miercoles: boolean | null
+          regreso_descanso: string | null
+          sabado: boolean | null
+          salida: string | null
+          salida_descanso: string | null
+          viernes: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empleado_turno_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleado_turno_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_datos_editables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleado_turno_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_ubicacion_chequeo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleado_turno_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_horarios_empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleado_turno_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_lista_empleados"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vista_lista_empleados: {
         Row: {

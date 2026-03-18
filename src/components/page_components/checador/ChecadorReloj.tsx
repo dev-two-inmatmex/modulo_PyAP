@@ -4,7 +4,7 @@ import { useTransition, useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { registrarChequeo } from '@/app/(shared)/checador/actions';
-import type { EmpleadoTurno, RegistroChequeo, ConfigUbicacion } from '@/services/types';
+import type { RegistroChequeo, ConfigUbicacion } from '@/services/types';
 import { toast } from 'sonner';
 import { ScannerBiometrico } from '@/components/reutilizables/ScannerBiometrico';
 import { Camera } from 'lucide-react';
@@ -15,7 +15,8 @@ import { IndicadorUbicacion } from '@/components/reutilizables/IndicadorUbicacio
 import { BotonMantenido } from '@/components/reutilizables/MantenidoButton';
 import{ Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-
+import { Database } from "@/types/database.types";
+type EmpleadoTurno = Database["public"]["Views"]["vista_horarios_empleados"]["Row"];
 export function ChecadorReloj({
   registros,
   turnoAsignado,
@@ -23,7 +24,7 @@ export function ChecadorReloj({
   ubicacionesValidas
 }: {
   registros: RegistroChequeo[],
-  turnoAsignado: EmpleadoTurno | null,
+  turnoAsignado: EmpleadoTurno,
   userId: string,
   ubicacionesValidas: ConfigUbicacion[]
 }) {

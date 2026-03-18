@@ -86,6 +86,12 @@ const navItems: NavItem[] = [
         icon: Users,
         roles: ['RH', 'Administrador'],
       },
+      {
+        label: 'Horarios',
+        href: '/rh/horarios',
+        icon: Users,
+        roles: ['RH', 'Administrador'],
+      },
     ],
   },
   { label: 'Supervisor', href: '/supervisor', icon: Eye, roles: ['Supervisor', 'Administrador'] },

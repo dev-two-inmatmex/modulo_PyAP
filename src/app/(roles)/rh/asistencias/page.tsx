@@ -9,6 +9,7 @@ import { RealtimeAsistencias } from "@/hooks/useRealtimeChecadorRegistros";
 import { getEmpleadosAgrupadosPorHoraEntrada } from "@/services/asistencias";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getEmpresas } from "@/services/empresas";
+import { getHorarioEmpleadoDelDia } from "@/services/horarios";
 
 export default async function AsistenciasPage() {
   const supabase = await createClient();
@@ -18,11 +19,11 @@ export default async function AsistenciasPage() {
   // ==========================================
   const empresas = await getEmpresas();
   const turnos_entrada = await getEmpleadosAgrupadosPorHoraEntrada(); // Trae TODOS los turnos
-
+  const empleadoTurnoRel = await getHorarioEmpleadoDelDia();
   // Traemos horarios completos
-  const { data: empleadoTurnoRel } = await supabase
+  /*const { data: empleadoTurnoRel } = await supabase
     .from("vista_horarios_empleados")
-    .select("id, entrada, salida_descanso, regreso_descanso, salida");
+    .select("id, entrada, salida_descanso, regreso_descanso, salida");*/
 
   const turnosCompletosMap = (empleadoTurnoRel || []).reduce((acc, curr: any) => {
     acc[curr.id] = { entrada: curr.entrada, salida: curr.salida, salida_descanso: curr.salida_descanso, regreso_descanso: curr.regreso_descanso };
@@ -113,7 +114,7 @@ export default async function AsistenciasPage() {
       <Tabs defaultValue="0" className="grid w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="0">Todos</TabsTrigger>
-          {empresas.map((empresa, index) => (
+          {empresas.map((empresa) => (
             <TabsTrigger key={empresa.id} value={empresa.id.toString()}>
               {empresa.nombre_empresa}
             </TabsTrigger>
