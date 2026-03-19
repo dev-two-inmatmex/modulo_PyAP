@@ -46,10 +46,7 @@ export default async function AsistenciasPage() {
 
   if (registrosError) console.error('Error fetching today records:', registrosError);
 
-  // Mapas globales para Avatares y Asistencias
-  const todosLosIds = turnos_entrada?.flatMap((turno: any) => turno.detalles_empleados.map((emp: any) => emp.empleado_id)) || [];
-  const avatarUrls = await getAvatarsMap(todosLosIds);
-
+  // Mapas globales Asistencias
   const asistenciasMap = (registrosHoy || []).reduce((acc, curr: any) => {
     acc[curr.id_empleado] = { hora: curr.registro, estatus: curr.estatus, ubicacion: curr.nombre_ubicacion };
     return acc;
@@ -58,16 +55,7 @@ export default async function AsistenciasPage() {
   // ==========================================
   // 2. CÁLCULOS GLOBALES (Para la pestaña "Todos")
   // ==========================================
-  const checkedInCountGlobal = registrosHoy?.length || 0;
   const totalEmpleadosHoyGlobal = turnos_entrada?.reduce((acc, turno: any) => acc + turno.total_personas, 0) || 0;
-
-  // ==========================================
-  // 3. RENDERIZADO DE LA INTERFAZ
-  // ==========================================
-
-  // ==========================================
-  // PREPARACIÓN DE DATOS PARA LA DONA (GRÁFICA)
-  // ==========================================
 
   // 1. Mapa para saber a qué empresa pertenece cada empleado (basado en los turnos)
   const empleadoEmpresaMap: Record<string, number> = {};
@@ -141,7 +129,6 @@ export default async function AsistenciasPage() {
             <h2 className="text-2xl font-bold tracking-tight mb-4">Asistencia General</h2>
             <TablasTurnos
               turnos={turnos_entrada || []}
-              avatarUrls={avatarUrls}
               asistencias={asistenciasMap}
               turnoCompleto={turnosCompletosMap}
             />
@@ -194,7 +181,6 @@ export default async function AsistenciasPage() {
                 </h2>
                 <TablasTurnos
                   turnos={turnosDeEstaEmpresa}
-                  avatarUrls={avatarUrls}
                   asistencias={asistenciasMap}
                   turnoCompleto={turnosCompletosMap}
                 />

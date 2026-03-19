@@ -2,7 +2,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Empleado } from "@/services/types";
-import { getAvatarsMap } from "@/utils/storage";
 import { UserAvatar } from "@/components/reutilizables/UserAvatar";
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -23,9 +22,6 @@ export default async function ProfilePage() {
     return <div className="p-4 text-red-500">Error al cargar los datos del perfil.</div>;
   }
 
-  const avatares = await getAvatarsMap([user.id]);
-  const miAvatarUrl = avatares[user.id];
-
   const roleNames: string[] = user.user_metadata.roles || [];
   
   const nombreCompleto = empleado ? `${empleado.nombres} ${empleado.apellido_paterno} ${empleado.apellido_materno}`: 'Usuario';
@@ -35,7 +31,7 @@ export default async function ProfilePage() {
       <div className="w-full max-w-md bg-card rounded-2xl shadow-lg p-8 border">
         <div className="flex flex-col items-center text-center">
           <UserAvatar 
-          url={miAvatarUrl} 
+          employeeId={user.id}
           name={nombreCompleto} 
           className="w-40 h-40 text-5xl shadow-lg mb-6" 
         />

@@ -214,7 +214,7 @@ export default function AppSidebar({ userRoles, user }: AppSidebarProps) {
       <SidebarFooter>
         <div className="flex items-center gap-3 p-2">
           <UserAvatar
-            url={user.avatarUrl}
+            employeeId={user.id}
             name={user.fullName}
             className="size-9"
           />

@@ -90,7 +90,7 @@ const getEstatusUI = (storedStatus: string | null) => {
   }
 };
 
-export function TablasTurnos({ turnos, avatarUrls, asistencias, turnoCompleto }: TablasTurnosProps) {
+export function TablasTurnos({ turnos, asistencias, turnoCompleto }: TablasTurnosProps) {
   if (!turnos || turnos.length === 0) {
     return <p>No hay datos de turnos para mostrar.</p>;
   }
@@ -127,34 +127,12 @@ export function TablasTurnos({ turnos, avatarUrls, asistencias, turnoCompleto }:
                     const turnohyd = turnoCompleto[empleado.empleado_id];
                     const estatusUI = getEstatusUI(asistencia ? asistencia.estatus : null);
                     return (
-                      /*<TableRow key={empleado.empleado_id}>
-                        <TableCell>
-                          <UserAvatar
-                            url={avatarUrls[empleado.empleado_id]}
-                            name={empleado.nombre_completos}
-                            className="w-10 h-10"
-                          />
-                        </TableCell>
-                        <TableCell>{empleado.nombre_completos}</TableCell>
-                        <TableCell className="text-slate-600 font-mono text-sm">
-                          {asistencia ? formatearHora(asistencia.hora) : '--:--'}
-                        </TableCell>
-                        <TableCell>
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold border ${estatusUI.clase}`}>
-                            {estatusUI.icono}
-                            {estatusUI.texto}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {asistencia ? asistencia.ubicacion : '--'}
-                        </TableCell>
-                      </TableRow>*/
                       <Popover key={empleado.empleado_id}>
                         <PopoverTrigger asChild>
                           <TableRow className="cursor-pointer hover:bg-slate-50/50">
                             <TableCell>
                               <UserAvatar
-                                url={avatarUrls[empleado.empleado_id]}
+                                employeeId={empleado.empleado_id}
                                 name={empleado.nombre_completos}
                                 className="w-10 h-10"
                               />

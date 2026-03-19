@@ -12,7 +12,7 @@ export function EmployeeCard({ empleado, avatarUrl }: EmployeeCardProps) {
       <CardHeader>
         <div className="flex items-center space-x-4">
           <UserAvatar
-            url={avatarUrl}
+            employeeId={empleado.id}
             name={empleado.nombre_completo}
             className="w-24 h-24 mb-4"
           />
