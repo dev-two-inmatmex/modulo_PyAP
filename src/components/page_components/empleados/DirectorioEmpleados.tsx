@@ -9,7 +9,6 @@ import type { Vista_Lista_Empleados } from '@/services/types';
 import {AddEmployee} from "@/components/page_components/empleados/AddEmployee";
 interface DirectorioEmpleadosProps {
   empleados: Vista_Lista_Empleados[];
-  avatarUrls: { [key: string]: string };
   puestos: { id: number; nombre_puesto: string }[];
   areas: { id: number; nombre_area: string }[];
   ubicaciones: { id: number; nombre_ubicacion: string }[];
@@ -23,7 +22,6 @@ const ITEMS_PER_PAGE = 6;
 
 export default function DirectorioEmpleados({
   empleados,
-  avatarUrls,
   puestos,
   areas,
   ubicaciones,
@@ -162,7 +160,6 @@ export default function DirectorioEmpleados({
           <EmployeeCard
             key={empleado.id}
             empleado={empleado}
-            avatarUrl={avatarUrls[empleado.id] || '/images/default-avatar.png'}
           />
         ))}
       </div>

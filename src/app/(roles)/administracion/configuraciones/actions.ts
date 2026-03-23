@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createServidorClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
 interface UbicacionData {
@@ -12,7 +12,7 @@ interface UbicacionData {
 }
 
 export async function guardarUbicacion(data: UbicacionData) {
-  const supabase = await createClient();
+  const supabase = await createServidorClient();
 
   const { error } = await supabase
     .from('config_ubicaciones')

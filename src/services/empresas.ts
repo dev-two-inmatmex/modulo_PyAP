@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createServidorClient } from '@/lib/supabase/server';
 import { Database } from '@/types/database.types';
 type Empresa = Database['public']['Tables']['empresas']['Row'];
 /**
@@ -6,7 +6,7 @@ type Empresa = Database['public']['Tables']['empresas']['Row'];
  * @returns Un arreglo de empresas.
  */
 export async function getEmpresas(): Promise<Empresa[]> {
-  const supabase = await createClient();
+  const supabase = await createServidorClient();
   let query = supabase
     .from('empresas')
     .select('*');

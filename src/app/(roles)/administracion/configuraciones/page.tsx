@@ -1,9 +1,9 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServidorClient } from "@/lib/supabase/server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UbicacionesManager } from "@/components/page_components/configuracion_Admin/UbicacionesManager";
 
 export default async function ConfiguracionesPage() {
-  const supabase = await createClient();
+  const supabase = await createServidorClient();
 
   // Obtenemos TODAS las configuraciones de la base de datos, ordenadas por nombre.
   const { data: ubicaciones, error } = await supabase

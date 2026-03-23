@@ -28,13 +28,13 @@ export function useGeocerca(ubicacionesValidas: ConfigUbicacion[]) {
     let mensajeAmigable = "Error desconocido de GPS.";
     switch (error.code) {
       case error.PERMISSION_DENIED:
-        mensajeAmigable = "Permiso denegado. Autoriza el GPS.";
+        mensajeAmigable = "Permiso de GPS denegado. Para fichar, ve a Ajustes > Safari > Ubicación y autoriza este sitio.";
         break;
       case error.POSITION_UNAVAILABLE:
-        mensajeAmigable = "Señal GPS apagada o sin alcance.";
+        mensajeAmigable = "Señal GPS no disponible. Asegúrate de tener la ubicación activada y buena señal.";
         break;
       case error.TIMEOUT:
-        mensajeAmigable = "Tiempo agotado buscando señal.";
+        mensajeAmigable = "No se pudo obtener tu ubicación a tiempo. Intenta en un lugar con mejor señal.";
         break;
     }
     setErrorGps(mensajeAmigable);

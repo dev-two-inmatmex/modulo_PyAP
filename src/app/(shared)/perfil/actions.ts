@@ -1,12 +1,12 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createServidorClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
 
 
 export async function logout() {
-  const supabase = await createClient();
+  const supabase = await createServidorClient();
 
   const { error } = await supabase.auth.signOut({ scope: 'local' });
 

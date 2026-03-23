@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
-import { ShieldAlert } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -39,6 +38,7 @@ import Cropper, { ReactCropperElement } from "react-cropper";
 import "cropperjs/dist/cropper.css";
 import { useAnalizadorFacial } from '@/hooks/useAnalizadorFacial';
 import { ResetPasswordButton } from '@/components/ResetPasswordButton';
+import { UserAvatar } from '@/components/reutilizables/UserAvatar';
 
 // Zod Schemas
 const AddressSchema = z.object({
@@ -55,7 +55,7 @@ const PhoneSchema = z.object({
 });
 
 // Main Component
-export function EditEmployee({ empleado, avatarUrl }: { empleado: Vista_Lista_Empleados, avatarUrl?: string }) {
+export function EditEmployee( {empleado}: Vista_Lista_Empleados ) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [detailedEmployee, setDetailedEmployee] = useState<Vista_Empleado_Datos_Editables | null>(null);
@@ -102,14 +102,14 @@ export function EditEmployee({ empleado, avatarUrl }: { empleado: Vista_Lista_Em
             <Skeleton className="h-10 w-full" />
           </div>
         ) : detailedEmployee ? (
-          <EditForm empleado={empleado} edit_empleado={detailedEmployee} avatarUrl={avatarUrl} setOpen={setOpen} />
+          <EditForm empleado={empleado} edit_empleado={detailedEmployee} setOpen={setOpen} />
         ) : null}
       </DialogContent>
     </Dialog>
   );
 }
 // Form Component (Internal)
-function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: Vista_Lista_Empleados, edit_empleado: Vista_Empleado_Datos_Editables, avatarUrl?: string, setOpen: (open: boolean) => void }) {
+function EditForm({ empleado, edit_empleado, setOpen }: { empleado: Vista_Lista_Empleados, edit_empleado: Vista_Empleado_Datos_Editables, setOpen: (open: boolean) => void }) {
   //const [activeTab, setActiveTab] = useState("picture");
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -209,10 +209,11 @@ function EditForm({ empleado, edit_empleado, setOpen, avatarUrl }: { empleado: V
         <div className="flex flex-col items-center space-y-4">
           {!selectedFile ? (
             <>
-              <Avatar className="w-40 h-40">
-                <AvatarImage src={preview || avatarUrl} alt="Avatar" className='object-cover' />
-                <AvatarFallback>{empleado.nombre_completo.charAt(0)}</AvatarFallback>
-              </Avatar>
+              <UserAvatar
+                employeeId={empleado.id}
+                name={empleado.nombre_completo}
+                className="w-40 h-40"
+              />
               <div className='w-full max-w-sm'>
                 <label className="mb-2 block text-sm font-medium text-center">Cambiar foto de perfil</label>
                 <Input type="file" accept="image/*" onChange={handleFileChange} />

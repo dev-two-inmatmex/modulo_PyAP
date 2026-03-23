@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServidorClient } from "@/lib/supabase/server";
 import { Database } from "@/types/database.types";
 type turno = Database["public"]["Views"]["vista_horarios_empleados"]["Row"];
 type turnos = Database["public"]["Views"]["vista_horarios_empleados_semanal"]["Row"];
@@ -11,7 +11,7 @@ type turnos = Database["public"]["Views"]["vista_horarios_empleados_semanal"]["R
 export async function getHorariosEmpleado(
     id_empleado?: string | null,
 ): Promise<turnos[]> {
-    const supabase = await createClient();
+    const supabase = await createServidorClient();
     let query = supabase
         .from('vista_horarios_empleados_semanal')
         .select('*');
@@ -34,7 +34,7 @@ export async function getHorarioEmpleadoDelDia(
     id_empleado?: string | null
 ): Promise<turno[]> {
 
-    const supabase = await createClient();
+    const supabase = await createServidorClient();
 
     let query = supabase
         .from('vista_horarios_empleados')

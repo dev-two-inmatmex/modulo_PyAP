@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createServidorClient } from "@/lib/supabase/server";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
 import Header from "@/components/Header";
@@ -22,7 +22,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const supabase = await createClient();
+  const supabase = await createServidorClient();
 
   // 1. Obtenemos el usuario y la sesión en paralelo
   const [

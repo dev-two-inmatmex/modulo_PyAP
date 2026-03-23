@@ -1,10 +1,10 @@
 
-import { createClient } from "@/lib/supabase/server";
+import { createServidorClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Empleado } from "@/services/types";
 import { UserAvatar } from "@/components/reutilizables/UserAvatar";
 export default async function ProfilePage() {
-  const supabase = await createClient();
+  const supabase = await createServidorClient();
   const { data: { user }} = await supabase.auth.getUser();
 
   if (!user) {
@@ -28,7 +28,7 @@ export default async function ProfilePage() {
   
   return (
     <div className="flex items-start justify-center p-4">
-      <div className="w-full max-w-md bg-card rounded-2xl shadow-lg p-8 border">
+      <div className="w-full max-w-md bg-card rounded-2xl p-8 border">
         <div className="flex flex-col items-center text-center">
           <UserAvatar 
           employeeId={user.id}

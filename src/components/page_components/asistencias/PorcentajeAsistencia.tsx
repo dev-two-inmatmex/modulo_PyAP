@@ -26,7 +26,7 @@ export interface SegmentoAsistencia {
   color: string;
 }
 
-interface PorcentajeAsistenciaProps {
+export interface PorcentajeAsistenciaProps {
   segmentos: SegmentoAsistencia[];
   totalEsperados: number;
 }
@@ -72,7 +72,7 @@ export function PorcentajeAsistencia({ segmentos, totalEsperados }: PorcentajeAs
       <CardContent className="flex-1 pb-0">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square max-h-[250px]"
+          className="mx-auto aspect-square max-h-62.5"
         >
           <PieChart>
             <ChartTooltip

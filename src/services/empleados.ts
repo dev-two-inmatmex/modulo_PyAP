@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServidorClient } from "@/lib/supabase/server";
 import { Database } from "@/types/database.types";
 type empleados = Database["public"]["Tables"]["empleados"]["Row"];
 /**
@@ -11,7 +11,7 @@ export async function getEmpleadoDatos(
     id_empleado?: string | null,
     id_empresa?: number | null
 ):Promise<empleados[]>{
-    const supabase = await createClient();
+    const supabase = await createServidorClient();
 
     let query = supabase
         .from('empleados')

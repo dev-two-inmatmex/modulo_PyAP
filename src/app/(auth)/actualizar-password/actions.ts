@@ -47,7 +47,7 @@ export async function updatePassword(prevState: any, formData: FormData) {
 }*/
 'use server';
 
-import { createClient } from "@/lib/supabase/server";
+import { createServidorClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from 'next/navigation';
 import { z } from "zod";
@@ -63,7 +63,7 @@ const UpdatePasswordSchema = z
     });
 
 export async function updatePassword(prevState: any, formData: FormData) {
-    const supabase = await createClient();
+    const supabase = await createServidorClient();
     const validatedFields = UpdatePasswordSchema.safeParse(
         Object.fromEntries(formData.entries())
     );

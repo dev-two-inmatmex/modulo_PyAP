@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from "@/lib/supabase/server";
+import { createServidorClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 type ChequeoAction = 'entrada' | 'salida_descanso' | 'regreso_descanso' | 'salida';
@@ -16,7 +16,7 @@ export async function registrarChequeo(
     faceDescriptor?: number[],
     horaEsperada?: string | null
 ) {
-    const supabase = await createClient();
+    const supabase = await createServidorClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {

@@ -46,7 +46,7 @@ export async function login(prevState: any, formData: FormData) {
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+import { createServidorClient } from '@/lib/supabase/server'
 
 const LoginSchema = z.object({
   email: z.string().email('El email no es válido.'),
@@ -55,7 +55,7 @@ const LoginSchema = z.object({
 })
 
 export async function login(prevState: any, formData: FormData) {
-  const supabase = await createClient()
+  const supabase = await createServidorClient()
 
   const validatedFields = LoginSchema.safeParse(
     Object.fromEntries(formData.entries())

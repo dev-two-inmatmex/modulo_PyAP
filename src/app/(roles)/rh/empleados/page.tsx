@@ -1,12 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServidorClient } from "@/lib/supabase/server";
 import DirectorioEmpleados from "@/components/page_components/empleados/DirectorioEmpleados";
-
-import { getAvatarsMap } from "@/utils/storage";
 // TODO: Convertir en client component y mover la logica de supabase a un action.
 
 export default async function EmpleadosPage() {
 
-  const supabase = await createClient();
+  const supabase = await createServidorClient();
   const { data: empleados, error } = await supabase
     .from('vista_lista_empleados')
     .select('*');
@@ -28,15 +26,12 @@ export default async function EmpleadosPage() {
     .from('empleados')
     .select('*', { count: 'exact', head: true });
     const n_empleados = (count || 0);
-  const empleadosIds = empleados?.map(empleado => empleado.id) || [];
-  const avatarUrls = await getAvatarsMap(empleadosIds);
 
   return (
     <div className="container mx-auto py-1">
       <h1 className="text-2xl font-bold mb-2">Directorio de Empleados</h1>
       <DirectorioEmpleados 
         empleados={empleados || []}
-        avatarUrls={avatarUrls}
         ubicaciones={ubicaciones || []}
         estatuses={estatuses || []}
         puestos={puestos || []}

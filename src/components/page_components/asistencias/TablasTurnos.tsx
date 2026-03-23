@@ -38,7 +38,6 @@ interface TurnoData {
 
 interface TablasTurnosProps {
   turnos: TurnoData[];
-  avatarUrls: Record<string, string>;
   asistencias: Record<string, { hora: string; estatus: string; ubicacion: string }>;
   turnoCompleto: Record<string, { entrada: string; salida: string; salida_descanso: string; regreso_descanso: string }>;
 }
@@ -114,7 +113,7 @@ export function TablasTurnos({ turnos, asistencias, turnoCompleto }: TablasTurno
               <Table>
                 <TableHeader>
                   <TableRow className="bg-slate-50/50">
-                    <TableHead className="w-[60px]"></TableHead>
+                    <TableHead className="w-15"></TableHead>
                     <TableHead>Nombre</TableHead>
                     <TableHead>LLegada</TableHead>
                     <TableHead>Estatus</TableHead>

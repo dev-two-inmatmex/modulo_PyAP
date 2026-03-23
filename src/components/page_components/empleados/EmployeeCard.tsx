@@ -6,7 +6,7 @@ import { EmployeeCardProps } from "@/services/types";
 import { EditEmployee } from './EditEmployee'; // Import the new component
 import { UserAvatar } from "@/components/reutilizables/UserAvatar";
 
-export function EmployeeCard({ empleado, avatarUrl }: EmployeeCardProps) {
+export function EmployeeCard({ empleado}: EmployeeCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -31,7 +31,6 @@ export function EmployeeCard({ empleado, avatarUrl }: EmployeeCardProps) {
             <Button variant="outline">Ver Ficha</Button>
             <EditEmployee
               empleado={empleado}
-              avatarUrl={avatarUrl}
             />
           </div>
         </div>

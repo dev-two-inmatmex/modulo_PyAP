@@ -1,11 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServidorClient } from "@/lib/supabase/server";
 import { ChecadorReloj } from "@/components/page_components/checador/ChecadorReloj";
 import { ChecadorHistorial } from "@/components/page_components/checador/ChecadorHistorial";
 import type { RegistroChequeo } from "@/services/types";
 import { getHorarioEmpleadoDelDia } from "@/services/horarios";
 
 export default async function ChecadorPage() {
-  const supabase = await createClient();
+  const supabase = await createServidorClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -46,7 +46,8 @@ export default async function ChecadorPage() {
   //if (diaActual !== 'domingo') {
 
   //Si no encuentra ningun turno de hoy, no hace nada.
-  if (empleadoTurnoRel) {
+  const isAdmin = user.user_metadata?.is_admin === true;
+  if (empleadoTurnoRel || isAdmin) {
 
     /* Le decimos a Supabase: "Tráeme el turno del usuario donde la columna de hoy (ej. 'martes') sea TRUE"
     const { data: turnoData, error: horarioError } = await supabase
@@ -76,7 +77,7 @@ export default async function ChecadorPage() {
       };
     }*/
 
-    const isAdmin = user.user_metadata?.is_admin === true;
+    
 
     let queryUbicaciones = supabase
       .from('config_ubicaciones')

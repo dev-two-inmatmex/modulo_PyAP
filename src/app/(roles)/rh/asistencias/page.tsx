@@ -1,29 +1,22 @@
 export const dynamic = 'force-dynamic';
-import { createClient } from "@/lib/supabase/server";
+import { createServidorClient } from "@/lib/supabase/server";
 import RelojAsistencia from "@/components/page_components/asistencias/RelojAsistencia";
-import { PorcentajeAsistencia } from "@/components/page_components/asistencias/tab_contenent/PorcentajeAsistencia";
-import { HistogramaAsistencia } from "@/components/page_components/asistencias/tab_contenent/HistogramaAsistencia";
+import { PorcentajeAsistencia } from "@/components/page_components/asistencias/PorcentajeAsistencia";
+import { HistogramaAsistencia } from "@/components/page_components/asistencias/HistogramaAsistencia";
 import { TablasTurnos } from "@/components/page_components/asistencias/TablasTurnos";
-import { getAvatarsMap } from "@/utils/storage";
 import { RealtimeAsistencias } from "@/hooks/useRealtimeChecadorRegistros";
 import { getEmpleadosAgrupadosPorHoraEntrada } from "@/services/asistencias";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getEmpresas } from "@/services/empresas";
 import { getHorarioEmpleadoDelDia } from "@/services/horarios";
+import { AsistenciaEmpresaCard } from "@/components/page_components/asistencias/AsistenciaEmpresaCard";
 
 export default async function AsistenciasPage() {
-  const supabase = await createClient();
+  const supabase = await createServidorClient();
 
-  // ==========================================
-  // 1. EL BUFFET: TRAEMOS TODOS LOS DATOS
-  // ==========================================
   const empresas = await getEmpresas();
-  const turnos_entrada = await getEmpleadosAgrupadosPorHoraEntrada(); // Trae TODOS los turnos
+  const turnos_entrada = await getEmpleadosAgrupadosPorHoraEntrada();
   const empleadoTurnoRel = await getHorarioEmpleadoDelDia();
-  // Traemos horarios completos
-  /*const { data: empleadoTurnoRel } = await supabase
-    .from("vista_horarios_empleados")
-    .select("id, entrada, salida_descanso, regreso_descanso, salida");*/
 
   const turnosCompletosMap = (empleadoTurnoRel || []).reduce((acc, curr: any) => {
     acc[curr.id] = { entrada: curr.entrada, salida: curr.salida, salida_descanso: curr.salida_descanso, regreso_descanso: curr.regreso_descanso };
@@ -52,9 +45,6 @@ export default async function AsistenciasPage() {
     return acc;
   }, {} as Record<string, { hora: string; estatus: string; ubicacion: string; }>);
 
-  // ==========================================
-  // 2. CÁLCULOS GLOBALES (Para la pestaña "Todos")
-  // ==========================================
   const totalEmpleadosHoyGlobal = turnos_entrada?.reduce((acc, turno: any) => acc + turno.total_personas, 0) || 0;
 
   // 1. Mapa para saber a qué empresa pertenece cada empleado (basado en los turnos)
@@ -100,7 +90,7 @@ export default async function AsistenciasPage() {
       </div>
 
       <Tabs defaultValue="0" className="grid w-full">
-        <TabsList className="mb-4">
+        <TabsList className="mb-4 p-0">
           <TabsTrigger value="0">Todos</TabsTrigger>
           {empresas.map((empresa) => (
             <TabsTrigger key={empresa.id} value={empresa.id.toString()}>
@@ -109,37 +99,47 @@ export default async function AsistenciasPage() {
           ))}
         </TabsList>
 
-        {/* ------------------------------------------- */}
-        {/* PESTAÑA 0: TODOS LOS EMPLEADOS GLOBALES */}
-        {/* ------------------------------------------- */}
         <TabsContent value="0" className="space-y-4">
+          <>
+            {/*<AsistenciaEmpresaCard
+              nombre="Todas las empresas"
+              segmentos={segmentosGlobales}
+              totalEsperados={totalEmpleadosHoyGlobal}
+            />*/}
+            <AsistenciaEmpresaCard
+                empresaId={null}
+                nombreEmpresa={"Todas las empresas"}
+                turnosHoy={turnos_entrada}
+                asistenciasMap={asistenciasMap}
+                turnoCompletoMap={turnosCompletosMap}
+                segmentoDona={segmentosGlobales}
+                totalEsperadosHoy={totalEmpleadosHoyGlobal}
+                fechaDelDia={today}
+              />
+          </>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="col-span-1 md:col-span-2 lg:col-span-2">
+            {/*<div className="col-span-1 md:col-span-2 lg:col-span-2">
               <PorcentajeAsistencia
-                segmentos={segmentosGlobales} // <--- REBANADAS MULTICOLOR
+                segmentos={segmentosGlobales}
                 totalEsperados={totalEmpleadosHoyGlobal}
               />
-            </div>
+            </div>*/}
             <div className="col-span-1 md:col-span-2 lg:col-span-2">
-              <HistogramaAsistencia />
+              {/*<HistogramaAsistencia />*/}
             </div>
           </div>
 
           <div className="mt-8">
             <h2 className="text-2xl font-bold tracking-tight mb-4">Asistencia General</h2>
-            <TablasTurnos
+            {/*<TablasTurnos
               turnos={turnos_entrada || []}
               asistencias={asistenciasMap}
               turnoCompleto={turnosCompletosMap}
-            />
+            /></HistorialAsistencia>*/}
+
           </div>
         </TabsContent>
-
-        {/* ------------------------------------------- */}
-        {/* PESTAÑAS DINÁMICAS: UNA POR CADA EMPRESA */}
-        {/* ------------------------------------------- */}
         {empresas.map((empresa, index) => {
-          // AQUI ESTÁ LA MAGIA: Filtramos los datos SOLO para esta empresa
 
           // 1. Filtramos los turnos
           const turnosDeEstaEmpresa = turnos_entrada?.filter(
@@ -162,7 +162,7 @@ export default async function AsistenciasPage() {
 
           return (
             <TabsContent key={empresa.id} value={empresa.id.toString()} className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {/*<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <div className="col-span-1 md:col-span-2 lg:col-span-2">
                   <PorcentajeAsistencia
                     segmentos={segmentoUnico} // <--- UNA SOLA REBANADA
@@ -170,7 +170,7 @@ export default async function AsistenciasPage() {
                   />
                 </div>
                 <div className="col-span-1 md:col-span-2 lg:col-span-2">
-                  {/* Si el histograma necesita datos filtrados, se los pasarías aquí */}
+                  
                   <HistogramaAsistencia />
                 </div>
               </div>
@@ -184,7 +184,17 @@ export default async function AsistenciasPage() {
                   asistencias={asistenciasMap}
                   turnoCompleto={turnosCompletosMap}
                 />
-              </div>
+              </div>*/}
+              <AsistenciaEmpresaCard 
+                empresaId={empresa.id}
+                nombreEmpresa={empresa.nombre_empresa}
+                turnosHoy={turnosDeEstaEmpresa}
+                asistenciasMap={asistenciasMap}
+                turnoCompletoMap={turnosCompletosMap}
+                segmentoDona={segmentoUnico}
+                totalEsperadosHoy={totalEsperadosEmpresa}
+                fechaDelDia={today}
+              />
             </TabsContent>
           );
         })}

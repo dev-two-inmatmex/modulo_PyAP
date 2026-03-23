@@ -94,7 +94,7 @@ export function HistogramaAsistencia() {
       <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b pb-4 mb-4">
         <CardTitle>Histórico de Entradas</CardTitle>
         <Select value={periodo} onValueChange={setPeriodo}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-45">
             <SelectValue placeholder="Seleccionar periodo" />
           </SelectTrigger>
           <SelectContent>
@@ -107,11 +107,11 @@ export function HistogramaAsistencia() {
       
       <CardContent className="pl-0">
         {isLoading ? (
-          <div className="flex h-[350px] items-center justify-center text-muted-foreground">
+          <div className="flex h-87.5 items-center justify-center text-muted-foreground">
             Cargando gráfico...
           </div>
         ) : data.length === 0 ? (
-          <div className="flex h-[350px] items-center justify-center text-muted-foreground">
+          <div className="flex h-87.5 items-center justify-center text-muted-foreground">
             No hay registros en este periodo.
           </div>
         ) : (

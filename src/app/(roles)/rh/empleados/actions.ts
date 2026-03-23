@@ -1,12 +1,12 @@
 'use server'
 import { createAdminClient } from '@/lib/supabase/admin';
-import { createClient } from '@/lib/supabase/server';
+import { createServidorClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import sharp from 'sharp';
 
 // This is a simplified version. A real-world scenario would have more robust error handling and validation.
 export async function addUser(prevState: any, formData: FormData) {
-  const supabase = await createClient();
+  const supabase = await createServidorClient();
   const supabaseAdmin = createAdminClient();
   
 
@@ -91,7 +91,7 @@ export async function addUser(prevState: any, formData: FormData) {
   return { message: 'Empleado agregado con éxito' };
 }
 export async function updateEmployeeAddress(employeeId: string, newAddress: string) {
-  const supabase = await createClient();
+  const supabase = await createServidorClient();
 
   const { error } = await supabase
     .from('empleados')
@@ -108,7 +108,7 @@ export async function updateEmployeeAddress(employeeId: string, newAddress: stri
 
 // Action to update employee's phone numbers
 export async function updateEmployeePhones(employeeId: string, phone1: string, phone2?: string, propietario_telefono2?: string) {
-  const supabase = await createClient();
+  const supabase = await createServidorClient();
   const { error: err1 } = await supabase
     .from('empleado_telefonos')
     .upsert({
@@ -135,7 +135,7 @@ export async function updateEmployeePhones(employeeId: string, phone1: string, p
 
 // Action to upload and update avatar
 export async function updateAvatar(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = await createServidorClient();
   const file = formData.get('avatar') as Blob;
   const employeeId = formData.get('employeeId') as string;
   const faceDescriptor = formData.get('faceDescriptor') as string;
@@ -180,7 +180,7 @@ export async function updateAvatar(formData: FormData) {
 }
 
 export async function getEmployeeDetails(employeeId: string) {
-  const supabase = await createClient();
+  const supabase = await createServidorClient();
   try {
     const { data, error } = await supabase
       .from('empleados')
