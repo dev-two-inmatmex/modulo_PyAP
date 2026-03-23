@@ -40,7 +40,7 @@ export function PorcentajeAsistencia({ segmentos, totalEsperados }: PorcentajeAs
   // 2. Preparamos la configuración de colores para Shadcn
   const chartConfig = React.useMemo(() => {
     const config: Record<string, { label: string; color: string }> = {
-      pendientes: { label: "Faltan", color: "hsl(var(--muted))" } // Color gris para los que no llegan
+      pendientes: { label: "Faltan", color: "var(--muted)" } // Color gris para los que no llegan
     }
     segmentos.forEach(seg => {
       config[seg.id] = { label: seg.label, color: seg.color }
@@ -58,7 +58,7 @@ export function PorcentajeAsistencia({ segmentos, totalEsperados }: PorcentajeAs
     
     // Solo mostramos la rebanada gris si aún falta gente
     if (pendientesCount > 0) {
-      data.push({ name: "pendientes", value: pendientesCount, fill: "hsl(var(--muted))" })
+      data.push({ name: "pendientes", value: pendientesCount, fill: "var(--muted)" })
     }
     return data
   }, [segmentos, pendientesCount])

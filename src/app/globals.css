@@ -28,7 +28,7 @@
   --color-muted-foreground: var(--muted-foreground);
 
   --color-accent: var(--accent);
-  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-foreground: var(--accent-foreground);
 
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);

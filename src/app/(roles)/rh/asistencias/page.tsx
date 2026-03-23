@@ -1,9 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { createServidorClient } from "@/lib/supabase/server";
 import RelojAsistencia from "@/components/page_components/asistencias/RelojAsistencia";
-import { PorcentajeAsistencia } from "@/components/page_components/asistencias/PorcentajeAsistencia";
-import { HistogramaAsistencia } from "@/components/page_components/asistencias/HistogramaAsistencia";
-import { TablasTurnos } from "@/components/page_components/asistencias/TablasTurnos";
 import { RealtimeAsistencias } from "@/hooks/useRealtimeChecadorRegistros";
 import { getEmpleadosAgrupadosPorHoraEntrada } from "@/services/asistencias";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -66,11 +63,11 @@ export default async function AsistenciasPage() {
 
   // 3. Colores del tema para asignar uno diferente a cada empresa
   const coloresGrafica = [
-    "hsl(var(--chart-1))",
-    "hsl(var(--chart-2))",
-    "hsl(var(--chart-3))",
-    "hsl(var(--chart-4))",
-    "hsl(var(--chart-5))"
+    "var(--chart-1)",
+    "var(--chart-2)",
+    "var(--chart-3)",
+    "var(--chart-4)",
+    "var(--chart-5)"
   ];
 
   // 4. Armamos las "Rebanadas" globales (Pestaña Todos)
