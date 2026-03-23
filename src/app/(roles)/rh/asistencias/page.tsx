@@ -78,7 +78,7 @@ export default async function AsistenciasPage() {
     color: coloresGrafica[index % coloresGrafica.length]
   }));
   return (
-    <div className="container space-y-4 mx-auto py-1">
+    <div className="container mx-auto py-1">
       <RealtimeAsistencias />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
@@ -86,8 +86,8 @@ export default async function AsistenciasPage() {
         <RelojAsistencia />
       </div>
 
-      <Tabs defaultValue="0" className="grid w-full">
-        <TabsList className="mb-4 p-0">
+      <Tabs defaultValue="0">
+        <TabsList>
           <TabsTrigger value="0">Todos</TabsTrigger>
           {empresas.map((empresa) => (
             <TabsTrigger key={empresa.id} value={empresa.id.toString()}>
@@ -97,44 +97,16 @@ export default async function AsistenciasPage() {
         </TabsList>
 
         <TabsContent value="0" className="space-y-4">
-          <>
-            {/*<AsistenciaEmpresaCard
-              nombre="Todas las empresas"
-              segmentos={segmentosGlobales}
-              totalEsperados={totalEmpleadosHoyGlobal}
-            />*/}
-            <AsistenciaEmpresaCard
-                empresaId={null}
-                nombreEmpresa={"Todas las empresas"}
-                turnosHoy={turnos_entrada}
-                asistenciasMap={asistenciasMap}
-                turnoCompletoMap={turnosCompletosMap}
-                segmentoDona={segmentosGlobales}
-                totalEsperadosHoy={totalEmpleadosHoyGlobal}
-                fechaDelDia={today}
-              />
-          </>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {/*<div className="col-span-1 md:col-span-2 lg:col-span-2">
-              <PorcentajeAsistencia
-                segmentos={segmentosGlobales}
-                totalEsperados={totalEmpleadosHoyGlobal}
-              />
-            </div>*/}
-            <div className="col-span-1 md:col-span-2 lg:col-span-2">
-              {/*<HistogramaAsistencia />*/}
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <h2 className="text-2xl font-bold tracking-tight mb-4">Asistencia General</h2>
-            {/*<TablasTurnos
-              turnos={turnos_entrada || []}
-              asistencias={asistenciasMap}
-              turnoCompleto={turnosCompletosMap}
-            /></HistorialAsistencia>*/}
-
-          </div>
+          <AsistenciaEmpresaCard
+            empresaId={null}
+            nombreEmpresa={"Todas las empresas"}
+            turnosHoy={turnos_entrada}
+            asistenciasMap={asistenciasMap}
+            turnoCompletoMap={turnosCompletosMap}
+            segmentoDona={segmentosGlobales}
+            totalEsperadosHoy={totalEmpleadosHoyGlobal}
+            fechaDelDia={today}
+          />
         </TabsContent>
         {empresas.map((empresa, index) => {
 
@@ -182,7 +154,7 @@ export default async function AsistenciasPage() {
                   turnoCompleto={turnosCompletosMap}
                 />
               </div>*/}
-              <AsistenciaEmpresaCard 
+              <AsistenciaEmpresaCard
                 empresaId={empresa.id}
                 nombreEmpresa={empresa.nombre_empresa}
                 turnosHoy={turnosDeEstaEmpresa}

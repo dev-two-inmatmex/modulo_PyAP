@@ -18,15 +18,15 @@ export default async function ConfiguracionesPage() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="space-y-4 p-4 ">
         <h2 className="text-3xl font-bold tracking-tight">Configuraciones del Sistema</h2>
-        <Tabs defaultValue="ubicaciones" className="space-y-4">
+        <Tabs defaultValue="ubicaciones" className="w-100">
             <TabsList>
                 <TabsTrigger value="ubicaciones">Ubicaciones</TabsTrigger>
                 <TabsTrigger value="general" disabled>General</TabsTrigger>
                 <TabsTrigger value="notificaciones" disabled>Notificaciones</TabsTrigger>
             </TabsList>
-            <TabsContent value="ubicaciones" className="space-y-4">
+            <TabsContent value="ubicaciones">
                 {/* El manager se encarga de toda la lógica de la UI */}
                 <UbicacionesManager ubicaciones={ubicaciones || []} />
             </TabsContent>
