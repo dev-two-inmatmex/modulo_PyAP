@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getEmpresas } from "@/services/empresas";
 import { getHorarioEmpleadoDelDia } from "@/services/horarios";
 import { AsistenciaEmpresaCard } from "@/components/page_components/asistencias/AsistenciaEmpresaCard";
+import  EmpresaLogo from "@/components/reutilizables/empresaLogo";
 
 export default async function AsistenciasPage() {
   const supabase = await createServidorClient();
@@ -91,6 +92,7 @@ export default async function AsistenciasPage() {
           <TabsTrigger value="0">Todos</TabsTrigger>
           {empresas.map((empresa) => (
             <TabsTrigger key={empresa.id} value={empresa.id.toString()}>
+              <EmpresaLogo id={empresa.id} wyh={24} />
               {empresa.nombre_empresa}
             </TabsTrigger>
           ))}
@@ -131,29 +133,6 @@ export default async function AsistenciasPage() {
 
           return (
             <TabsContent key={empresa.id} value={empresa.id.toString()} className="space-y-4">
-              {/*<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <div className="col-span-1 md:col-span-2 lg:col-span-2">
-                  <PorcentajeAsistencia
-                    segmentos={segmentoUnico} // <--- UNA SOLA REBANADA
-                    totalEsperados={totalEsperadosEmpresa}
-                  />
-                </div>
-                <div className="col-span-1 md:col-span-2 lg:col-span-2">
-                  
-                  <HistogramaAsistencia />
-                </div>
-              </div>
-
-              <div className="mt-8">
-                <h2 className="text-2xl font-bold tracking-tight mb-4">
-                  Asistencia: {empresa.nombre_empresa}
-                </h2>
-                <TablasTurnos
-                  turnos={turnosDeEstaEmpresa}
-                  asistencias={asistenciasMap}
-                  turnoCompleto={turnosCompletosMap}
-                />
-              </div>*/}
               <AsistenciaEmpresaCard
                 empresaId={empresa.id}
                 nombreEmpresa={empresa.nombre_empresa}

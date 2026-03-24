@@ -3,7 +3,10 @@ import { createServidorClient } from '@/lib/supabase/server';
 import { Database } from '@/types/database.types';
 
 type GrupoHoraEntradaDB = Database['public']['Views']['vista_empleados_hora_entrada']['Row'];
-export type HistorialAsistenciaRow = Database['public']['Functions']['obtener_historial_asistencia']['Returns'][number];
+
+export type AsistenciaReporteRow = Database['public']['Tables']['asistencia_diaria']['Row']&{
+  empleados?: {nombres: string; apellido_paterno: string; apellido_materno: string}| null;
+};
 
 /**
  * Obtiene y agrupa a los empleados por su hora de entrada y estatus.
@@ -35,27 +38,35 @@ export async function getEmpleadosAgrupadosPorHoraEntrada(
   return data || [];
 }
 
+
 /**
- * Consulta el historial de asistencias, faltas, vacaciones e incapacidades
- * usando la función RPC de Supabase.
+ * Obtiene el historial de asistencias (no incluye horas extra) desde la base de datos.
+ * @returns {Promise<AsistenciaReporteRow[]>} Un arreglo de objetos que representan el historial de asistencias.
  */
-export async function getHistorialReporte(
+export async function getAsistenciaReporte(
   fechaInicio: string, 
   fechaFin: string, 
   idEmpresa?: number | null | undefined
-): Promise<HistorialAsistenciaRow[]> {
-
+): Promise<AsistenciaReporteRow[]> {
   const supabase = await createServidorClient();
-  let query = supabase.rpc('obtener_historial_asistencia', {
-    fecha_inicio_param: fechaInicio,
-    fecha_fin_param: fechaFin,
-    empresa_id_param: idEmpresa || undefined
-  });
+  let query = supabase
+    .from('asistencia_diaria')
+    .select(`*,
+      empleados ( nombres, apellido_paterno )`)
+      .gte('fecha', fechaInicio) 
+      .lte('fecha', fechaFin)
+      .order('empleados(nombres)', { ascending: true })
+      .order('fecha', { ascending: true });
+    
+    if (idEmpresa) {
+      query = query.eq('id_empresa', idEmpresa);
+    }
+
   const { data, error } = await query;
-  
+
   if (error) {
     throw new Error(`Error al obtener el historial: ${error.message}`);
   }
 
-  return data || [];
+  return data as [];
 }

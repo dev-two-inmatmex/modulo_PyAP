@@ -99,7 +99,7 @@ const navItems: NavItem[] = [
 
 interface AppSidebarProps {
   userRoles: string[];
-  user: User & { fullName: string; avatarUrl?: string };
+  user: User & { fullName: string; };
 }
 
 export default function AppSidebar({ userRoles, user }: AppSidebarProps) {

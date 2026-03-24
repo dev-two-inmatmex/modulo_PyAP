@@ -61,12 +61,10 @@ export default async function RootLayout({
     const { data: employees } = await supabase.from('empleados').select('id');
     const employeeIds = employees?.map(e => e.id) || [];
     avatarUrls = await getAvatarsMap(employeeIds);
-    const avatarUrl = avatarUrls[user.id];
 
     userData = {
       ...user,
       fullName,
-      avatarUrl: avatarUrl,
     };
   }
 

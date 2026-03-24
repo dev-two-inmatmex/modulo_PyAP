@@ -16,8 +16,8 @@ import { PorcentajeAsistencia } from "./PorcentajeAsistencia";
 import { HistogramaAsistencia } from "./HistogramaAsistencia";
 import { TablasTurnos } from "./TablasTurnos";
 import { HistorialAsistencia } from "./HistorialAsistencia";
-import { getHistorialReporte, type HistorialAsistenciaRow } from "@/services/asistencias";
-
+//import { getHistorialReporte, type HistorialAsistenciaRow } from "@/services/asistencias";
+import { getAsistenciaReporte, type AsistenciaReporteRow } from "@/services/asistencias";
 interface AsistenciaCardProps {
     empresaId: number|null|undefined;
     nombreEmpresa: string|null;
@@ -35,7 +35,8 @@ export function AsistenciaEmpresaCard( {
     // Estados del componente
   const [viewMode, setViewMode] = useState<"hoy" | "rango">("hoy");
   const [date, setDate] = useState<DateRange | undefined>();
-  const [historialData, setHistorialData] = useState<HistorialAsistenciaRow[]>([]);
+  //const [historialData, setHistorialData] = useState<HistorialAsistenciaRow[]>([]);
+  const [historialData, setHistorialData] = useState<AsistenciaReporteRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Efecto que pide los datos a Supabase cuando eliges fechas en el calendario
@@ -45,7 +46,7 @@ export function AsistenciaEmpresaCard( {
       const fromStr = format(date.from, 'yyyy-MM-dd');
       const toStr = format(date.to, 'yyyy-MM-dd');
       
-      getHistorialReporte(fromStr, toStr, empresaId)
+      getAsistenciaReporte(fromStr, toStr, empresaId)
         .then((data) => {
           // 👇 LUPA 1: Vemos qué llega de la base de datos
           console.log("Datos crudos de Supabase:", data);
@@ -107,15 +108,13 @@ export function AsistenciaEmpresaCard( {
           )}
         </div>
       </div>
-
-      {/* 2. CONTENIDO DINÁMICO (Hoy vs Rango) */}
+      
       {viewMode === "hoy" ? (
         <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div className="col-span-1 md:col-span-2 lg:col-span-2">
               <PorcentajeAsistencia segmentos={segmentoDona} totalEsperados={totalEsperadosHoy} />
             </div>
-            {/* Aquí puedes poner métricas extra de HOY si las tienes */}
           </div>
           <TablasTurnos 
             turnos={turnosHoy} 

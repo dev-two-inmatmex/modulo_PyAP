@@ -35,6 +35,51 @@ export type Database = {
         }
         Relationships: []
       }
+      asistencia_diaria: {
+        Row: {
+          created_at: string | null
+          estado_entrada: string | null
+          estado_general: string | null
+          estado_salida: string | null
+          fecha: string
+          hora_entrada_real: string | null
+          hora_salida_real: string | null
+          horas_trabajadas: number | null
+          id: string
+          id_empleado: string
+          id_empresa: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          estado_entrada?: string | null
+          estado_general?: string | null
+          estado_salida?: string | null
+          fecha: string
+          hora_entrada_real?: string | null
+          hora_salida_real?: string | null
+          horas_trabajadas?: number | null
+          id?: string
+          id_empleado: string
+          id_empresa: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          estado_entrada?: string | null
+          estado_general?: string | null
+          estado_salida?: string | null
+          fecha?: string
+          hora_entrada_real?: string | null
+          hora_salida_real?: string | null
+          horas_trabajadas?: number | null
+          id?: string
+          id_empleado?: string
+          id_empresa?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       cat_area_funcional: {
         Row: {
           activo: boolean | null
@@ -768,6 +813,7 @@ export type Database = {
       }
       empleado_turno: {
         Row: {
+          domingo: boolean | null
           fecha_fin: string | null
           fecha_inicio: string | null
           id: number
@@ -782,6 +828,7 @@ export type Database = {
           viernes: boolean | null
         }
         Insert: {
+          domingo?: boolean | null
           fecha_fin?: string | null
           fecha_inicio?: string | null
           id?: number
@@ -796,6 +843,7 @@ export type Database = {
           viernes?: boolean | null
         }
         Update: {
+          domingo?: boolean | null
           fecha_fin?: string | null
           fecha_inicio?: string | null
           id?: number
@@ -966,7 +1014,7 @@ export type Database = {
           },
         ]
       }
-      empleados_estatus_bajas_permanentes: {
+      empleados_estatus_baja: {
         Row: {
           capturado_por: string | null
           ejecutar_a_partir_de: string | null
@@ -1075,61 +1123,96 @@ export type Database = {
           capturado_por: string | null
           dia_fin: string | null
           dia_inicio: string | null
-          empleado_id: string | null
           fecha: string | null
           hora: string | null
           id: number
+          id_empleado: string | null
         }
         Insert: {
           capturado_por?: string | null
           dia_fin?: string | null
           dia_inicio?: string | null
-          empleado_id?: string | null
           fecha?: string | null
           hora?: string | null
           id?: number
+          id_empleado?: string | null
         }
         Update: {
           capturado_por?: string | null
           dia_fin?: string | null
           dia_inicio?: string | null
-          empleado_id?: string | null
           fecha?: string | null
           hora?: string | null
           id?: number
+          id_empleado?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "empleados_estatus_incapacidad_empleado_id_fkey"
-            columns: ["empleado_id"]
+            foreignKeyName: "empleados_estatus_incapacidad_capturado_por_fkey"
+            columns: ["capturado_por"]
             isOneToOne: false
             referencedRelation: "empleados"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "empleados_estatus_incapacidad_empleado_id_fkey"
-            columns: ["empleado_id"]
+            foreignKeyName: "empleados_estatus_incapacidad_capturado_por_fkey"
+            columns: ["capturado_por"]
             isOneToOne: false
             referencedRelation: "vista_empleado_datos_editables"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "empleados_estatus_incapacidad_empleado_id_fkey"
-            columns: ["empleado_id"]
+            foreignKeyName: "empleados_estatus_incapacidad_capturado_por_fkey"
+            columns: ["capturado_por"]
             isOneToOne: false
             referencedRelation: "vista_empleado_ubicacion_chequeo"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "empleados_estatus_incapacidad_empleado_id_fkey"
-            columns: ["empleado_id"]
+            foreignKeyName: "empleados_estatus_incapacidad_capturado_por_fkey"
+            columns: ["capturado_por"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "empleados_estatus_incapacidad_empleado_id_fkey"
-            columns: ["empleado_id"]
+            foreignKeyName: "empleados_estatus_incapacidad_capturado_por_fkey"
+            columns: ["capturado_por"]
+            isOneToOne: false
+            referencedRelation: "vista_lista_empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleados_estatus_incapacidad_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleados_estatus_incapacidad_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_datos_editables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleados_estatus_incapacidad_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_ubicacion_chequeo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleados_estatus_incapacidad_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_horarios_empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleados_estatus_incapacidad_id_empleado_fkey"
+            columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]
@@ -2583,6 +2666,10 @@ export type Database = {
     Functions: {
       admin_revoke_user_sessions: {
         Args: { target_user_id: string }
+        Returns: undefined
+      }
+      generar_asistencia_diaria: {
+        Args: { p_fecha: string }
         Returns: undefined
       }
       obtener_historial_asistencia: {

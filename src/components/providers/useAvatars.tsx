@@ -1,5 +1,3 @@
-// src/hooks/useAvatars.tsx
-
 "use client";
 
 import { createContext, useContext, ReactNode } from 'react';
