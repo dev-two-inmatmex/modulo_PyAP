@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from "react";
 import {
   Card,
   CardContent,
@@ -24,22 +25,26 @@ import {
 import { UserAvatar } from "@/components/reutilizables/UserAvatar";
 import { Clock, CheckCircle2, AlertCircle, XCircle, MinusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import EmpresaLogo from "@/components/reutilizables/empresaLogo";
 
 interface EmpleadoDetalle {
   empleado_id: string;
   nombre_completos: string;
+  id_empresa?: number;
 }
 
 interface TurnoData {
   entrada: string;
   detalles_empleados: EmpleadoDetalle[];
   total_personas: number;
+  id_empresa?: number;
 }
 
 interface TablasTurnosProps {
   turnos: TurnoData[];
   asistencias: Record<string, { hora: string; estatus: string; ubicacion: string }>;
   turnoCompleto: Record<string, { entrada: string; salida: string; salida_descanso: string; regreso_descanso: string }>;
+  mostrarLogo?: boolean;
 }
 
 const formatearHora = (hora: string) => {
@@ -52,54 +57,59 @@ const formatearHora = (hora: string) => {
 
 const getEstatusUI = (storedStatus: string | null) => {
   if (!storedStatus) {
-    return {
-      texto: 'Sin Entrada',
-      clase: 'bg-slate-100 text-slate-600 border-slate-200',
-      icono: <MinusCircle className="w-3 h-3 mr-1" />
-    };
+    return { texto: 'Sin Entrada', clase: 'bg-slate-100 text-slate-600 border-slate-200', icono: <MinusCircle className="w-3 h-3 mr-1" /> };
   }
-
-  // Comparamos directamente contra las cadenas de texto almacenadas en la base de datos
   switch (storedStatus) {
-    case 'Puntual':
-      return {
-        texto: 'Puntual',
-        clase: 'bg-green-100 text-green-800 border-green-300',
-        icono: <CheckCircle2 className="w-3 h-3 mr-1" />
-      };
-    case 'Retraso Leve':
-      return {
-        texto: 'Retraso Leve',
-        clase: 'bg-orange-100 text-orange-800 border-orange-300',
-        icono: <Clock className="w-3 h-3 mr-1" />
-      };
-    case 'Retraso Grave':
-      return {
-        texto: 'Retraso Grave',
-        clase: 'bg-red-100 text-red-800 border-red-300',
-        icono: <AlertCircle className="w-3 h-3 mr-1" />
-      };
-    default:
-      // Fallback para estatus desconocidos o inesperados
-      return {
-        texto: 'Estatus Desconocido',
-        clase: 'bg-slate-100 text-slate-600 border-slate-200',
-        icono: <MinusCircle className="w-3 h-3 mr-1" />
-      };
+    case 'Puntual': return { texto: 'Puntual', clase: 'bg-green-100 text-green-800 border-green-300', icono: <CheckCircle2 className="w-3 h-3 mr-1" /> };
+    case 'Retraso Leve': return { texto: 'Retraso Leve', clase: 'bg-orange-100 text-orange-800 border-orange-300', icono: <Clock className="w-3 h-3 mr-1" /> };
+    case 'Retraso Grave': return { texto: 'Retraso Grave', clase: 'bg-red-100 text-red-800 border-red-300', icono: <AlertCircle className="w-3 h-3 mr-1" /> };
+    default: return { texto: 'Estatus Desconocido', clase: 'bg-slate-100 text-slate-600 border-slate-200', icono: <MinusCircle className="w-3 h-3 mr-1" /> };
   }
 };
 
-export function TablasTurnos({ turnos, asistencias, turnoCompleto }: TablasTurnosProps) {
-  if (!turnos || turnos.length === 0) {
+export function TablasTurnos({ turnos, asistencias, turnoCompleto, mostrarLogo=false }: TablasTurnosProps) {
+  
+  const turnosAgrupados = React.useMemo(() => {
+    if (!turnos) return [];
+    
+    const agrupados: Record<string, TurnoData> = {};
+    
+    turnos.forEach(turno => {
+      // Si la hora aún no existe en nuestro objeto, la creamos
+      const empleadosConEmpresa = turno.detalles_empleados.map(emp => ({
+        ...emp,
+        id_empresa: turno.id_empresa 
+      }));
+      if (!agrupados[turno.entrada]) {
+        agrupados[turno.entrada] = {
+          entrada: turno.entrada,
+          // Clonamos el arreglo para no modificar los datos originales por accidente
+          detalles_empleados: [...empleadosConEmpresa], 
+          total_personas: turno.total_personas
+        };
+      } else {
+        // Si ya existe otra empresa con la misma hora, fusionamos a los empleados
+        agrupados[turno.entrada].detalles_empleados.push(...empleadosConEmpresa);
+        agrupados[turno.entrada].total_personas += turno.total_personas;
+      }
+    });
+
+    // Convertimos el objeto de vuelta a un arreglo y lo ordenamos por hora
+    return Object.values(agrupados).sort((a, b) => a.entrada.localeCompare(b.entrada));
+  }, [turnos]);
+
+  if (!turnosAgrupados || turnosAgrupados.length === 0) {
     return <p>No hay datos de turnos para mostrar.</p>;
   }
 
   return (
     <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-1">
-      {turnos.map((turno) => {
+      {/* 👇 Ahora mapeamos 'turnosAgrupados' en lugar de 'turnos' 👇 */}
+      {turnosAgrupados.map((turno) => {
         const llegaron = turno.detalles_empleados.filter(e => asistencias[e.empleado_id]).length;
         return (
-          <Card key={turno.entrada} className="overflow-hidden shawdow-sm">
+          // Al estar agrupados, la llave 'turno.entrada' vuelve a ser 100% única
+          <Card key={turno.entrada} className="overflow-hidden shadow-sm">
             <CardHeader className="bg-slate-50 border-b py-4">
               <CardTitle className="text-lg flex justify-between items-center">
                 <span>Turno: {formatearHora(turno.entrada)}</span>
@@ -115,7 +125,8 @@ export function TablasTurnos({ turnos, asistencias, turnoCompleto }: TablasTurno
                   <TableRow className="bg-slate-50/50">
                     <TableHead className="w-15"></TableHead>
                     <TableHead>Nombre</TableHead>
-                    <TableHead>LLegada</TableHead>
+                    <TableHead>Empresa</TableHead>
+                    <TableHead>Llegada</TableHead>
                     <TableHead>Estatus</TableHead>
                     <TableHead>Ubicacion</TableHead>
                   </TableRow>
@@ -131,12 +142,18 @@ export function TablasTurnos({ turnos, asistencias, turnoCompleto }: TablasTurno
                           <TableRow className="cursor-pointer hover:bg-slate-50/50">
                             <TableCell>
                               <UserAvatar
-                                employeeId={empleado.empleado_id}
+                                // Revisa si tu componente UserAvatar espera 'employeeId' o 'url'. Si marca error, ajustalo según tu interfaz.
+                                employeeId={empleado.empleado_id} 
                                 name={empleado.nombre_completos}
                                 className="w-10 h-10"
                               />
                             </TableCell>
                             <TableCell>{empleado.nombre_completos}</TableCell>
+                            <TableCell>
+                            {mostrarLogo && empleado.id_empresa && (
+                                  <EmpresaLogo id={empleado.id_empresa} wyh={20} />
+                                )}
+                            </TableCell>
                             <TableCell className="text-slate-600 font-mono text-sm">
                               {asistencia ? formatearHora(asistencia.hora) : '--:--'}
                             </TableCell>
@@ -177,7 +194,6 @@ export function TablasTurnos({ turnos, asistencias, turnoCompleto }: TablasTurno
                                   { !asistencia &&(
                                   <Button variant="outline">Guardar Falta</Button>)}
                                 </div>
-
                               </>
                             ) : (
                               <span>Sin horario asignado</span>

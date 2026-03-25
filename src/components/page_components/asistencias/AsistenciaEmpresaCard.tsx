@@ -119,8 +119,8 @@ export function AsistenciaEmpresaCard( {
           <TablasTurnos 
             turnos={turnosHoy} 
             asistencias={asistenciasMap} 
-            turnoCompleto={turnoCompletoMap} 
-            fechaDelDia={fechaDelDia} 
+            turnoCompleto={turnoCompletoMap}
+            mostrarLogo={empresaId === null}
           />
         </div>
       ) : (
