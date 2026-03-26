@@ -207,13 +207,12 @@ export function EditarHorarioModal({
 
               {horarioSeleccionado !== "descanso" && horarioSeleccionado !== "" && (
                 <div className="space-y-2 animate-in fade-in zoom-in-95">
-                  <Label className="text-xs text-muted-foreground">Comida (Opcional)</Label>
+                  <Label className="text-xs text-muted-foreground">Descanso (Obligatorio) *</Label>
                   <Select value={descansoSeleccionado} onValueChange={setDescansoSeleccionado}>
                     <SelectTrigger className="bg-white">
-                      <SelectValue placeholder="Selecciona horario..." />
+                      <SelectValue placeholder="Selecciona horario de descanso..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="descanso" className="font-semibold text-slate-500">Sin comida</SelectItem>
                       {descansosDisponibles.map(d => (
                         <SelectItem key={d.id} value={d.id.toString()}>
                           {d.nombre} ({d.inicio} - {d.fin})
@@ -229,10 +228,15 @@ export function EditarHorarioModal({
               <Button 
                 className="w-full mt-4" 
                 onClick={aplicarCambioPreview}
-                disabled={diasSeleccionados.length === 0 || !horarioSeleccionado}
+                disabled={
+                  diasSeleccionados.length === 0 || 
+                  !horarioSeleccionado ||           
+                  (horarioSeleccionado !== "descanso" && !descansoSeleccionado)
+                }
               >
                 Pintar en la Cuadrícula <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
+
             </div>
           </div>
           <div className="lg:col-span-8 flex flex-col bg-white border rounded-xl shadow-sm overflow-hidden h-150">
@@ -324,7 +328,7 @@ export function EditarHorarioModal({
                             }}
                           >
                             <span className={`text-[9px] font-bold uppercase tracking-widest ${isModificado ? 'text-orange-900' : 'text-slate-600'}`}>
-                              Comida
+                              Descanso
                             </span>
                           </div>
                         )}
@@ -343,7 +347,12 @@ export function EditarHorarioModal({
           <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isSaving}>
             Cancelar
           </Button>
-          <Button onClick={handleGuardarCambios} className="bg-blue-600 hover:bg-blue-700" disabled={isSaving}>
+          <Button onClick={handleGuardarCambios} className="bg-blue-600 hover:bg-blue-700" disabled={
+                  isSaving ||
+                  diasSeleccionados.length === 0 || // Faltan días
+                  !horarioSeleccionado ||           // Falta turno
+                  (horarioSeleccionado !== "descanso" && !descansoSeleccionado)
+                }>
             <Save className="w-4 h-4 mr-2" />
             {isSaving ? "Guardando Masivamente..." : "Confirmar y Guardar Cambios"}
           </Button>
