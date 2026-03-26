@@ -1,8 +1,8 @@
+"use server"
 import { createServidorClient } from "@/lib/supabase/server";
 import { Database } from "@/types/database.types";
 type turno = Database["public"]["Views"]["vista_horarios_empleados"]["Row"];
 type turnos = Database["public"]["Views"]["vista_horarios_empleados_semanal"]["Row"];
-
 
 /**
  * Obtiene todos los horarios de los empleados.
@@ -50,4 +50,101 @@ export async function getHorarioEmpleadoDelDia(
         throw new Error(`Error al consultar la vista de horarios de empleados: ${error.message}`);
     }
     return data || [];
+}
+
+export type DiaSemana = 'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes' | 'sabado' | 'domingo';
+
+export interface AsignacionDia { 
+  id_horario: number | null; 
+  id_descanso: number | null; 
+}
+
+// HorarioDraft es un objeto que forzosamente tiene los 7 días de la semana, 
+// y cada día contiene su id_horario y id_descanso (o null si es día libre).
+export type HorarioDraft = Record<DiaSemana, AsignacionDia>;
+
+
+// ==========================================
+// 2. FUNCIONES DE CATÁLOGOS
+// ==========================================
+
+// Obtiene las opciones para el Select de Horarios
+export async function getOpcionesHorarios() {
+  const supabase = await createServidorClient();
+  const { data, error } = await supabase.from('horarios').select('*').order('id');
+  
+  if (error) {
+    console.error("Error al obtener horarios:", error);
+    return [];
+  }
+
+  return (data || []).map(h => ({
+    id: Number(h.id),
+    nombre: h.tipo ? h.tipo.toUpperCase() : 'General', // Ej. "PRODUCCION"
+    entrada: h.hora_entrada ? h.hora_entrada.substring(0, 5) : '--:--',
+    salida: h.hora_salida ? h.hora_salida.substring(0, 5) : '--:--'
+  }));
+}
+
+// Obtiene las opciones para el Select de Descansos/Comidas
+export async function getOpcionesDescansos() {
+  const supabase = await createServidorClient();
+  const { data, error } = await supabase.from('descansos').select('*').order('id');
+  
+  if (error) {
+    console.error("Error al obtener descansos:", error);
+    return [];
+  }
+
+  return (data || []).map(d => ({
+    id: Number(d.id),
+    nombre: `Turno ${d.id}`, 
+    inicio: d.inicio_descanso ? d.inicio_descanso.substring(0, 5) : '--:--',
+    fin: d.fin_descanso ? d.fin_descanso.substring(0, 5) : '--:--'
+  }));
+}
+
+
+// ==========================================
+// 3. FUNCIÓN DE MAPEO (EL "ROMPECABEZAS" DEL EMPLEADO)
+// ==========================================
+
+// Obtiene el horario ACTUAL del empleado desde `empleado_turno` y lo formatea como un HorarioDraft
+export async function getHorarioBaseActualEmpleado(empleadoId: string |null): Promise<HorarioDraft> {
+  const supabase = await createServidorClient();
+  
+  // Plantilla en blanco (Asume por defecto que descansa toda la semana)
+  const horarioBase: HorarioDraft = {
+    lunes: { id_horario: null, id_descanso: null },
+    martes: { id_horario: null, id_descanso: null },
+    miercoles: { id_horario: null, id_descanso: null },
+    jueves: { id_horario: null, id_descanso: null },
+    viernes: { id_horario: null, id_descanso: null },
+    sabado: { id_horario: null, id_descanso: null },
+    domingo: { id_horario: null, id_descanso: null },
+  };
+
+  const { data, error } = await supabase
+    .from('empleado_turno')
+    .select('*')
+    .eq('id_empleado', empleadoId);
+
+  if (!error && data) {
+    const diasSemana: DiaSemana[] = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+    
+    // Recorremos todas las filas en la BD de este empleado
+    data.forEach((filaTurno: any) => {
+      diasSemana.forEach(dia => {
+        // Si el día está marcado como 'true', lo asignamos al "Draft"
+        if (filaTurno[dia] === true) {
+          horarioBase[dia] = {
+            id_horario: filaTurno.id_horario ? Number(filaTurno.id_horario) : null,
+            id_descanso: filaTurno.id_descanso ? Number(filaTurno.id_descanso) : null
+          };
+        }
+      });
+    });
+  }
+
+  return horarioBase;
 }

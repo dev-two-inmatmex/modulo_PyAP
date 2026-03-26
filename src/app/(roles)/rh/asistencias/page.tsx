@@ -5,9 +5,10 @@ import { RealtimeAsistencias } from "@/hooks/useRealtimeChecadorRegistros";
 import { getEmpleadosAgrupadosPorHoraEntrada } from "@/services/asistencias";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getEmpresas } from "@/services/empresas";
+import { EmpresaColor } from "@/services/empresas-data";
 import { getHorarioEmpleadoDelDia } from "@/services/horarios";
 import { AsistenciaEmpresaCard } from "@/components/page_components/asistencias/AsistenciaEmpresaCard";
-import  EmpresaLogo from "@/components/reutilizables/empresaLogo";
+import EmpresaLogo from "@/components/reutilizables/EmpresaLogo";
 
 export default async function AsistenciasPage() {
   const supabase = await createServidorClient();
@@ -62,21 +63,12 @@ export default async function AsistenciasPage() {
     }
   });
 
-  // 3. Colores del tema para asignar uno diferente a cada empresa
-  const coloresGrafica = [
-    "var(--chart-1)",
-    "var(--chart-2)",
-    "var(--chart-3)",
-    "var(--chart-4)",
-    "var(--chart-5)"
-  ];
-
   // 4. Armamos las "Rebanadas" globales (Pestaña Todos)
   const segmentosGlobales = empresas.map((empresa, index) => ({
     id: `empresa_${empresa.id}`,
     label: empresa.nombre_empresa,
     count: llegadasPorEmpresa[empresa.id] || 0,
-    color: coloresGrafica[index % coloresGrafica.length]
+    color: EmpresaColor(empresa.id)
   }));
   return (
     <div className="container mx-auto py-1">
@@ -110,7 +102,7 @@ export default async function AsistenciasPage() {
             fechaDelDia={today}
           />
         </TabsContent>
-        {empresas.map((empresa, index) => {
+        {empresas.map((empresa) => {
 
           // 1. Filtramos los turnos
           const turnosDeEstaEmpresa = turnos_entrada?.filter(
@@ -128,7 +120,7 @@ export default async function AsistenciasPage() {
             id: `empresa_${empresa.id}`,
             label: empresa.nombre_empresa,
             count: llegadasEmpresa, // La variable que ya calculaste
-            color: coloresGrafica[index % coloresGrafica.length] // Usa su mismo color global
+            color: EmpresaColor(empresa.id) // Usa su mismo color global
           }];
 
           return (

@@ -13,7 +13,7 @@ import { useRealtimeReloj } from '@/hooks/useRealtimeReloj';
 import { useGeocerca } from '@/hooks/useGeoCerca';
 import { IndicadorUbicacion } from '@/components/reutilizables/IndicadorUbicacion';
 import { BotonMantenido } from '@/components/reutilizables/MantenidoButton';
-import{ Label } from '@/components/ui/label';
+import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Database } from "@/types/database.types";
 type EmpleadoTurno = Database["public"]["Views"]["vista_horarios_empleados"]["Row"];
@@ -60,7 +60,7 @@ export function ChecadorReloj({
     const currentMins = serverDateTime.getHours() * 60 + serverDateTime.getMinutes();
 
     // Función auxiliar para convertir las horas del turno a minutos
-    const getMins = (t: string | null| undefined) => {
+    const getMins = (t: string | null | undefined) => {
       if (!t) return 0;
       const [h, m] = t?.split(':').map(Number);
       return h * 60 + m;

@@ -32,7 +32,6 @@ import { Input } from '@/components/ui/input';
 import {toast} from 'sonner';
 import { Vista_Lista_Empleados, Vista_Empleado_Datos_Editables, Telefono } from '@/services/types';
 import { getEmployeeDetails, updateEmployeeAddress, updateEmployeePhones, updateAvatar, resetUserPassword } from '@/app/(roles)/rh/empleados/actions';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from "@/components/ui/skeleton";
 import Cropper, { ReactCropperElement } from "react-cropper";
 import "cropperjs/dist/cropper.css";

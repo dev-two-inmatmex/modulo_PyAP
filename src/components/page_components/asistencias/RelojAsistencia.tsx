@@ -22,7 +22,7 @@ export default function RelojAsistencia() {
   // mostramos un texto genérico o vacío para que coincida perfectamente.
   if (!mounted) {
     return (
-      <div className="text-5xl font-bold text-gray-800 dark:text-white">
+      <div className="text-3xl font-bold text-gray-800 dark:text-white">
         --:--:--
       </div>
     );
@@ -30,7 +30,7 @@ export default function RelojAsistencia() {
 
   // 4. Una vez montado, mostramos la hora real sin problemas de hidratación
   return (
-    <div className="text-5xl font-bold text-gray-800 dark:text-white">
+    <div className="text-4xl font-bold text-gray-800 dark:text-white">
       {time.toLocaleTimeString('es-MX')}
     </div>
   );

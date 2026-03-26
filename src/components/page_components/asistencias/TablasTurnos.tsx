@@ -25,7 +25,7 @@ import {
 import { UserAvatar } from "@/components/reutilizables/UserAvatar";
 import { Clock, CheckCircle2, AlertCircle, XCircle, MinusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import EmpresaLogo from "@/components/reutilizables/empresaLogo";
+import EmpresaLogo from "@/components/reutilizables/EmpresaLogo";
 
 interface EmpleadoDetalle {
   empleado_id: string;
@@ -67,24 +67,24 @@ const getEstatusUI = (storedStatus: string | null) => {
   }
 };
 
-export function TablasTurnos({ turnos, asistencias, turnoCompleto, mostrarLogo=false }: TablasTurnosProps) {
-  
+export function TablasTurnos({ turnos, asistencias, turnoCompleto, mostrarLogo = false }: TablasTurnosProps) {
+
   const turnosAgrupados = React.useMemo(() => {
     if (!turnos) return [];
-    
+
     const agrupados: Record<string, TurnoData> = {};
-    
+
     turnos.forEach(turno => {
       // Si la hora aún no existe en nuestro objeto, la creamos
       const empleadosConEmpresa = turno.detalles_empleados.map(emp => ({
         ...emp,
-        id_empresa: turno.id_empresa 
+        id_empresa: turno.id_empresa
       }));
       if (!agrupados[turno.entrada]) {
         agrupados[turno.entrada] = {
           entrada: turno.entrada,
           // Clonamos el arreglo para no modificar los datos originales por accidente
-          detalles_empleados: [...empleadosConEmpresa], 
+          detalles_empleados: [...empleadosConEmpresa],
           total_personas: turno.total_personas
         };
       } else {
@@ -123,9 +123,10 @@ export function TablasTurnos({ turnos, asistencias, turnoCompleto, mostrarLogo=f
               <Table>
                 <TableHeader>
                   <TableRow className="bg-slate-50/50">
-                    <TableHead className="w-15"></TableHead>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Empresa</TableHead>
+                    <TableHead>Empleado</TableHead>
+                    {mostrarLogo && (
+                      <TableHead>Emp.</TableHead>
+                    )}
                     <TableHead>Llegada</TableHead>
                     <TableHead>Estatus</TableHead>
                     <TableHead>Ubicacion</TableHead>
@@ -140,20 +141,23 @@ export function TablasTurnos({ turnos, asistencias, turnoCompleto, mostrarLogo=f
                       <Popover key={empleado.empleado_id}>
                         <PopoverTrigger asChild>
                           <TableRow className="cursor-pointer hover:bg-slate-50/50">
-                            <TableCell>
-                              <UserAvatar
-                                // Revisa si tu componente UserAvatar espera 'employeeId' o 'url'. Si marca error, ajustalo según tu interfaz.
-                                employeeId={empleado.empleado_id} 
-                                name={empleado.nombre_completos}
-                                className="w-10 h-10"
-                              />
+                            <TableCell className="font-medium">
+                              <div className="flex items-center gap-3">
+                                <UserAvatar
+                                  employeeId={empleado.empleado_id}
+                                  name={empleado.nombre_completos}
+                                  className="w-10 h-10"
+                                />
+                                <span>{empleado.nombre_completos}</span>
+                              </div>
                             </TableCell>
-                            <TableCell>{empleado.nombre_completos}</TableCell>
-                            <TableCell>
+
                             {mostrarLogo && empleado.id_empresa && (
-                                  <EmpresaLogo id={empleado.id_empresa} wyh={20} />
-                                )}
-                            </TableCell>
+                              <TableCell>
+                                <EmpresaLogo id={empleado.id_empresa} wyh={20} />
+                              </TableCell>
+                            )}
+
                             <TableCell className="text-slate-600 font-mono text-sm">
                               {asistencia ? formatearHora(asistencia.hora) : '--:--'}
                             </TableCell>
@@ -172,32 +176,32 @@ export function TablasTurnos({ turnos, asistencias, turnoCompleto, mostrarLogo=f
                           <PopoverHeader>
                             <PopoverTitle>Turno Completo</PopoverTitle>
                             <div >
-                            {turnohyd ? (
-                              <>
-                                <div >
-                                  <span>Entrada: </span>
-                                  <span>{formatearHora(turnohyd.entrada)}</span>
-                                </div>
-                                <div >
-                                  <span>Salida Descanso: </span>
-                                  <span>{formatearHora(turnohyd.salida_descanso)}</span>
-                                </div>
-                                <div >
-                                  <span>Regreso Descanso: </span>
-                                  <span>{formatearHora(turnohyd.regreso_descanso)}</span>
-                                </div>
-                                <div >
-                                  <span >Salida: </span>
-                                  <span>{formatearHora(turnohyd.salida)}</span>
-                                </div>
-                                <div>
-                                  { !asistencia &&(
-                                  <Button variant="outline">Guardar Falta</Button>)}
-                                </div>
-                              </>
-                            ) : (
-                              <span>Sin horario asignado</span>
-                            )}
+                              {turnohyd ? (
+                                <>
+                                  <div >
+                                    <span>Entrada: </span>
+                                    <span>{formatearHora(turnohyd.entrada)}</span>
+                                  </div>
+                                  <div >
+                                    <span>Salida Descanso: </span>
+                                    <span>{formatearHora(turnohyd.salida_descanso)}</span>
+                                  </div>
+                                  <div >
+                                    <span>Regreso Descanso: </span>
+                                    <span>{formatearHora(turnohyd.regreso_descanso)}</span>
+                                  </div>
+                                  <div >
+                                    <span >Salida: </span>
+                                    <span>{formatearHora(turnohyd.salida)}</span>
+                                  </div>
+                                  <div>
+                                    {!asistencia && (
+                                      <Button variant="outline">Guardar Falta</Button>)}
+                                  </div>
+                                </>
+                              ) : (
+                                <span>Sin horario asignado</span>
+                              )}
                             </div>
                           </PopoverHeader>
                         </PopoverContent>

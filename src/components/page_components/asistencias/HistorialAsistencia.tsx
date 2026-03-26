@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from "react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -9,13 +10,15 @@ import { UserAvatar } from "@/components/reutilizables/UserAvatar";
 import { Clock, CheckCircle2, AlertCircle, UserMinus, Palmtree, Stethoscope, Ban, CalendarX, Coffee } from "lucide-react";
 import { toast } from "sonner";
 import type { AsistenciaReporteRow } from "@/services/asistencias";
+import EmpresaLogo from "@/components/reutilizables/EmpresaLogo";
 
 interface HistorialProps {
   historial: AsistenciaReporteRow[];
+  mostrarLogo?: boolean;
 }
 
-export function HistorialAsistencia({ historial}: HistorialProps) {
-  
+export function HistorialAsistencia({ historial, mostrarLogo = false }: HistorialProps) {
+
   const getEstatusUI = (registro: AsistenciaReporteRow) => {
     if (registro.estado_general !== 'LABORAL') {
       switch (registro.estado_general) {
@@ -27,7 +30,7 @@ export function HistorialAsistencia({ historial}: HistorialProps) {
         case 'SIN_HORARIO': return <Badge variant="outline"><CalendarX className="w-3 h-3 mr-1" /> Sin Horario Asignado</Badge>;
       }
     }
-    
+
     if (registro.hora_entrada_real) {
       switch (registro.estado_entrada) {
         case 'PUNTUAL': return <Badge className="bg-green-100 text-green-800"><CheckCircle2 className="w-3 h-3 mr-1" /> Puntual</Badge>;
@@ -35,13 +38,13 @@ export function HistorialAsistencia({ historial}: HistorialProps) {
         case 'RETARDO_GRAVE': return <Badge className="bg-red-100 text-red-800"><AlertCircle className="w-3 h-3 mr-1" /> Retraso Grave</Badge>;
       }
     }
-    
+
     return <Badge variant="outline">Asistencia Registrada</Badge>;
   };
 
   const formatHora = (timeString: string | null) => {
     if (!timeString) return '--:--';
-    return timeString.substring(0, 5); 
+    return timeString.substring(0, 5);
   };
 
   // Calculamos el nombre del día ("Lunes", "Martes") porque ya no viene de la base de datos
@@ -64,7 +67,8 @@ export function HistorialAsistencia({ historial}: HistorialProps) {
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-50 dark:bg-slate-800/50">
-            <TableHead>Empleado</TableHead>
+            <TableHead>Empleada</TableHead>
+            <TableHead></TableHead>
             <TableHead>Día y Fecha</TableHead>
             <TableHead>Entrada - Salida</TableHead>
             <TableHead>Estatus</TableHead>
@@ -73,23 +77,28 @@ export function HistorialAsistencia({ historial}: HistorialProps) {
         </TableHeader>
         <TableBody>
           {historial.map((row: AsistenciaReporteRow, idx: number) => {
-            const nombreCompleto = row.empleados 
-              ? `${row.empleados.nombres.split(' ')[0]} ${row.empleados.apellido_paterno}` 
+            const nombreCompleto = row.empleados
+              ? `${row.empleados.nombres.split(' ')[0]} ${row.empleados.apellido_paterno}`
               : 'Desconocido';
-              
+
             const esFaltaInjustificada = row.estado_general === 'FALTA';
-            
+
             return (
               <TableRow key={`${row.id_empleado}-${row.fecha}-${idx}`} className="hover:bg-slate-50/50">
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-3">
-                    <UserAvatar 
-                      employeeId={row.id_empleado} 
-                      name={nombreCompleto} 
-                      className="w-9 h-9 border" 
+                    <UserAvatar
+                      employeeId={row.id_empleado}
+                      name={nombreCompleto}
+                      className="w-9 h-9 border"
                     />
                     <span>{nombreCompleto}</span>
                   </div>
+                </TableCell>
+                <TableCell>
+                  {mostrarLogo && row.id_empresa && (
+                    <EmpresaLogo id={row.id_empresa} wyh={20} />
+                  )}
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-col">
@@ -109,9 +118,9 @@ export function HistorialAsistencia({ historial}: HistorialProps) {
                 </TableCell>
                 <TableCell className="text-right">
                   {esFaltaInjustificada ? (
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
+                    <Button
+                      size="sm"
+                      variant="outline"
                       className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 h-8"
                       onClick={() => toast.info(`Justificar falta de ${nombreCompleto}`)}
                     >

@@ -78,7 +78,43 @@ export type Database = {
           id_empresa?: number
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "asistencia_diaria_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asistencia_diaria_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_datos_editables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asistencia_diaria_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_ubicacion_chequeo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asistencia_diaria_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_horarios_empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asistencia_diaria_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_lista_empleados"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cat_area_funcional: {
         Row: {
@@ -268,6 +304,21 @@ export type Database = {
             referencedColumns: ["sku"]
           },
         ]
+      }
+      config_sistema: {
+        Row: {
+          clave: string
+          valor_f: string | null
+        }
+        Insert: {
+          clave: string
+          valor_f?: string | null
+        }
+        Update: {
+          clave?: string
+          valor_f?: string | null
+        }
+        Relationships: []
       }
       config_ubicaciones: {
         Row: {
@@ -814,8 +865,6 @@ export type Database = {
       empleado_turno: {
         Row: {
           domingo: boolean | null
-          fecha_fin: string | null
-          fecha_inicio: string | null
           id: number
           id_descanso: number | null
           id_empleado: string | null
@@ -829,8 +878,6 @@ export type Database = {
         }
         Insert: {
           domingo?: boolean | null
-          fecha_fin?: string | null
-          fecha_inicio?: string | null
           id?: number
           id_descanso?: number | null
           id_empleado?: string | null
@@ -844,8 +891,6 @@ export type Database = {
         }
         Update: {
           domingo?: boolean | null
-          fecha_fin?: string | null
-          fecha_inicio?: string | null
           id?: number
           id_descanso?: number | null
           id_empleado?: string | null
@@ -1827,96 +1872,96 @@ export type Database = {
       }
       registro_empleado_cambio_turno: {
         Row: {
-          cambios: Json | null
-          capturado_por: string | null
-          fecha: string | null
-          hora: string | null
+          comentarios: string | null
+          fecha_cambio: string | null
           id: number
-          id_empleado: string | null
+          id_empleado: string
+          modificado_por: string | null
+          nuevo_horario: Json
         }
         Insert: {
-          cambios?: Json | null
-          capturado_por?: string | null
-          fecha?: string | null
-          hora?: string | null
+          comentarios?: string | null
+          fecha_cambio?: string | null
           id?: number
-          id_empleado?: string | null
+          id_empleado: string
+          modificado_por?: string | null
+          nuevo_horario: Json
         }
         Update: {
-          cambios?: Json | null
-          capturado_por?: string | null
-          fecha?: string | null
-          hora?: string | null
+          comentarios?: string | null
+          fecha_cambio?: string | null
           id?: number
-          id_empleado?: string | null
+          id_empleado?: string
+          modificado_por?: string | null
+          nuevo_horario?: Json
         }
         Relationships: [
           {
-            foreignKeyName: "registro_empleado_cambio_turno_capturado_por_fkey"
-            columns: ["capturado_por"]
+            foreignKeyName: "registro_empleado_cambio_turno_id_empleado_fkey"
+            columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "empleados"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "registro_empleado_cambio_turno_capturado_por_fkey"
-            columns: ["capturado_por"]
+            foreignKeyName: "registro_empleado_cambio_turno_id_empleado_fkey"
+            columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_empleado_datos_editables"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "registro_empleado_cambio_turno_capturado_por_fkey"
-            columns: ["capturado_por"]
+            foreignKeyName: "registro_empleado_cambio_turno_id_empleado_fkey"
+            columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_empleado_ubicacion_chequeo"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "registro_empleado_cambio_turno_capturado_por_fkey"
-            columns: ["capturado_por"]
+            foreignKeyName: "registro_empleado_cambio_turno_id_empleado_fkey"
+            columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "registro_empleado_cambio_turno_capturado_por_fkey"
-            columns: ["capturado_por"]
+            foreignKeyName: "registro_empleado_cambio_turno_id_empleado_fkey"
+            columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "registro_empleado_cambio_turno_id_empleado_fkey"
-            columns: ["id_empleado"]
+            foreignKeyName: "registro_empleado_cambio_turno_modificado_por_fkey"
+            columns: ["modificado_por"]
             isOneToOne: false
             referencedRelation: "empleados"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "registro_empleado_cambio_turno_id_empleado_fkey"
-            columns: ["id_empleado"]
+            foreignKeyName: "registro_empleado_cambio_turno_modificado_por_fkey"
+            columns: ["modificado_por"]
             isOneToOne: false
             referencedRelation: "vista_empleado_datos_editables"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "registro_empleado_cambio_turno_id_empleado_fkey"
-            columns: ["id_empleado"]
+            foreignKeyName: "registro_empleado_cambio_turno_modificado_por_fkey"
+            columns: ["modificado_por"]
             isOneToOne: false
             referencedRelation: "vista_empleado_ubicacion_chequeo"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "registro_empleado_cambio_turno_id_empleado_fkey"
-            columns: ["id_empleado"]
+            foreignKeyName: "registro_empleado_cambio_turno_modificado_por_fkey"
+            columns: ["modificado_por"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "registro_empleado_cambio_turno_id_empleado_fkey"
-            columns: ["id_empleado"]
+            foreignKeyName: "registro_empleado_cambio_turno_modificado_por_fkey"
+            columns: ["modificado_por"]
             isOneToOne: false
             referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]

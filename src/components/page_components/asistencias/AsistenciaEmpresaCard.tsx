@@ -16,23 +16,22 @@ import { PorcentajeAsistencia } from "./PorcentajeAsistencia";
 import { HistogramaAsistencia } from "./HistogramaAsistencia";
 import { TablasTurnos } from "./TablasTurnos";
 import { HistorialAsistencia } from "./HistorialAsistencia";
-//import { getHistorialReporte, type HistorialAsistenciaRow } from "@/services/asistencias";
 import { getAsistenciaReporte, type AsistenciaReporteRow } from "@/services/asistencias";
 interface AsistenciaCardProps {
-    empresaId: number|null|undefined;
-    nombreEmpresa: string|null;
-    turnosHoy: any[];
-    asistenciasMap: any;
-    turnoCompletoMap: any;
-    segmentoDona: any[];
-    totalEsperadosHoy: number;
-    fechaDelDia: string;
+  empresaId: number | null | undefined;
+  nombreEmpresa: string | null;
+  turnosHoy: any[];
+  asistenciasMap: any;
+  turnoCompletoMap: any;
+  segmentoDona: any[];
+  totalEsperadosHoy: number;
+  fechaDelDia: string;
 }
 
-export function AsistenciaEmpresaCard( {
-    empresaId, nombreEmpresa, turnosHoy, asistenciasMap, turnoCompletoMap, segmentoDona, totalEsperadosHoy, fechaDelDia
-}:AsistenciaCardProps) {
-    // Estados del componente
+export function AsistenciaEmpresaCard({
+  empresaId, nombreEmpresa, turnosHoy, asistenciasMap, turnoCompletoMap, segmentoDona, totalEsperadosHoy, fechaDelDia
+}: AsistenciaCardProps) {
+  // Estados del componente
   const [viewMode, setViewMode] = useState<"hoy" | "rango">("hoy");
   const [date, setDate] = useState<DateRange | undefined>();
   //const [historialData, setHistorialData] = useState<HistorialAsistenciaRow[]>([]);
@@ -45,7 +44,7 @@ export function AsistenciaEmpresaCard( {
       setIsLoading(true);
       const fromStr = format(date.from, 'yyyy-MM-dd');
       const toStr = format(date.to, 'yyyy-MM-dd');
-      
+
       getAsistenciaReporte(fromStr, toStr, empresaId)
         .then((data) => {
           // 👇 LUPA 1: Vemos qué llega de la base de datos
@@ -63,21 +62,19 @@ export function AsistenciaEmpresaCard( {
           toast.error("Error de Supabase: " + err.message);
         })
         .finally(() => setIsLoading(false));
-      }
+    }
   }, [viewMode, date, empresaId]);
 
   return (
-    <div className="">
-      
-      {/* 1. BARRA DE CONTROL (Interruptor Hoy/Rango y Calendario) */}
+    <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-lg border shadow-sm">
         <h2 className="text-xl font-bold tracking-tight">
           Asistencia: <span className="text-primary">{nombreEmpresa}</span>
         </h2>
-        
-        <div className="flex items-center gap-4 w-full sm:w-auto">
-          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "hoy" | "rango")} className="w-50">
-            <TabsList className="grid w-full grid-cols-2">
+
+        <div className="grid w-full grid-cols-1">
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "hoy" | "rango")}>
+            <TabsList className="">
               <TabsTrigger value="hoy">Hoy</TabsTrigger>
               <TabsTrigger value="rango">Rango</TabsTrigger>
             </TabsList>
@@ -108,17 +105,13 @@ export function AsistenciaEmpresaCard( {
           )}
         </div>
       </div>
-      
+
       {viewMode === "hoy" ? (
         <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="col-span-1 md:col-span-2 lg:col-span-2">
-              <PorcentajeAsistencia segmentos={segmentoDona} totalEsperados={totalEsperadosHoy} />
-            </div>
-          </div>
-          <TablasTurnos 
-            turnos={turnosHoy} 
-            asistencias={asistenciasMap} 
+            <PorcentajeAsistencia segmentos={segmentoDona} totalEsperados={totalEsperadosHoy} />
+          <TablasTurnos
+            turnos={turnosHoy}
+            asistencias={asistenciasMap}
             turnoCompleto={turnoCompletoMap}
             mostrarLogo={empresaId === null}
           />
@@ -128,10 +121,10 @@ export function AsistenciaEmpresaCard( {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div className="col-span-1 md:col-span-2 lg:col-span-4">
               {/* Le pasamos los datos del historial al histograma (si tu histograma los soporta) */}
-              <HistogramaAsistencia /> 
+              <HistogramaAsistencia />
             </div>
           </div>
-          
+
           <div className="relative">
             {isLoading && (
               <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-lg">
@@ -144,11 +137,14 @@ export function AsistenciaEmpresaCard( {
                 <p>Selecciona una fecha de inicio y fin en el calendario de arriba para generar el reporte.</p>
               </div>
             ) : (
-              <HistorialAsistencia historial={historialData} />
+              <HistorialAsistencia
+                historial={historialData}
+                mostrarLogo={empresaId === null}
+              />
             )}
           </div>
         </div>
       )}
     </div>
-    );
+  );
 }
