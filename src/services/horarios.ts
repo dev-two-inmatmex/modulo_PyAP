@@ -105,10 +105,6 @@ export async function getOpcionesDescansos() {
 }
 
 
-// ==========================================
-// 3. FUNCIÓN DE MAPEO (EL "ROMPECABEZAS" DEL EMPLEADO)
-// ==========================================
-
 // Obtiene el horario ACTUAL del empleado desde `empleado_turno` y lo formatea como un HorarioDraft
 export async function getHorarioBaseActualEmpleado(empleadoId: string |null): Promise<HorarioDraft> {
   const supabase = await createServidorClient();

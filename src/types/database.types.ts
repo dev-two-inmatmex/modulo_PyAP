@@ -1591,91 +1591,66 @@ export type Database = {
       jerarquia: {
         Row: {
           id: number
-          id_empleado: string | null
-          id_jefe_directo: string | null
+          id_empresa: number | null
+          id_padre: number | null
+          id_tipo: number | null
+          nombre_seccion: string | null
         }
         Insert: {
           id?: number
-          id_empleado?: string | null
-          id_jefe_directo?: string | null
+          id_empresa?: number | null
+          id_padre?: number | null
+          id_tipo?: number | null
+          nombre_seccion?: string | null
         }
         Update: {
           id?: number
-          id_empleado?: string | null
-          id_jefe_directo?: string | null
+          id_empresa?: number | null
+          id_padre?: number | null
+          id_tipo?: number | null
+          nombre_seccion?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "jerarquia_id_empleado_fkey"
-            columns: ["id_empleado"]
+            foreignKeyName: "jerarquia_id_empresa_fkey"
+            columns: ["id_empresa"]
             isOneToOne: false
-            referencedRelation: "empleados"
+            referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "jerarquia_id_empleado_fkey"
-            columns: ["id_empleado"]
+            foreignKeyName: "jerarquia_id_padre_fkey"
+            columns: ["id_padre"]
             isOneToOne: false
-            referencedRelation: "vista_empleado_datos_editables"
+            referencedRelation: "jerarquia"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "jerarquia_id_empleado_fkey"
-            columns: ["id_empleado"]
+            foreignKeyName: "jerarquia_id_tipo_fkey"
+            columns: ["id_tipo"]
             isOneToOne: false
-            referencedRelation: "vista_empleado_ubicacion_chequeo"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "jerarquia_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "jerarquia_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "jerarquia_id_jefe_directo_fkey"
-            columns: ["id_jefe_directo"]
-            isOneToOne: false
-            referencedRelation: "empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "jerarquia_id_jefe_directo_fkey"
-            columns: ["id_jefe_directo"]
-            isOneToOne: false
-            referencedRelation: "vista_empleado_datos_editables"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "jerarquia_id_jefe_directo_fkey"
-            columns: ["id_jefe_directo"]
-            isOneToOne: false
-            referencedRelation: "vista_empleado_ubicacion_chequeo"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "jerarquia_id_jefe_directo_fkey"
-            columns: ["id_jefe_directo"]
-            isOneToOne: false
-            referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "jerarquia_id_jefe_directo_fkey"
-            columns: ["id_jefe_directo"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
+            referencedRelation: "jerarquia_tipos"
             referencedColumns: ["id"]
           },
         ]
+      }
+      jerarquia_tipos: {
+        Row: {
+          descripcion: string | null
+          id: number
+          nombre_nivel: string | null
+        }
+        Insert: {
+          descripcion?: string | null
+          id?: number
+          nombre_nivel?: string | null
+        }
+        Update: {
+          descripcion?: string | null
+          id?: number
+          nombre_nivel?: string | null
+        }
+        Relationships: []
       }
       publicaciones: {
         Row: {
@@ -1761,18 +1736,24 @@ export type Database = {
           descripcion_general: string | null
           id: number
           id_area: number | null
+          id_empresa: number | null
+          id_seccion_jerarquica: number | null
           nombre_puesto: string | null
         }
         Insert: {
           descripcion_general?: string | null
           id?: number
           id_area?: number | null
+          id_empresa?: number | null
+          id_seccion_jerarquica?: number | null
           nombre_puesto?: string | null
         }
         Update: {
           descripcion_general?: string | null
           id?: number
           id_area?: number | null
+          id_empresa?: number | null
+          id_seccion_jerarquica?: number | null
           nombre_puesto?: string | null
         }
         Relationships: [
@@ -1781,6 +1762,20 @@ export type Database = {
             columns: ["id_area"]
             isOneToOne: false
             referencedRelation: "areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "puestos_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "puestos_id_seccion_jerarquica_fkey"
+            columns: ["id_seccion_jerarquica"]
+            isOneToOne: false
+            referencedRelation: "jerarquia"
             referencedColumns: ["id"]
           },
         ]

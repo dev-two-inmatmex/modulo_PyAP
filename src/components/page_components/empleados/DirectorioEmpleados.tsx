@@ -10,7 +10,7 @@ import {AddEmployee} from "@/components/page_components/empleados/AddEmployee";
 interface DirectorioEmpleadosProps {
   empleados: Vista_Lista_Empleados[];
   puestos: { id: number; nombre_puesto: string }[];
-  areas: { id: number; nombre_area: string }[];
+  areas: { id: number; nombre_seccion: string }[];
   ubicaciones: { id: number; nombre_ubicacion: string }[];
   estatuses: { id: number; nombre_estatus: string }[];
   horarios: { id: number; hora_entrada: string; hora_salida: string }[];
@@ -33,6 +33,7 @@ export default function DirectorioEmpleados({
   const [busqueda, setBusqueda] = useState('');
   const [filtroPuesto, setFiltroPuesto] = useState('all');
   const [filtroArea, setFiltroArea] = useState('all');
+  const [filtroSeccion, setFiltroSeccion] = useState('all');
   const [filtroEstatus, setFiltroEstatus] = useState('all');
   const [orden, setOrden] = useState('asc');
   const [paginaActual, setPaginaActual] = useState(1);
@@ -117,8 +118,8 @@ export default function DirectorioEmpleados({
           <SelectContent>
             <SelectItem value="all">Todas las áreas</SelectItem>
             {areas.map((area) => (
-              <SelectItem key={area.id} value={String(area.nombre_area)}>
-                {area.nombre_area}
+              <SelectItem key={area.id} value={String(area.nombre_seccion)}>
+                {area.nombre_seccion}
               </SelectItem>
             ))}
           </SelectContent>

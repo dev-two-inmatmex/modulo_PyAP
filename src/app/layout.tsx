@@ -9,6 +9,9 @@ import "./globals.css";
 import { getAvatarsMap } from '@/utils/storage';
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { AvatarProvider } from "@/components/providers/useAvatars";
+import { NombreEmpleadoProvider } from "@/components/providers/NombreEmpleadoProvider";
+import RealtimeManager from "@/components/providers/RealtimeManager";
+
 
 export const dynamic = 'force-dynamic';
 
@@ -48,7 +51,6 @@ export default async function RootLayout({
       { data: empleado }
     ] = await Promise.all([
       supabase.from("v_usuario_roles").select("nombre_rol").eq("id_usuario", user.id),
-      // Aprovechamos para traer el url_avatar directamente desde aquí
       supabase.from("empleados").select("nombres, apellido_paterno, apellido_materno").eq("id", user.id).single()
     ]);
 
@@ -84,26 +86,28 @@ export default async function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <Toaster />
         <SupabaseProviderClient serverSession={session}>
           <AvatarProvider value={avatarUrls}>
-            <TooltipProvider>
-              {/* Si NO está autenticado o requiere cambio de contraseña */}
-              {!isAuthValid ? (
-                <>
-                  {children}
-                </>
-              ) : (
-                /* Si está autenticado correctamente */
-                <SidebarProvider>
-                  <AppSidebar userRoles={roles} user={userData!} />
-                  <SidebarInset>
-                    <Header />
-                    <main className="flex-1 p-4 sm:p-6 bg-muted/30">{children}</main>
-                  </SidebarInset>
-                </SidebarProvider>
-              )}
-            </TooltipProvider>
+            <NombreEmpleadoProvider>
+            <Toaster />
+              <TooltipProvider>
+                <RealtimeManager />
+                {!isAuthValid ? (
+                  <>
+                    {children}
+                  </>
+                ) : (
+                  /* Si está autenticado correctamente */
+                  <SidebarProvider>
+                    <AppSidebar userRoles={roles} user={userData!} />
+                    <SidebarInset>
+                      <Header />
+                      <main className="flex-1 p-4 sm:p-6 bg-muted/30">{children}</main>
+                    </SidebarInset>
+                  </SidebarProvider>
+                )}
+              </TooltipProvider>
+            </NombreEmpleadoProvider>
           </AvatarProvider>
         </SupabaseProviderClient>
 

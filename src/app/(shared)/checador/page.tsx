@@ -40,12 +40,6 @@ export default async function ChecadorPage() {
   const turnoDeHoy = await getHorarioEmpleadoDelDia(user.id);
   const empleadoTurnoRel = turnoDeHoy[0];
 
-  //let empleadoTurnoRel = null;
-
-  // Evitamos buscar si es 'domingo' y no tienes esa columna en tu tabla (según la imagen)
-  //if (diaActual !== 'domingo') {
-
-  //Si no encuentra ningun turno de hoy, no hace nada.
   const isAdmin = user.user_metadata?.is_admin === true;
   if (empleadoTurnoRel || isAdmin) {
 

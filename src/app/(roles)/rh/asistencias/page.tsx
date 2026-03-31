@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { createServidorClient } from "@/lib/supabase/server";
 import RelojAsistencia from "@/components/page_components/asistencias/RelojAsistencia";
-import { RealtimeAsistencias } from "@/hooks/useRealtimeChecadorRegistros";
+import { RealtimeAsistencias, RealtimeSalidas } from "@/hooks/useRealtimeChecadorRegistros";
 import { getEmpleadosAgrupadosPorHoraEntrada } from "@/services/asistencias";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getEmpresas } from "@/services/empresas";
@@ -64,7 +64,7 @@ export default async function AsistenciasPage() {
   });
 
   // 4. Armamos las "Rebanadas" globales (Pestaña Todos)
-  const segmentosGlobales = empresas.map((empresa, index) => ({
+  const segmentosGlobales = empresas.map((empresa) => ({
     id: `empresa_${empresa.id}`,
     label: empresa.nombre_empresa,
     count: llegadasPorEmpresa[empresa.id] || 0,
@@ -73,6 +73,7 @@ export default async function AsistenciasPage() {
   return (
     <div className="container mx-auto py-1">
       <RealtimeAsistencias />
+      <RealtimeSalidas />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
         <h1 className="text-3xl font-bold tracking-tight mb-6">Control de Asistencias</h1>

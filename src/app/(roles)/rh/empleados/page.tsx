@@ -22,6 +22,8 @@ export default async function EmpleadosPage() {
   const { data: descansos } = await supabase.from('descansos').select('id, inicio_descanso, fin_descanso');
   const { data: ubicaciones } = await supabase.from('config_ubicaciones').select('id, nombre_ubicacion');
   const { data: estatuses } = await supabase.from('estatus').select('id, nombre_estatus');
+  const { data: empresas} = await supabase.from('empresas').select('id, nombre_empresa');
+  const { data: secciones } = await supabase.from('jerarquia').select('id, nombre_seccion');
   const { count } = await supabase
     .from('empleados')
     .select('*', { count: 'exact', head: true });
@@ -35,7 +37,7 @@ export default async function EmpleadosPage() {
         ubicaciones={ubicaciones || []}
         estatuses={estatuses || []}
         puestos={puestos || []}
-        areas={areas || []}
+        areas={secciones || []}
         horarios={horarios || []}
         descansos={descansos || []}
         n_empleados={n_empleados}

@@ -67,7 +67,7 @@ export function HistorialAsistencia({ historial, mostrarLogo = false }: Historia
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-50 dark:bg-slate-800/50">
-            <TableHead>Empleada</TableHead>
+            <TableHead>Empleado</TableHead>
             <TableHead></TableHead>
             <TableHead>Día y Fecha</TableHead>
             <TableHead>Entrada - Salida</TableHead>

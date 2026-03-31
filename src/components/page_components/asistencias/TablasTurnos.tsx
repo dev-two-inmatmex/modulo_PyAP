@@ -23,7 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UserAvatar } from "@/components/reutilizables/UserAvatar";
-import { Clock, CheckCircle2, AlertCircle, XCircle, MinusCircle } from "lucide-react";
+import { Clock, CheckCircle2, AlertCircle, MinusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EmpresaLogo from "@/components/reutilizables/EmpresaLogo";
 
@@ -57,7 +57,7 @@ const formatearHora = (hora: string) => {
 
 const getEstatusUI = (storedStatus: string | null) => {
   if (!storedStatus) {
-    return { texto: 'Sin Entrada', clase: 'bg-slate-100 text-slate-600 border-slate-200', icono: <MinusCircle className="w-3 h-3 mr-1" /> };
+    return { texto: 'Falta', clase: 'bg-slate-100 text-slate-600 border-slate-200', icono: <MinusCircle className="w-3 h-3 mr-1" /> };
   }
   switch (storedStatus) {
     case 'Puntual': return { texto: 'Puntual', clase: 'bg-green-100 text-green-800 border-green-300', icono: <CheckCircle2 className="w-3 h-3 mr-1" /> };
