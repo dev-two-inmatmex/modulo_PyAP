@@ -532,6 +532,78 @@ export type Database = {
           },
         ]
       }
+      empleado_domicilio: {
+        Row: {
+          c_postal: string | null
+          calle: string | null
+          ciudad: string | null
+          colonia: string | null
+          estado: string | null
+          id: number
+          id_empleado: string | null
+          n_ext: string | null
+          n_int: string | null
+        }
+        Insert: {
+          c_postal?: string | null
+          calle?: string | null
+          ciudad?: string | null
+          colonia?: string | null
+          estado?: string | null
+          id?: number
+          id_empleado?: string | null
+          n_ext?: string | null
+          n_int?: string | null
+        }
+        Update: {
+          c_postal?: string | null
+          calle?: string | null
+          ciudad?: string | null
+          colonia?: string | null
+          estado?: string | null
+          id?: number
+          id_empleado?: string | null
+          n_ext?: string | null
+          n_int?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empleado_domicilio_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleado_domicilio_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_datos_editables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleado_domicilio_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_ubicacion_chequeo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleado_domicilio_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_horarios_empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleado_domicilio_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_lista_empleados"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       empleado_estatus: {
         Row: {
           id: number

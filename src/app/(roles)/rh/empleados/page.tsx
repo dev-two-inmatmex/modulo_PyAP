@@ -1,6 +1,5 @@
 import { createServidorClient } from "@/lib/supabase/server";
 import DirectorioEmpleados from "@/components/page_components/empleados/DirectorioEmpleados";
-// TODO: Convertir en client component y mover la logica de supabase a un action.
 
 export default async function EmpleadosPage() {
 
@@ -11,13 +10,11 @@ export default async function EmpleadosPage() {
 
   if (error) {
     console.error("Error fetching empleados:", error);
-    // Handle error appropriately, maybe return an error message
     return <div>Error al cargar los empleados.</div>;
   }
 
   // Fetch additional data needed for filters
   const { data: puestos } = await supabase.from('puestos').select('id, nombre_puesto');
-  const { data: areas } = await supabase.from('areas').select('id, nombre_area');
   const { data: horarios } = await supabase.from('horarios').select('id, hora_entrada, hora_salida');
   const { data: descansos } = await supabase.from('descansos').select('id, inicio_descanso, fin_descanso');
   const { data: ubicaciones } = await supabase.from('config_ubicaciones').select('id, nombre_ubicacion');
@@ -37,7 +34,7 @@ export default async function EmpleadosPage() {
         ubicaciones={ubicaciones || []}
         estatuses={estatuses || []}
         puestos={puestos || []}
-        areas={secciones || []}
+        secciones={secciones || []}
         horarios={horarios || []}
         descansos={descansos || []}
         n_empleados={n_empleados}

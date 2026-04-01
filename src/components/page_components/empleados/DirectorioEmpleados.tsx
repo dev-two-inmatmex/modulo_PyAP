@@ -10,7 +10,7 @@ import {AddEmployee} from "@/components/page_components/empleados/AddEmployee";
 interface DirectorioEmpleadosProps {
   empleados: Vista_Lista_Empleados[];
   puestos: { id: number; nombre_puesto: string }[];
-  areas: { id: number; nombre_seccion: string }[];
+  secciones: { id: number; nombre_seccion: string }[];
   ubicaciones: { id: number; nombre_ubicacion: string }[];
   estatuses: { id: number; nombre_estatus: string }[];
   horarios: { id: number; hora_entrada: string; hora_salida: string }[];
@@ -23,7 +23,7 @@ const ITEMS_PER_PAGE = 6;
 export default function DirectorioEmpleados({
   empleados,
   puestos,
-  areas,
+  secciones,
   ubicaciones,
   estatuses,
   horarios,
@@ -32,7 +32,6 @@ export default function DirectorioEmpleados({
 }: DirectorioEmpleadosProps) {
   const [busqueda, setBusqueda] = useState('');
   const [filtroPuesto, setFiltroPuesto] = useState('all');
-  const [filtroArea, setFiltroArea] = useState('all');
   const [filtroSeccion, setFiltroSeccion] = useState('all');
   const [filtroEstatus, setFiltroEstatus] = useState('all');
   const [orden, setOrden] = useState('asc');
@@ -55,9 +54,9 @@ export default function DirectorioEmpleados({
       );
     }
 
-    if (filtroArea !== 'all') {
+    if (filtroSeccion !== 'all') {
       empleadosResult = empleadosResult.filter(
-        (empleado) => empleado.area === filtroArea
+        (empleado) => empleado.area === filtroSeccion
       );
     }
     if (filtroEstatus !== 'all') {
@@ -76,7 +75,7 @@ export default function DirectorioEmpleados({
     });
 
     return empleadosResult;
-  }, [busqueda, filtroPuesto, filtroArea, filtroEstatus,  orden, empleados]);
+  }, [busqueda, filtroPuesto, filtroSeccion, filtroEstatus,  orden, empleados]);
 
   const paginatedEmpleados = useMemo(() => {
     const startIndex = (paginaActual - 1) * ITEMS_PER_PAGE;
@@ -111,13 +110,13 @@ export default function DirectorioEmpleados({
             ))}
           </SelectContent>
         </Select>
-        <Select value={filtroArea} onValueChange={(value) => { setFiltroArea(value); setPaginaActual(1); }}>
+        <Select value={filtroSeccion} onValueChange={(value) => { setFiltroSeccion(value); setPaginaActual(1); }}>
           <SelectTrigger>
             <SelectValue placeholder="Filtrar por área" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas las áreas</SelectItem>
-            {areas.map((area) => (
+            {secciones.map((area) => (
               <SelectItem key={area.id} value={String(area.nombre_seccion)}>
                 {area.nombre_seccion}
               </SelectItem>
