@@ -153,13 +153,15 @@ export function ChecadorReloj({
         if (result?.error) {
           toast.error('Error', {
             description: result.error,
-            position: "top-center"
+            position: "top-center",
+            style: {background: 'red',}
           });
           setSalidaAnticipada(false)
         }
         else if (result?.success) toast.success('Éxito', {
           description: result.success,
-          position: "top-center"
+          position: "top-center",
+          style: {background: 'green',}
         });
       });
     } else {

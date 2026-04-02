@@ -328,19 +328,11 @@ export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatus
                             </Button>
 
                             <Button type="button" onClick={handleCropAndAnalyze} disabled={isProcessing} className="bg-blue-600 hover:bg-blue-700">
-
                               {isProcessing ? "Analizando rostro..." : "Recortar y Analizar"}
-
                             </Button>
-
                           </div>
-
                         </div>
-
                       )}
-
-
-
                       {croppedImage && (
 
                         <div className="flex flex-col items-center space-y-6 animate-in fade-in zoom-in-95 duration-300">
@@ -722,7 +714,7 @@ export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatus
                 </div>
               </div>
             </Tabs>
-            <DialogFooter className="m-2 px-6 py-4 bg-white shrink-0 mt-auto relative z-20 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-0">
+            <DialogFooter className="m-2 px-6 py-4 bg-white shrink-0 mt-auto relative z-20">
               <DialogClose asChild>
                 <Button type="button" variant="secondary">Cancelar</Button>
               </DialogClose>
