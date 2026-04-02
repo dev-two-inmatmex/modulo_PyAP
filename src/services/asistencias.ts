@@ -70,3 +70,23 @@ export async function getAsistenciaReporte(
 
   return data as [];
 }
+
+export type Inasistencias = Database['public']['Tables']['registro_inasistencias_confirmadas']['Row'];
+export async function getInasistencias(
+  fecha? : string
+): Promise<Inasistencias[]> {
+  const supabase = await createServidorClient();
+  let query = supabase
+    .from('registro_inasistencias_confirmadas')
+    .select('*')
+    if (fecha) {
+      query = query.eq('fecha', fecha);
+    }
+    const { data, error } = await query;
+
+  if (error) {
+    throw new Error(`Error al obtener el historial: ${error.message}`);
+  }
+
+  return data as [];
+}

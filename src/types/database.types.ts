@@ -14,27 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      areas: {
-        Row: {
-          activo: string | null
-          descripcion: string | null
-          id: number
-          nombre_area: string | null
-        }
-        Insert: {
-          activo?: string | null
-          descripcion?: string | null
-          id?: number
-          nombre_area?: string | null
-        }
-        Update: {
-          activo?: string | null
-          descripcion?: string | null
-          id?: number
-          nombre_area?: string | null
-        }
-        Relationships: []
-      }
       asistencia_diaria: {
         Row: {
           created_at: string | null
@@ -536,33 +515,33 @@ export type Database = {
         Row: {
           c_postal: string | null
           calle: string | null
-          ciudad: string | null
           colonia: string | null
           estado: string | null
           id: number
           id_empleado: string | null
+          municipio: string | null
           n_ext: string | null
           n_int: string | null
         }
         Insert: {
           c_postal?: string | null
           calle?: string | null
-          ciudad?: string | null
           colonia?: string | null
           estado?: string | null
           id?: number
           id_empleado?: string | null
+          municipio?: string | null
           n_ext?: string | null
           n_int?: string | null
         }
         Update: {
           c_postal?: string | null
           calle?: string | null
-          ciudad?: string | null
           colonia?: string | null
           estado?: string | null
           id?: number
           id_empleado?: string | null
+          municipio?: string | null
           n_ext?: string | null
           n_int?: string | null
         }
@@ -1807,7 +1786,6 @@ export type Database = {
         Row: {
           descripcion_general: string | null
           id: number
-          id_area: number | null
           id_empresa: number | null
           id_seccion_jerarquica: number | null
           nombre_puesto: string | null
@@ -1815,7 +1793,6 @@ export type Database = {
         Insert: {
           descripcion_general?: string | null
           id?: number
-          id_area?: number | null
           id_empresa?: number | null
           id_seccion_jerarquica?: number | null
           nombre_puesto?: string | null
@@ -1823,19 +1800,11 @@ export type Database = {
         Update: {
           descripcion_general?: string | null
           id?: number
-          id_area?: number | null
           id_empresa?: number | null
           id_seccion_jerarquica?: number | null
           nombre_puesto?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "puestos_id_area_fkey"
-            columns: ["id_area"]
-            isOneToOne: false
-            referencedRelation: "areas"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "puestos_id_empresa_fkey"
             columns: ["id_empresa"]
@@ -2124,6 +2093,101 @@ export type Database = {
           {
             foreignKeyName: "registro_inasistencias_capturado_por_fkey"
             columns: ["capturado_por"]
+            isOneToOne: false
+            referencedRelation: "vista_lista_empleados"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      registro_inasistencias_confirmadas: {
+        Row: {
+          capturo: string | null
+          fecha: string | null
+          hora: string | null
+          id: number
+          id_empleado: string | null
+        }
+        Insert: {
+          capturo?: string | null
+          fecha?: string | null
+          hora?: string | null
+          id?: number
+          id_empleado?: string | null
+        }
+        Update: {
+          capturo?: string | null
+          fecha?: string | null
+          hora?: string | null
+          id?: number
+          id_empleado?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registro_inasistencias_confirmadas_capturo_fkey"
+            columns: ["capturo"]
+            isOneToOne: false
+            referencedRelation: "empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registro_inasistencias_confirmadas_capturo_fkey"
+            columns: ["capturo"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_datos_editables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registro_inasistencias_confirmadas_capturo_fkey"
+            columns: ["capturo"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_ubicacion_chequeo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registro_inasistencias_confirmadas_capturo_fkey"
+            columns: ["capturo"]
+            isOneToOne: false
+            referencedRelation: "vista_horarios_empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registro_inasistencias_confirmadas_capturo_fkey"
+            columns: ["capturo"]
+            isOneToOne: false
+            referencedRelation: "vista_lista_empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registro_inasistencias_confirmadas_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registro_inasistencias_confirmadas_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_datos_editables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registro_inasistencias_confirmadas_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_ubicacion_chequeo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registro_inasistencias_confirmadas_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_horarios_empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registro_inasistencias_confirmadas_id_empleado_fkey"
+            columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]

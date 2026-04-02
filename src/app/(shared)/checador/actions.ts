@@ -24,46 +24,6 @@ export async function registrarChequeo(
     }
     const requiereBiometria = action === 'entrada' || action === 'salida';
 
-    // Biometric Validation via RPC
-    /*if (!faceDescriptor) {
-        return { error: "No se proporcionó información biométrica." };
-    }
-    const { data: biometricResult, error: rpcError } = await supabase.rpc('verificar_identidad_biometrica', {
-        id_empleado_param: user.id,
-        descriptor_param: faceDescriptor
-    });
-    if (rpcError || biometricResult === null) {
-        console.error('Biometric RPC Error:', rpcError);
-        return { error: "Error en el servidor de biometría." };
-    }
-
-    console.log('distancia biometrica:', biometricResult);
-    const score = biometricResult as number;
-    if (biometricResult > 0.38) { // Umbral para distancia de Coseno
-        return { error: `Identidad no verificada. (Score: ${score.toFixed(4)})` };
-    }*/
-
-    /*const { data: ubicacion, error: ubicacionError } = await supabase
-        .from('vista_empleado_ubicacion_chequeo')
-        .select('latitud, longitud, radio_permitido')
-        .eq('id', user.id)
-        .single();
-
-    if (ubicacionError) {
-        console.error("Error fetching location:", ubicacionError);
-        return { error: "No se pudo verificar la ubicación del empleado." };
-    }
-
-    if (!ubicacion) {
-        return { error: "No tienes una ubicación de chequeo asignada." };
-    }
-
-    const distancia = calcularDistanciaMetros(latitude, longitude, ubicacion.latitud, ubicacion.longitud);
-
-    if (distancia > ubicacion.radio_permitido) {
-        return { error: `Estás a ${distancia.toFixed(0)} metros de tu ubicación de chequeo. No puedes registrar.` };
-    }*/
-
     if (requiereBiometria) {
         // Si es entrada o salida, EXIGIMOS el rostro
         if (!faceDescriptor || faceDescriptor.length === 0) {
@@ -86,7 +46,6 @@ export async function registrarChequeo(
 
     } else {
         // Si es un descanso (salida_descanso o regreso_descanso)
-        // Opcional: Puedes poner un console.log para depurar
         console.log(`Chequeo de ${action} omitiendo biometría por regla de negocio.`);
     }
 

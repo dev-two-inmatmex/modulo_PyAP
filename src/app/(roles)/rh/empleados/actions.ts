@@ -8,7 +8,7 @@ import sharp from 'sharp';
 export async function addUser(prevState: any, formData: FormData) {
   const supabase = await createServidorClient();
   const supabaseAdmin = createAdminClient();
-  
+  const tempPassword = `${Math.random().toString(36).slice(-6)}`
   const data = {
     //Datos Personales
     nombres: formData.get('nombres') as string,
@@ -22,7 +22,7 @@ export async function addUser(prevState: any, formData: FormData) {
     n_int: formData.get('n_int') as string | null,
     colonia: formData.get('colonia') as string,
     c_postal: formData.get('c_postal') as string,
-    ciudad: formData.get('ciudad') as string,
+    municipio: formData.get('municipio') as string,
     estado: formData.get('estado') as string,
     //Telefonos
     telefono1: formData.get('telefono1') as string,
@@ -42,7 +42,7 @@ export async function addUser(prevState: any, formData: FormData) {
   // 1. Create user in auth.users
   const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
     email: data.email,
-    password: 'inmatmex123',
+    password: tempPassword,
     email_confirm: true,// IMPORTANT: This is insecure. Use a secure password generation method.
     user_metadata: {
       requires_password_change: true // <- Aquí está la clave
@@ -85,6 +85,7 @@ export async function addUser(prevState: any, formData: FormData) {
       n_int: data.n_int,
       colonia: data.colonia,
       c_postal: data.c_postal,
+      municipio: data.municipio,
       estado: data.estado
     }),
     supabase.from('empleado_telefonos').insert({ id_empleado: userId, numero_telefonico: data.telefono1, tipo: 'principal', propietario: 'Propio' }),
@@ -247,7 +248,7 @@ export async function resetUserPassword(userId: string): Promise<{
   error?: string 
 }> {
   const supabaseAdmin = createAdminClient();
-  const tempPassword = `temp_${Math.random().toString(36).slice(-6)}A1!`
+  const tempPassword = `${Math.random().toString(36).slice(-6)}`
 
   try {
     // PASO 1: Intentamos actualizar la contraseña y el metadata

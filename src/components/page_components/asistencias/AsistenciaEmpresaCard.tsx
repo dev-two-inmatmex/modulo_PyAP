@@ -12,24 +12,26 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { PorcentajeAsistencia } from "./PorcentajeAsistencia";
-import { HistogramaAsistencia } from "./HistogramaAsistencia";
-import { TablasTurnos } from "./TablasTurnos";
-import { HistorialAsistencia } from "./HistorialAsistencia";
+import { PorcentajeAsistencia } from "./AsistenciaPorcentaje";
+import { HistogramaAsistencia } from "./AsistenciaHistograma";
+import { TablasTurnos } from "./AsistenciaTablasTurnos";
+import { HistorialAsistencia } from "./AsistenciaHistorial";
 import { getAsistenciaReporte, type AsistenciaReporteRow } from "@/services/asistencias";
+import { type Inasistencias } from "@/services/asistencias";
 interface AsistenciaCardProps {
   empresaId: number | null | undefined;
   nombreEmpresa: string | null;
   turnosHoy: any[];
   asistenciasMap: any;
   turnoCompletoMap: any;
+  inasistenciasMap: any;
   segmentoDona: any[];
   totalEsperadosHoy: number;
   fechaDelDia: string;
 }
 
 export function AsistenciaEmpresaCard({
-  empresaId, nombreEmpresa, turnosHoy, asistenciasMap, turnoCompletoMap, segmentoDona, totalEsperadosHoy, fechaDelDia
+  empresaId, nombreEmpresa, turnosHoy, asistenciasMap, turnoCompletoMap, inasistenciasMap, segmentoDona, totalEsperadosHoy, fechaDelDia
 }: AsistenciaCardProps) {
   // Estados del componente
   const [viewMode, setViewMode] = useState<"hoy" | "rango">("hoy");
@@ -113,6 +115,7 @@ export function AsistenciaEmpresaCard({
             turnos={turnosHoy}
             asistencias={asistenciasMap}
             turnoCompleto={turnoCompletoMap}
+            inasistencias={inasistenciasMap}
             mostrarLogo={empresaId === null}
           />
         </div>

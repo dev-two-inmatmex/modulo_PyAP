@@ -26,7 +26,8 @@ import { UserAvatar } from "@/components/reutilizables/UserAvatar";
 import { Clock, CheckCircle2, AlertCircle, MinusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EmpresaLogo from "@/components/reutilizables/EmpresaLogo";
-
+import {ConfirmarInasistenciaDialog} from "@/components/page_components/asistencias/AsistenciaDialogConfirmarInasistencia";
+import { useNombreEmpleado } from "@/components/providers/NombreEmpleadoProvider";
 interface EmpleadoDetalle {
   empleado_id: string;
   nombre_completos: string;
@@ -44,6 +45,7 @@ interface TablasTurnosProps {
   turnos: TurnoData[];
   asistencias: Record<string, { hora: string; estatus: string; ubicacion: string }>;
   turnoCompleto: Record<string, { entrada: string; salida: string; salida_descanso: string; regreso_descanso: string }>;
+  inasistencias:Record<string, { capturo: string; fecha: string; hora: string }>;
   mostrarLogo?: boolean;
 }
 
@@ -67,8 +69,10 @@ const getEstatusUI = (storedStatus: string | null) => {
   }
 };
 
-export function TablasTurnos({ turnos, asistencias, turnoCompleto, mostrarLogo = false }: TablasTurnosProps) {
-
+export function TablasTurnos({ turnos, asistencias, turnoCompleto, inasistencias, mostrarLogo = false }: TablasTurnosProps) {
+  
+  
+  const { getNombreEmpleadoPorId } = useNombreEmpleado();
   const turnosAgrupados = React.useMemo(() => {
     if (!turnos) return [];
 
@@ -136,6 +140,7 @@ export function TablasTurnos({ turnos, asistencias, turnoCompleto, mostrarLogo =
                   {turno.detalles_empleados.map((empleado) => {
                     const asistencia = asistencias[empleado.empleado_id];
                     const turnohyd = turnoCompleto[empleado.empleado_id];
+                    const inasistencia = inasistencias[empleado?.empleado_id];
                     const estatusUI = getEstatusUI(asistencia ? asistencia.estatus : null);
                     return (
                       <Popover key={empleado.empleado_id}>
@@ -162,10 +167,18 @@ export function TablasTurnos({ turnos, asistencias, turnoCompleto, mostrarLogo =
                               {asistencia ? formatearHora(asistencia.hora) : '--:--'}
                             </TableCell>
                             <TableCell>
-                              <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold border ${estatusUI.clase}`}>
+                              {!inasistencia && (
+                                <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold border ${estatusUI.clase}`}>
                                 {estatusUI.icono}
                                 {estatusUI.texto}
-                              </span>
+                              </span>)}
+                              {inasistencia && (
+                                <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold border ${estatusUI.clase}`}>
+                                  {estatusUI.icono}
+                                  {`Falta confirmada por ${inasistencia.capturo ? getNombreEmpleadoPorId(inasistencia.capturo)?.nombre_corto : 'el capturista'}`}
+                                </span>
+                              )}
+                              
                             </TableCell>
                             <TableCell>
                               {asistencia ? asistencia.ubicacion : '--'}
@@ -195,8 +208,12 @@ export function TablasTurnos({ turnos, asistencias, turnoCompleto, mostrarLogo =
                                     <span>{formatearHora(turnohyd.salida)}</span>
                                   </div>
                                   <div>
-                                    {!asistencia && (
-                                      <Button variant="outline">Guardar Falta</Button>)}
+                                    {!asistencia && !inasistencia &&(
+                                      <ConfirmarInasistenciaDialog id_empleado = {empleado.empleado_id} />                                    
+                                    )}
+                                    {!asistencia &&(
+                                      <Button variant="outline">Justificar Falta</Button>
+                                    )}
                                   </div>
                                 </>
                               ) : (

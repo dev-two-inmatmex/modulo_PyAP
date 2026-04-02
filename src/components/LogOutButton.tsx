@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -31,7 +30,6 @@ export default function LogoutButton() {
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
-        {/* SECCIÓN CORREGIDA: Se añadió el Header con Título y Descripción */}
         <AlertDialogHeader>
           <AlertDialogTitle>¿Estás seguro de que quieres salir?</AlertDialogTitle>
           <AlertDialogDescription>

@@ -49,9 +49,9 @@ const UserSchema = z.object({
   calle: z.string().min(1, "La calle es requerida"),
   n_ext: z.string().min(1, "El número exterior es requerido"),
   n_int: z.string().optional(), // Es opcional
-  colonia: z.string().min(1, "La colonia es requerida"),
+  colonia: z.string().min(1, "La ciudad/colonia es requerida"),
   c_postal: z.string().min(5, "El código postal debe tener 5 dígitos"),
-  ciudad: z.string().min(1, "La ciudad/municipio es requerida"),
+  municipio: z.string().min(1, "La municipio es requerida"),
   estado: z.string().min(1, "El estado es requerido"),
   //Telefonos
   telefono1: z.string().min(10, "Teléfono principal debe tener 10 dígitos"),
@@ -128,7 +128,7 @@ export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatus
       n_int: '',
       colonia: '',
       c_postal: '',
-      ciudad: '',
+      municipio: '',
       estado: '',
       //Telefonos
       telefono1: '',
@@ -274,57 +274,31 @@ export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatus
               <div className="flex-1 overflow-y-auto min-h-0 px-6">
                 <div className="pb-6">
                   <TabsContent value="foto" className="mt-2">
-
                     <div className="flex flex-col items-center space-y-4">
-
                       {!selectedFile && (
-
                         <div className='w-full max-w-sm border-2 border-dashed rounded-xl p-8 text-center bg-slate-50'>
-
                           <label className="mb-4 block text-sm font-semibold text-slate-700">Subir foto del empleado</label>
-
                           <Input type="file" accept="image/*" onChange={handleFileChange} className="cursor-pointer" />
-
                         </div>
-
                       )}
 
-
-
                       {selectedFile && !croppedImage && (
-
                         <div className="w-full max-w-2xl space-y-4">
-
                           <div className="overflow-hidden rounded-lg border bg-slate-900 shadow-inner">
-
                             <Cropper
-
                               ref={cropperRef}
-
                               src={selectedFile}
-
                               style={{ height: 350, width: "100%" }}
-
                               aspectRatio={1}
-
                               guides={true}
-
                               viewMode={1}
-
                               dragMode="move"
-
                               autoCropArea={0.8}
-
                             />
-
                           </div>
-
                           <div className="flex justify-center gap-3">
-
                             <Button type="button" variant="outline" onClick={() => setSelectedFile(null)} disabled={isProcessing}>
-
                               Cancelar
-
                             </Button>
 
                             <Button type="button" onClick={handleCropAndAnalyze} disabled={isProcessing} className="bg-blue-600 hover:bg-blue-700">
@@ -333,361 +307,202 @@ export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatus
                           </div>
                         </div>
                       )}
+
                       {croppedImage && (
-
                         <div className="flex flex-col items-center space-y-6 animate-in fade-in zoom-in-95 duration-300">
-
                           <div className="relative">
-
                             <img
-
                               src={croppedImage}
-
                               alt="Preview del empleado"
-
                               className="w-48 h-48 rounded-full object-cover border-4 border-white shadow-xl ring-2 ring-slate-100"
-
                             />
 
                             {faceData && (
-
                               <div className="absolute bottom-2 right-2 bg-green-500 rounded-full p-1.5 shadow-md" title="Rostro detectado">
-
                                 <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-
                               </div>
 
                             )}
-
                           </div>
-
-
 
                           <div className="text-center space-y-1">
-
                             <h4 className="font-semibold text-slate-700">Vista Previa del Avatar</h4>
-
                             <p className={`text-sm ${faceData ? 'text-green-600 font-medium' : 'text-amber-600'}`}>
-
                               {faceData ? 'Biometría facial extraída correctamente.' : 'Falta información biométrica.'}
-
                             </p>
-
                           </div>
-
-
-
                           <Button type="button" variant="outline" onClick={() => setCroppedImage(null)}>
-
                             Volver a Recortar
-
                           </Button>
-
                         </div>
-
-                      )
-
-                      }
-
+                      )}
                     </div>
-
                   </TabsContent>
 
-
-
                   <TabsContent value='datosP' className="mt-2 space-y-4">
-
                     <FormField control={form.control} name="nombres" render={({ field }) => (
-
                       <FormItem>
-
                         <FormLabel>Nombres</FormLabel>
-
                         <FormControl>
-
                           <Input placeholder="Juan" {...field} />
-
                         </FormControl>
-
                         <FormMessage />
-
                       </FormItem>)} />
 
                     <FormField control={form.control} name="a_paterno" render={({ field }) => (
-
                       <FormItem>
-
                         <FormLabel>Apellido Paterno</FormLabel>
-
                         <FormControl>
-
                           <Input placeholder="Pérez" {...field} />
-
                         </FormControl><FormMessage />
-
                       </FormItem>)} />
 
                     <FormField control={form.control} name="a_materno" render={({ field }) => (
-
                       <FormItem>
-
                         <FormLabel>Apellido Materno</FormLabel>
-
                         <FormControl>
-
                           <Input placeholder="García" {...field} />
-
                         </FormControl>
-
                         <FormMessage />
-
                       </FormItem>)} />
 
                     <FormField control={form.control} name="fecha_nacimiento" render={({ field }) => (
-
                       <FormItem>
-
                         <FormLabel>Fecha de Nacimiento</FormLabel>
-
                         <FormControl>
-
                           <Input type="date" {...field} />
-
                         </FormControl><FormMessage />
-
                       </FormItem>)} />
-
                     <FormField control={form.control} name="sexo" render={({ field }) => (
 
                       <FormItem>
-
                         <FormLabel>Sexo</FormLabel>
-
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-
                           <FormControl>
-
                             <SelectTrigger>
-
                               <SelectValue placeholder="Seleccione el sexo" />
-
                             </SelectTrigger>
-
                           </FormControl>
-
                           <SelectContent>
-
                             <SelectItem value="true">Masculino</SelectItem>
-
                             <SelectItem value="false">Femenino</SelectItem>
-
                           </SelectContent>
-
                         </Select>
-
                         <FormMessage /></FormItem>)} />
-
                   </TabsContent>
 
-
-
                   <TabsContent value='domicilio' className="mt-2 space-y-4">
-
                     <FormField control={form.control} name="calle" render={({ field }) => (
-
                       <FormItem>
-
                         <FormLabel>Calle</FormLabel>
-
                         <FormControl><Input placeholder="Ej. Av. Siempre Viva" {...field} /></FormControl>
-
                         <FormMessage />
-
                       </FormItem>
-
                     )} />
 
-
-
                     <div className="grid grid-cols-2 gap-4">
-
                       <FormField control={form.control} name="n_ext" render={({ field }) => (
-
                         <FormItem>
-
                           <FormLabel>No. Exterior</FormLabel>
-
                           <FormControl><Input placeholder="Ej. 123" {...field} /></FormControl>
-
                           <FormMessage />
-
                         </FormItem>
-
                       )} />
 
                       <FormField control={form.control} name="n_int" render={({ field }) => (
-
                         <FormItem>
-
                           <FormLabel>No. Interior (Opcional)</FormLabel>
-
                           <FormControl><Input placeholder="Ej. Depto 4" {...field} /></FormControl>
-
                           <FormMessage />
-
                         </FormItem>
-
                       )} />
-
                     </div>
 
-
-
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
                       <FormField control={form.control} name="colonia" render={({ field }) => (
-
                         <FormItem>
-
-                          <FormLabel>Colonia</FormLabel>
-
+                          <FormLabel>Ciudad / Colonia</FormLabel>
                           <FormControl><Input placeholder="Ej. Centro" {...field} /></FormControl>
-
                           <FormMessage />
-
                         </FormItem>
-
                       )} />
 
                       <FormField control={form.control} name="c_postal" render={({ field }) => (
-
                         <FormItem>
-
                           <FormLabel>Código Postal</FormLabel>
-
                           <FormControl><Input placeholder="Ej. 12345" {...field} /></FormControl>
-
                           <FormMessage />
-
                         </FormItem>
-
                       )} />
 
-                      <FormField control={form.control} name="ciudad" render={({ field }) => (
-
+                      <FormField control={form.control} name="municipio" render={({ field }) => (
                         <FormItem>
-
-                          <FormLabel>Ciudad / Municipio</FormLabel>
-
+                          <FormLabel>Municipio</FormLabel>
                           <FormControl><Input placeholder="Ej. Yautepec" {...field} /></FormControl>
-
                           <FormMessage />
-
                         </FormItem>
-
                       )} />
 
                       <FormField control={form.control} name="estado" render={({ field }) => (
-
                         <FormItem>
-
                           <FormLabel>Estado</FormLabel>
-
                           <FormControl><Input placeholder="Ej. Morelos" {...field} /></FormControl>
-
                           <FormMessage />
-
                         </FormItem>
-
                       )} />
 
                     </div>
-
                   </TabsContent>
 
-
-
                   <TabsContent value='telefonos' className="mt-2 space-y-4">
-
                     <FormField control={form.control} name="telefono1" render={({ field }) => (<FormItem><FormLabel>Teléfono Principal</FormLabel><FormControl><Input placeholder="5512345678" {...field} /></FormControl><FormMessage /></FormItem>)} />
 
                     <FormItem>
-
                       <FormLabel>Propietario Tel. Principal</FormLabel>
-
                       <FormControl>
-
                         <Input value="Propio" disabled />
-
                       </FormControl>
-
                     </FormItem>
 
                     <FormField control={form.control} name="telefono2" render={({ field }) => (<FormItem><FormLabel>Teléfono de Emergencia</FormLabel><FormControl><Input placeholder="5587654321" {...field} /></FormControl><FormMessage /></FormItem>)} />
 
                     <FormField control={form.control} name="propietario_telefono2" render={({ field }) => (<FormItem><FormLabel>Propietario Tel. Emergencia</FormLabel><FormControl><Input placeholder="Ej: Esposa, Madre" {...field} /></FormControl><FormMessage /></FormItem>)} />
-
                   </TabsContent>
 
-
-
                   <TabsContent value='datosE' className="mt-2 space-y-4">
-
                     <FormField
-
                       control={form.control}
-
                       name="email"
-
                       render={({ field }) => (
-
                         <FormItem>
-
                           <FormLabel>Email</FormLabel>
-
                           <FormControl>
-
                             <Input placeholder="email@generado.com" {...field} readOnly />
-
                           </FormControl>
-
                           <FormMessage />
-
                         </FormItem>
-
                       )}
-
                     />
 
                     <SelectField
-
                       control={form.control}
-
                       name="id_puesto"
-
                       label="Puesto"
-
                       placeholder="Seleccione un puesto"
-
                       options={puestos.map(p => ({ id: p.id, label: p.nombre_puesto }))}
-
                     />
 
                     <SelectField
-
                       control={form.control}
-
                       name="id_ubicacion"
-
                       label="Ubicación de Trabajo"
-
                       placeholder="Seleccione una ubicación"
-
                       options={ubicaciones.map(ubi => ({ id: ubi.id, label: ubi.nombre_ubicacion }))}
                     />
 
                     <FormField control={form.control} name="id_estatus" render={({ field }) => (<FormItem><FormLabel>Estatus</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Seleccione un estatus" /></SelectTrigger></FormControl><SelectContent>{estatuses.map((estatus) => (<SelectItem key={estatus.id} value={String(estatus.id)}>{estatus.nombre_estatus}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)} />
                   </TabsContent>
+
                   <TabsContent value='turnos' className="mt-2 space-y-4">
                   <SelectField
                       control={form.control}
@@ -711,6 +526,7 @@ export function AddEmployee({ horarios, descansos, puestos, ubicaciones, estatus
                       }))}
                     />
                   </TabsContent>
+
                 </div>
               </div>
             </Tabs>

@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { createServidorClient } from "@/lib/supabase/server";
-import RelojAsistencia from "@/components/page_components/asistencias/RelojAsistencia";
+import RelojAsistencia from "@/components/page_components/asistencias/AsistenciaReloj";
 import { RealtimeAsistencias, RealtimeSalidas } from "@/hooks/useRealtimeChecadorRegistros";
 import { getEmpleadosAgrupadosPorHoraEntrada } from "@/services/asistencias";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,6 +9,8 @@ import { EmpresaColor } from "@/services/empresas-data";
 import { getHorarioEmpleadoDelDia } from "@/services/horarios";
 import { AsistenciaEmpresaCard } from "@/components/page_components/asistencias/AsistenciaEmpresaCard";
 import EmpresaLogo from "@/components/reutilizables/EmpresaLogo";
+import { useHoy } from "@/hooks/useHoy";
+import { getInasistencias } from "@/services/asistencias";
 
 export default async function AsistenciasPage() {
   const supabase = await createServidorClient();
@@ -16,6 +18,15 @@ export default async function AsistenciasPage() {
   const empresas = await getEmpresas();
   const turnos_entrada = await getEmpleadosAgrupadosPorHoraEntrada();
   const empleadoTurnoRel = await getHorarioEmpleadoDelDia();
+
+  const { getFormatosBD } = useHoy();
+  const inasistencias_confirmadas = await getInasistencias(getFormatosBD().fecha);
+
+  const inasistenciasMap = (inasistencias_confirmadas || []).reduce((acc, curr: any) => {
+    acc[curr.id_empleado] = { capturo: curr.capturo, fecha: curr.fecha, hora: curr.hora };
+    return acc;
+  }, {} as Record<string, { capturo: string; fecha: string; hora: string }>);
+
 
   const turnosCompletosMap = (empleadoTurnoRel || []).reduce((acc, curr: any) => {
     acc[curr.id] = { entrada: curr.entrada, salida: curr.salida, salida_descanso: curr.salida_descanso, regreso_descanso: curr.regreso_descanso };
@@ -98,6 +109,7 @@ export default async function AsistenciasPage() {
             turnosHoy={turnos_entrada}
             asistenciasMap={asistenciasMap}
             turnoCompletoMap={turnosCompletosMap}
+            inasistenciasMap={inasistenciasMap}
             segmentoDona={segmentosGlobales}
             totalEsperadosHoy={totalEmpleadosHoyGlobal}
             fechaDelDia={today}
@@ -132,6 +144,7 @@ export default async function AsistenciasPage() {
                 turnosHoy={turnosDeEstaEmpresa}
                 asistenciasMap={asistenciasMap}
                 turnoCompletoMap={turnosCompletosMap}
+                inasistenciasMap={inasistenciasMap}
                 segmentoDona={segmentoUnico}
                 totalEsperadosHoy={totalEsperadosEmpresa}
                 fechaDelDia={today}

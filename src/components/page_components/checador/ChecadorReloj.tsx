@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { ScannerBiometrico } from '@/components/reutilizables/ScannerBiometrico';
 import { Camera } from 'lucide-react';
 import { useRealtimeChecadorRegistrosUsuario } from '@/hooks/useRealtimeChecadorRegistrosUsuario';
-import { useRealtimeReloj } from '@/hooks/useRealtimeReloj';
+import { useRealtimeReloj } from '@/hooks/useRealtimeRelojPorUbicacion';
 import { useGeocerca } from '@/hooks/useGeoCerca';
 import { IndicadorUbicacion } from '@/components/reutilizables/IndicadorUbicacion';
 import { BotonMantenido } from '@/components/reutilizables/MantenidoButton';
