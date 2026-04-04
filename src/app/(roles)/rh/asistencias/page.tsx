@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { createServidorClient } from "@/lib/supabase/server";
 import RelojAsistencia from "@/components/page_components/asistencias/AsistenciaReloj";
 import { RealtimeAsistencias, RealtimeSalidas } from "@/hooks/useRealtimeChecadorRegistros";
+import { RealtimeInasistencias } from "@/hooks/useRealtimeInasistenciasConfirmadas";
 import { getEmpleadosAgrupadosPorHoraEntrada } from "@/services/asistencias";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getEmpresas } from "@/services/empresas";
@@ -19,9 +20,15 @@ export default async function AsistenciasPage() {
   const turnos_entrada = await getEmpleadosAgrupadosPorHoraEntrada();
   const empleadoTurnoRel = await getHorarioEmpleadoDelDia();
 
+  /*const today = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'America/Mexico_City',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(new Date());*/
+
   const { getFormatosBD } = useHoy();
   const inasistencias_confirmadas = await getInasistencias(getFormatosBD().fecha);
-
   const inasistenciasMap = (inasistencias_confirmadas || []).reduce((acc, curr: any) => {
     acc[curr.id_empleado] = { capturo: curr.capturo, fecha: curr.fecha, hora: curr.hora };
     return acc;
@@ -33,18 +40,12 @@ export default async function AsistenciasPage() {
     return acc;
   }, {} as Record<string, { entrada: string; salida: string; salida_descanso: string; regreso_descanso: string }>);
 
-  // Traemos los registros (checadas) de hoy
-  const today = new Intl.DateTimeFormat('sv-SE', {
-    timeZone: 'America/Mexico_City',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).format(new Date());
+  
 
   const { data: registrosHoy, error: registrosError } = await supabase
     .from('vista_registro_checador_resumida')
     .select('id_empleado, registro, estatus, nombre_ubicacion')
-    .eq('fecha', today)
+    .eq('fecha', getFormatosBD().fecha)
     .eq('tipo_registro', 'entrada');
 
   if (registrosError) console.error('Error fetching today records:', registrosError);
@@ -56,6 +57,7 @@ export default async function AsistenciasPage() {
   }, {} as Record<string, { hora: string; estatus: string; ubicacion: string; }>);
 
   const totalEmpleadosHoyGlobal = turnos_entrada?.reduce((acc, turno: any) => acc + turno.total_personas, 0) || 0;
+
 
   // 1. Mapa para saber a qué empresa pertenece cada empleado (basado en los turnos)
   const empleadoEmpresaMap: Record<string, number> = {};
@@ -85,6 +87,7 @@ export default async function AsistenciasPage() {
     <div className="container mx-auto py-1">
       <RealtimeAsistencias />
       <RealtimeSalidas />
+      <RealtimeInasistencias />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
         <h1 className="text-3xl font-bold tracking-tight mb-6">Control de Asistencias</h1>
@@ -112,7 +115,7 @@ export default async function AsistenciasPage() {
             inasistenciasMap={inasistenciasMap}
             segmentoDona={segmentosGlobales}
             totalEsperadosHoy={totalEmpleadosHoyGlobal}
-            fechaDelDia={today}
+            fechaDelDia={getFormatosBD().fecha}
           />
         </TabsContent>
         {empresas.map((empresa) => {
@@ -147,7 +150,7 @@ export default async function AsistenciasPage() {
                 inasistenciasMap={inasistenciasMap}
                 segmentoDona={segmentoUnico}
                 totalEsperadosHoy={totalEsperadosEmpresa}
-                fechaDelDia={today}
+                fechaDelDia={getFormatosBD().fecha}
               />
             </TabsContent>
           );
