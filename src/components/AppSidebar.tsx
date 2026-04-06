@@ -70,6 +70,8 @@ const navItems: NavItem[] = [
     href: '/direccion',
     icon: Briefcase,
     roles: ['Dirección', 'Administrador'],
+    subItems: [
+    ],
   },
   {
     label: 'Recursos Humanos', href: '/rh', icon: ClipboardList, roles: ['RH', 'Administrador'],
@@ -89,6 +91,12 @@ const navItems: NavItem[] = [
       {
         label: 'Horarios',
         href: '/rh/horarios',
+        icon: Users,
+        roles: ['RH', 'Administrador'],
+      },
+      {
+        label: 'Jerarquía',
+        href: '/rh/jerarquia',
         icon: Users,
         roles: ['RH', 'Administrador'],
       },
