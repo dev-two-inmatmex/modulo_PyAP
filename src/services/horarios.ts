@@ -9,20 +9,20 @@ type turnos = Database["public"]["Views"]["vista_horarios_empleados_semanal"]["R
  * @returns Un arreglo de horarios de todos los empleados.
  */
 export async function getHorariosEmpleado(
-    id_empleado?: string | null,
+  id_empleado?: string | null,
 ): Promise<turnos[]> {
-    const supabase = await createServidorClient();
-    let query = supabase
-        .from('vista_horarios_empleados_semanal')
-        .select('*');
-    if (id_empleado) {
-        query = query.eq('id_empleado', id_empleado);
-    }
-    const { data, error } = await query;
-    if (error) {
-        throw new Error(`Error al consultar la vista de horarios de empleados: ${error.message}`);
-    }
-    return data || [];
+  const supabase = await createServidorClient();
+  let query = supabase
+    .from('vista_horarios_empleados_semanal')
+    .select('*');
+  if (id_empleado) {
+    query = query.eq('id_empleado', id_empleado);
+  }
+  const { data, error } = await query;
+  if (error) {
+    throw new Error(`Error al consultar la vista de horarios de empleados: ${error.message}`);
+  }
+  return data || [];
 }
 
 /**
@@ -31,32 +31,32 @@ export async function getHorariosEmpleado(
  * @returns Un arreglo de horarios(del dia de la semana) de todos los empleados.
  */
 export async function getHorarioEmpleadoDelDia(
-    id_empleado?: string | null
+  id_empleado?: string | null
 ): Promise<turno[]> {
 
-    const supabase = await createServidorClient();
+  const supabase = await createServidorClient();
 
-    let query = supabase
-        .from('vista_horarios_empleados')
-        .select('*');
+  let query = supabase
+    .from('vista_horarios_empleados')
+    .select('*');
 
-    if (id_empleado) {
-        query = query.eq('id', id_empleado);
-    }
+  if (id_empleado) {
+    query = query.eq('id', id_empleado);
+  }
 
-    const { data, error } = await query;
+  const { data, error } = await query;
 
-    if (error) {
-        throw new Error(`Error al consultar la vista de horarios de empleados: ${error.message}`);
-    }
-    return data || [];
+  if (error) {
+    throw new Error(`Error al consultar la vista de horarios de empleados: ${error.message}`);
+  }
+  return data || [];
 }
 
 export type DiaSemana = 'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes' | 'sabado' | 'domingo';
 
-export interface AsignacionDia { 
-  id_horario: number | null; 
-  id_descanso: number | null; 
+export interface AsignacionDia {
+  id_horario: number | null;
+  id_descanso: number | null;
 }
 
 // HorarioDraft es un objeto que forzosamente tiene los 7 días de la semana, 
@@ -72,7 +72,7 @@ export type HorarioDraft = Record<DiaSemana, AsignacionDia>;
 export async function getOpcionesHorarios() {
   const supabase = await createServidorClient();
   const { data, error } = await supabase.from('horarios').select('*').order('id');
-  
+
   if (error) {
     console.error("Error al obtener horarios:", error);
     return [];
@@ -90,7 +90,7 @@ export async function getOpcionesHorarios() {
 export async function getOpcionesDescansos() {
   const supabase = await createServidorClient();
   const { data, error } = await supabase.from('descansos').select('*').order('id');
-  
+
   if (error) {
     console.error("Error al obtener descansos:", error);
     return [];
@@ -98,7 +98,7 @@ export async function getOpcionesDescansos() {
 
   return (data || []).map(d => ({
     id: Number(d.id),
-    nombre: `Turno ${d.id}`, 
+    nombre: `Turno ${d.id}`,
     inicio: d.inicio_descanso ? d.inicio_descanso.substring(0, 5) : '--:--',
     fin: d.fin_descanso ? d.fin_descanso.substring(0, 5) : '--:--'
   }));
@@ -106,9 +106,9 @@ export async function getOpcionesDescansos() {
 
 
 // Obtiene el horario ACTUAL del empleado desde `empleado_turno` y lo formatea como un HorarioDraft
-export async function getHorarioBaseActualEmpleado(empleadoId: string |null): Promise<HorarioDraft> {
+export async function getHorarioBaseActualEmpleado(empleadoId: string | null): Promise<HorarioDraft> {
   const supabase = await createServidorClient();
-  
+
   // Plantilla en blanco (Asume por defecto que descansa toda la semana)
   const horarioBase: HorarioDraft = {
     lunes: { id_horario: null, id_descanso: null },
@@ -125,9 +125,14 @@ export async function getHorarioBaseActualEmpleado(empleadoId: string |null): Pr
     .select('*')
     .eq('id_empleado', empleadoId);
 
+  if (error) {
+    console.error("Error al obtener el horario base del empleado:", error);
+    return horarioBase;
+  }
+
   if (!error && data) {
     const diasSemana: DiaSemana[] = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
-    
+
     // Recorremos todas las filas en la BD de este empleado
     data.forEach((filaTurno: any) => {
       diasSemana.forEach(dia => {
@@ -143,4 +148,38 @@ export async function getHorarioBaseActualEmpleado(empleadoId: string |null): Pr
   }
 
   return horarioBase;
+}
+
+export type Horarios = Database["public"]["Tables"]["horarios"]["Row"];
+export async function getHorarios(): Promise<Horarios[]> {
+  const supabase = await createServidorClient();
+
+  let query = supabase
+    .from('horarios')
+    .select('*')
+    .order('hora_entrada');
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(`Error al consultar los horarios: ${error.message}`);
+  }
+  return data || [];
+}
+
+export type Descansos = Database["public"]["Tables"]["descansos"]["Row"]
+export async function getDescansos(): Promise<Descansos[]> {
+  const supabase = await createServidorClient();
+
+  let query = supabase
+    .from('descansos')
+    .select('*')
+    .order('inicio_descanso');
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(`Error al consultar los descansos: ${error.message}`);
+  }
+  return data || [];
 }

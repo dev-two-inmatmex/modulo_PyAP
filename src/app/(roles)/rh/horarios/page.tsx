@@ -12,7 +12,7 @@ export default async function HorariosPage() {
     const horariosDisponibles = await getOpcionesHorarios();
     const descansosDisponibles = await getOpcionesDescansos();
     const empleados = await getEmpleadoDatos();
-
+    
     // Al llamar la función sin ID, asumimos que te trae TODOS los turnos de la vista
     const todosLosTurnos = await getHorariosEmpleado();
 

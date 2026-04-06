@@ -127,6 +127,83 @@ export async function addUser(prevState: any, formData: FormData) {
   return { message: 'Empleado agregado con éxito' };
 }
 
+export async function addUserIncomplet(prevState: any, formData: FormData) {
+  const supabase = await createServidorClient();
+  const supabaseAdmin = createAdminClient();
+  const tempPassword = `${Math.random().toString(36).slice(-6)}`
+  const data = {
+    //Datos Personales
+    nombres: formData.get('nombres') as string,
+    a_paterno: formData.get('a_paterno') as string,
+    a_materno: formData.get('a_materno') as string,
+    fecha_nacimiento: formData.get('fecha_nacimiento') as string,
+    sexo: formData.get('sexo') === 'true',
+    //DatosEmpresariales
+    email: formData.get('email') as string,
+    id_ubicacion: Number(formData.get('id_ubicacion')),
+    //Horarios
+    id_estatus: Number(1),
+    id_rol: Number(1),
+    id_empresa: Number(formData.get('id_empresa')),
+    id_ext_horario: Number(formData.get('id_ext_horario')),
+    id_ext_descanso: Number(formData.get('id_ext_descanso')),
+  };
+
+  // 1. Create user in auth.users
+  const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    email: data.email,
+    password: tempPassword,
+    email_confirm: true,// IMPORTANT: This is insecure. Use a secure password generation method.
+    user_metadata: {
+      requires_password_change: true // <- Aquí está la clave
+    }
+  });
+
+  if (authError || !authData.user) {
+    console.error('Error creating auth user:', authError);
+    return { message: `Error al crear usuario de autenticación: ${authError?.message}` };
+  }
+
+  const userId = authData.user.id;
+
+  // 2. Insert into Empleados table
+  const { error: empleadoError } = await supabase.from('empleados').insert({
+    id: userId,
+    nombres: data.nombres,
+    apellido_paterno: data.a_paterno,
+    apellido_materno: data.a_materno,
+    fecha_nacimiento: data.fecha_nacimiento,
+    sexo: data.sexo,
+    id_empresa: data.id_empresa,
+  });
+
+  if (empleadoError) {
+    console.error('Error inserting into Empleados:', empleadoError);
+    // Rollback would be needed here for the created auth user
+    return { message: `Error al insertar empleado: ${empleadoError.message}` };
+  }
+
+  const { error: empleadoUbicacionError } = await supabase.from('empleado_ubicacion_chequeo').insert({ id_empleado: userId, id_ubicaciones: data.id_ubicacion });
+  if (empleadoUbicacionError) {
+    console.error('Error al insertar', empleadoUbicacionError)
+    return { message: `Error al insertar la ubicacion: ${empleadoUbicacionError.message}` };
+  }
+
+  const {error: empleado_turnoError} = await supabase.from('empleado_turno').insert({ id_empleado: userId, id_horario: data.id_ext_horario, id_descanso: data.id_ext_descanso, lunes: true, martes: true, miercoles: true, jueves: true, viernes: true, sabado: true });
+  if (empleado_turnoError) {
+    console.error('Error al insertar', empleado_turnoError)
+    return { message: `Error al insertar el turno: ${empleado_turnoError.message}` };
+  }
+
+  const {error: empleado_estatusError} = await supabase.from('empleado_estatus').insert({ id_empleado: userId, id_estatus: data.id_estatus });
+  if (empleado_estatusError) {
+    console.error('Error al insertar', empleado_estatusError)
+    return { message: `Error al insertar el estatus: ${empleado_estatusError.message}` };
+  }
+  revalidatePath('/(roles)/rh/empleados');
+  return { message: 'Empleado agregado con éxito' };
+}
+
 export async function updateEmployeeAddress(employeeId: string, newAddress: string) {
   const supabase = await createServidorClient();
 
