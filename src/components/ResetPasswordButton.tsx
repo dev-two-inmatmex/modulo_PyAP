@@ -20,9 +20,10 @@ import {
 interface ResetPasswordButtonProps {
   employeeId: string;
   employeeName: string;
+  employeeEmail: string|null;
 }
 
-export function ResetPasswordButton({ employeeId, employeeName }: ResetPasswordButtonProps) {
+export function ResetPasswordButton({ employeeId, employeeName, employeeEmail }: ResetPasswordButtonProps) {
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [tempPassword, setTempPassword] = useState<string | null>(null);
 
@@ -80,6 +81,11 @@ export function ResetPasswordButton({ employeeId, employeeName }: ResetPasswordB
         <p className="text-sm text-green-700">
           Copia esta contraseña temporal y entrégala al empleado. El sistema le pedirá que la cambie la próxima vez que inicie sesión.
         </p>
+        <div className="flex items-center gap-2">
+          <code className="flex-1 p-2 bg-white rounded border font-mono text-lg text-center select-all">
+            {employeeEmail}
+          </code>
+        </div>
         <div className="flex items-center gap-2">
           <code className="flex-1 p-2 bg-white rounded border font-mono text-lg text-center select-all">
             {tempPassword}

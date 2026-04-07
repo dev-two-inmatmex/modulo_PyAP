@@ -6,7 +6,7 @@ import { RealtimeInasistencias } from "@/hooks/useRealtimeInasistenciasConfirmad
 import { getEmpleadosAgrupadosPorHoraEntrada } from "@/services/asistencias";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getEmpresas } from "@/services/empresas";
-import { EmpresaColor } from "@/services/empresas-data";
+import { EmpresaColor } from "@/services/empresas-data_estilos";
 import { getHorarioEmpleadoDelDia } from "@/services/horarios";
 import { AsistenciaEmpresaCard } from "@/components/page_components/asistencias/AsistenciaEmpresaCard";
 import EmpresaLogo from "@/components/reutilizables/EmpresaLogo";

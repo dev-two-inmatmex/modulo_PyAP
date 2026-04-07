@@ -1,8 +1,8 @@
 'use client'
 import Image from 'next/image';
-import { empresas } from '@/services/empresas-data';
+import { empresas } from '@/services/empresas-data_estilos';
 type Props = {
-    id: number;
+    id: number | null;
     wyh: number;
 }
 export default function EmpresaLogo({

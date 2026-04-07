@@ -30,3 +30,4 @@ export function EmpresaColor(id: number) {
     if (!empresa) return null;
     return empresa.color;
 }
+

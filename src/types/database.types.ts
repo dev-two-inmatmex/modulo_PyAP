@@ -1146,6 +1146,7 @@ export type Database = {
           apellido_materno: string | null
           apellido_paterno: string | null
           direccion: string | null
+          email: string | null
           fecha_ingreso: string | null
           fecha_nacimiento: string | null
           id: string
@@ -1157,6 +1158,7 @@ export type Database = {
           apellido_materno?: string | null
           apellido_paterno?: string | null
           direccion?: string | null
+          email?: string | null
           fecha_ingreso?: string | null
           fecha_nacimiento?: string | null
           id?: string
@@ -1168,6 +1170,7 @@ export type Database = {
           apellido_materno?: string | null
           apellido_paterno?: string | null
           direccion?: string | null
+          email?: string | null
           fecha_ingreso?: string | null
           fecha_nacimiento?: string | null
           id?: string

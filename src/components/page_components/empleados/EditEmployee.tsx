@@ -31,6 +31,7 @@ import {
 import { Input } from '@/components/ui/input';
 import {toast} from 'sonner';
 import { Vista_Lista_Empleados, Vista_Empleado_Datos_Editables, Telefono } from '@/services/types';
+import type { empleados } from '@/services/empleados';
 import { getEmployeeDetails, updateEmployeeAddress, updateEmployeePhones, updateAvatar, resetUserPassword } from '@/app/(roles)/rh/empleados/actions';
 import { Skeleton } from "@/components/ui/skeleton";
 import Cropper, { ReactCropperElement } from "react-cropper";
@@ -38,6 +39,7 @@ import "cropperjs/dist/cropper.css";
 import { useAnalizadorFacial } from '@/hooks/useAnalizadorFacial';
 import { ResetPasswordButton } from '@/components/ResetPasswordButton';
 import { UserAvatar } from '@/components/reutilizables/UserAvatar';
+import { useNombreEmpleado } from '@/components/providers/NombreEmpleadoProvider';
 
 // Zod Schemas
 const AddressSchema = z.object({
@@ -53,11 +55,16 @@ const PhoneSchema = z.object({
   path: ["propietario_telefono2"],
 });
 
+interface EditEmployeeProps {
+  empleado: empleados;
+}
+
 // Main Component
-export function EditEmployee( {empleado}: Vista_Lista_Empleados ) {
+export function EditEmployee( {empleado}: EditEmployeeProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [detailedEmployee, setDetailedEmployee] = useState<Vista_Empleado_Datos_Editables | null>(null);
+  const { getNombreEmpleadoPorId } = useNombreEmpleado();
 
   useEffect(() => {
     if (open && !detailedEmployee) {
@@ -68,7 +75,7 @@ export function EditEmployee( {empleado}: Vista_Lista_Empleados ) {
           setDetailedEmployee(result.data as Vista_Empleado_Datos_Editables);
         } else {
           //toast({ variant: "destructive", title: "Error", description: "No se pudieron cargar los detalles del empleado." });
-          toast.error('Error', { description: "No se pudieron cargar los detalles del empleado.",
+          toast.error('Error', { description: `No se pudieron cargar los detalles del empleado.${ result.message }`,
             position: "top-center" });
           setOpen(false);
         }
@@ -89,7 +96,7 @@ export function EditEmployee( {empleado}: Vista_Lista_Empleados ) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Actualizar Datos de {empleado.nombre_completo}</DialogTitle>
+          <DialogTitle>Actualizar Datos de {getNombreEmpleadoPorId(empleado?.id)?.nombre_corto}</DialogTitle>
           <DialogDescription>
             Actualiza la fotografía, dirección y números de contacto del colaborador.
           </DialogDescription>
@@ -108,13 +115,14 @@ export function EditEmployee( {empleado}: Vista_Lista_Empleados ) {
   );
 }
 // Form Component (Internal)
-function EditForm({ empleado, edit_empleado, setOpen }: { empleado: Vista_Lista_Empleados, edit_empleado: Vista_Empleado_Datos_Editables, setOpen: (open: boolean) => void }) {
+function EditForm({ empleado, edit_empleado, setOpen }: { empleado: empleados, edit_empleado: Vista_Empleado_Datos_Editables, setOpen: (open: boolean) => void }) {
   //const [activeTab, setActiveTab] = useState("picture");
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   //const [isProcessing, setIsProcessing] = useState(false);
   const cropperRef = useRef<ReactCropperElement>(null);
   const { analyzeFace, isProcessing } = useAnalizadorFacial();
+  const { getNombreEmpleadoPorId } = useNombreEmpleado();
 
   const addressForm = useForm({ resolver: zodResolver(AddressSchema), defaultValues: { direccion: edit_empleado.direccion || '' } });
   const phoneForm = useForm({
@@ -210,7 +218,7 @@ function EditForm({ empleado, edit_empleado, setOpen }: { empleado: Vista_Lista_
             <>
               <UserAvatar
                 employeeId={empleado.id}
-                name={empleado.nombre_completo}
+                name={getNombreEmpleadoPorId(empleado.id).nombre_completo}
                 className="w-40 h-40"
               />
               <div className='w-full max-w-sm'>
@@ -288,7 +296,8 @@ function EditForm({ empleado, edit_empleado, setOpen }: { empleado: Vista_Lista_
           </p>
           <ResetPasswordButton
             employeeId={edit_empleado.id}
-            employeeName={empleado.nombre_completo}
+            employeeName={getNombreEmpleadoPorId(empleado.id).nombre_completo}
+            employeeEmail={empleado.email}
           />
       </TabsContent>
     </Tabs>

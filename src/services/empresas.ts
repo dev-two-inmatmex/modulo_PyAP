@@ -1,6 +1,6 @@
 import { createServidorClient } from '@/lib/supabase/server';
 import { Database } from '@/types/database.types';
-type Empresa = Database['public']['Tables']['empresas']['Row'];
+export type Empresa = Database['public']['Tables']['empresas']['Row'];
 
 /**
  * Obtiene todas las empresas.

@@ -4,7 +4,7 @@ import { Database } from "@/types/database.types";
 type empleados = Database["public"]["Tables"]["empleados"]["Row"];
 export type EmpleadosToast = Pick<empleados, "id" | "nombres" | "apellido_paterno" | "apellido_materno">;
 
-export async function getEmpleadoDatosToast(): Promise<EmpleadosToast[]> {
+export async function getEmpleadoNombreCompleto(): Promise<EmpleadosToast[]> {
     const supabase = createClient();
 
     let query = supabase
