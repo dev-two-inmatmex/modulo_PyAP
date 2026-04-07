@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserAvatar } from "@/components/reutilizables/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,13 @@ interface EmployeeCardProps {
 export function EmployeeCard({ empleado, empleado_puestos_map, puestos_map, secciones_map }: EmployeeCardProps) {
   // Estado para saber qué puesto se hizo clic para mostrar su sección
   const [puestoActivo, setPuestoActivo] = useState<number | null>(null);
+  const [formattedDate, setFormattedDate] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (empleado?.fecha_ingreso) {
+      setFormattedDate(new Date(empleado.fecha_ingreso).toLocaleDateString('es-MX'));
+    }
+  }, [empleado?.fecha_ingreso]);
 
   const nombreCompleto = `${empleado.nombres} ${empleado.apellido_paterno} ${empleado.apellido_materno || ''}`.trim();
   
@@ -39,7 +46,7 @@ export function EmployeeCard({ empleado, empleado_puestos_map, puestos_map, secc
           <div>
             <CardTitle className="text-lg leading-tight">{nombreCompleto}</CardTitle>
             <p className="text-xs text-gray-500 font-medium mt-1">
-              Ingreso: {new Date(empleado?.fecha_ingreso).toLocaleDateString('es-MX')}
+            Ingreso: {formattedDate || '...'}
             </p>
           </div>
         </div>
