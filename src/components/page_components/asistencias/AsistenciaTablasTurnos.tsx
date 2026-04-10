@@ -1,12 +1,15 @@
 'use client';
 
-import * as React from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import React, { useState, useMemo } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { useNombreEmpleado } from '@/components/providers/NombreEmpleadoProvider';
+import { AsistenciaReporteRow } from '@/services/asistencias';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search } from 'lucide-react';
+import { vista_empleado_ubicacion } from '@/services/ubicaciones';
+import { UserAvatar } from '@/components/reutilizables/UserAvatar';
 import {
   Popover,
   PopoverContent,
@@ -14,223 +17,258 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { UserAvatar } from "@/components/reutilizables/UserAvatar";
-import { Clock, CheckCircle2, AlertCircle, MinusCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import EmpresaLogo from "@/components/reutilizables/EmpresaLogo";
-import {ConfirmarInasistenciaDialog} from "@/components/page_components/asistencias/AsistenciaDialogConfirmarInasistencia";
-import { useNombreEmpleado } from "@/components/providers/NombreEmpleadoProvider";
-interface EmpleadoDetalle {
+import { ConfirmarInasistenciaDialog } from './AsistenciaDialogConfirmarInasistencia';
+import { Button } from '@/components/ui/button';
+
+// Helper to get badge variant
+const getStatusBadge = (status: string | null | undefined): 'secondary' | 'destructive' | 'outline' => {
+  if (!status) return 'secondary';
+  const lowerStatus = status.toLowerCase();
+  if (lowerStatus.includes('retardo_grave') || lowerStatus.includes('anticipada')) return 'destructive';
+  if (lowerStatus.includes('inasistencia')) return 'destructive';
+  if (lowerStatus.includes('ausente')) return 'outline';
+  return 'secondary';
+};
+
+// Prop Types
+type TurnoDetalle = {
   empleado_id: string;
-  nombre_completos: string;
-  id_empresa?: number;
-}
+};
 
-interface TurnoData {
-  entrada: string;
-  detalles_empleados: EmpleadoDetalle[];
+type TurnoData = {
+  hora_entrada: string;
+  detalles_empleados: TurnoDetalle[];
   total_personas: number;
-  id_empresa?: number;
-}
+};
 
-interface TablasTurnosProps {
+type AsistenciasMap = Record<string, AsistenciaReporteRow>;
+type InasistenciasMap = Record<string, { capturo: string; }>;
+type HorariosMap = Record<string, { entrada: string; salida: string; }>;
+
+type ubicacionesMap = Record<string, vista_empleado_ubicacion>;
+
+type FilterStatus = 'todos' | 'presentes' | 'ausentes';
+
+interface Props {
   turnos: TurnoData[];
-  asistencias: Record<string, { hora: string; estatus: string; ubicacion: string }>;
-  turnoCompleto: Record<string, { entrada: string; salida: string; salida_descanso: string; regreso_descanso: string }>;
-  inasistencias:Record<string, { capturo: string; fecha: string; hora: string }>;
-  mostrarLogo?: boolean;
+  asistencias: AsistenciasMap;
+  inasistencias: InasistenciasMap;
+  horarios: HorariosMap;
+  ubicaciones: ubicacionesMap;
 }
 
-const formatearHora = (hora: string) => {
-  if (!hora) return '--:--';
-  const [h, m] = hora.split(':');
-  const date = new Date();
-  date.setHours(parseInt(h), parseInt(m));
-  return date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true });
-};
-
-const getEstatusUI = (storedStatus: string | null) => {
-  if (!storedStatus) {
-    return { texto: 'Falta', clase: 'bg-slate-100 text-slate-600 border-slate-200', icono: <MinusCircle className="w-3 h-3 mr-1" /> };
-  }
-  switch (storedStatus) {
-    case 'Puntual': return { texto: 'Puntual', clase: 'bg-green-100 text-green-800 border-green-300', icono: <CheckCircle2 className="w-3 h-3 mr-1" /> };
-    case 'Retraso Leve': return { texto: 'Retraso Leve', clase: 'bg-orange-100 text-orange-800 border-orange-300', icono: <Clock className="w-3 h-3 mr-1" /> };
-    case 'Retraso Grave': return { texto: 'Retraso Grave', clase: 'bg-red-100 text-red-800 border-red-300', icono: <AlertCircle className="w-3 h-3 mr-1" /> };
-    default: return { texto: 'Estatus Desconocido', clase: 'bg-slate-100 text-slate-600 border-slate-200', icono: <MinusCircle className="w-3 h-3 mr-1" /> };
-  }
-};
-
-export function TablasTurnos({ turnos, asistencias, turnoCompleto, inasistencias, mostrarLogo = false }: TablasTurnosProps) {
-  
-  
+export const AsistenciaTablaTurnos: React.FC<Props> = ({ turnos, asistencias, inasistencias, horarios, ubicaciones }) => {
   const { getNombreEmpleadoPorId } = useNombreEmpleado();
-  const turnosAgrupados = React.useMemo(() => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>('todos');
+
+  const filteredTurnos = useMemo(() => {
     if (!turnos) return [];
 
-    const agrupados: Record<string, TurnoData> = {};
+    // First, filter employees within each shift
+    const turnosConEmpleadosFiltrados = turnos.map(turno => {
+      const empleadosFiltrados = turno.detalles_empleados.filter(empleado => {
+        const nombre = getNombreEmpleadoPorId(empleado.empleado_id)?.nombre_corto || '';
+        const tieneAsistencia = !!asistencias[empleado.empleado_id];
 
-    turnos.forEach(turno => {
-      // Si la hora aún no existe en nuestro objeto, la creamos
-      const empleadosConEmpresa = turno.detalles_empleados.map(emp => ({
-        ...emp,
-        id_empresa: turno.id_empresa
-      }));
-      if (!agrupados[turno.entrada]) {
-        agrupados[turno.entrada] = {
-          entrada: turno.entrada,
-          // Clonamos el arreglo para no modificar los datos originales por accidente
-          detalles_empleados: [...empleadosConEmpresa],
-          total_personas: turno.total_personas
-        };
-      } else {
-        // Si ya existe otra empresa con la misma hora, fusionamos a los empleados
-        agrupados[turno.entrada].detalles_empleados.push(...empleadosConEmpresa);
-        agrupados[turno.entrada].total_personas += turno.total_personas;
-      }
+        // Status filter logic
+        if (filterStatus === 'presentes' && !tieneAsistencia) return false;
+        if (filterStatus === 'ausentes' && tieneAsistencia) return false;
+
+        // Search term filter logic
+        if (searchTerm && !nombre.toLowerCase().includes(searchTerm.toLowerCase())) {
+          return false;
+        }
+
+        return true;
+      });
+
+      return {
+        ...turno,
+        detalles_empleados: empleadosFiltrados,
+      };
     });
 
-    // Convertimos el objeto de vuelta a un arreglo y lo ordenamos por hora
-    return Object.values(agrupados).sort((a, b) => a.entrada.localeCompare(b.entrada));
-  }, [turnos]);
+    // Then, remove any shifts that are now empty
+    return turnosConEmpleadosFiltrados.filter(turno => turno.detalles_empleados.length > 0);
 
-  if (!turnosAgrupados || turnosAgrupados.length === 0) {
-    return <p>No hay datos de turnos para mostrar.</p>;
+  }, [turnos, searchTerm, filterStatus, getNombreEmpleadoPorId, asistencias]);
+
+
+  if (!turnos || turnos.length === 0) {
+    return <p className="text-center text-gray-500 py-4">No hay turnos programados para hoy.</p>;
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-1">
-      {/* 👇 Ahora mapeamos 'turnosAgrupados' en lugar de 'turnos' 👇 */}
-      {turnosAgrupados.map((turno) => {
-        const llegaron = turno.detalles_empleados.filter(e => asistencias[e.empleado_id]).length;
-        return (
-          // Al estar agrupados, la llave 'turno.entrada' vuelve a ser 100% única
-          <Card key={turno.entrada} className="overflow-hidden shadow-sm">
-            <CardHeader className="bg-slate-50 border-b py-4">
-              <CardTitle className="text-lg flex justify-between items-center">
-                <span>Turno: {formatearHora(turno.entrada)}</span>
-                <span className={`text-sm font-medium px-3 py-1 rounded-full border ${llegaron === turno.total_personas ? 'bg-green-100 text-green-800 border-green-200' : 'bg-white text-slate-600'
-                  }`}>
-                  {llegaron} / {turno.total_personas} Registrados
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-slate-50/50">
-                    <TableHead>Empleado</TableHead>
-                    {mostrarLogo && (
-                      <TableHead>Emp.</TableHead>
-                    )}
-                    <TableHead>Llegada</TableHead>
-                    <TableHead>Estatus</TableHead>
-                    <TableHead>Ubicacion</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {turno.detalles_empleados.map((empleado) => {
-                    const asistencia = asistencias[empleado.empleado_id];
-                    const turnohyd = turnoCompleto[empleado.empleado_id];
-                    const inasistencia = inasistencias[empleado?.empleado_id];
-                    const estatusUI = getEstatusUI(asistencia ? asistencia.estatus : null);
-                    return (
-                      <Popover key={empleado.empleado_id}>
-                        <PopoverTrigger asChild>
-                          <TableRow className="cursor-pointer hover:bg-slate-50/50">
-                            <TableCell className="font-medium">
-                              <div className="flex items-center gap-3">
-                                <UserAvatar
-                                  employeeId={empleado.empleado_id}
-                                  name={empleado.nombre_completos}
-                                  className="w-10 h-10"
-                                />
-                                <span>{empleado.nombre_completos}</span>
-                              </div>
-                            </TableCell>
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative grow">
+          <Search className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Buscar por nombre de empleado..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 w-full"
+          />
+        </div>
+        <Select value={filterStatus} onValueChange={(value: FilterStatus) => setFilterStatus(value)}>
+          <SelectTrigger className="w-full sm:w-45">
+            <SelectValue placeholder="Filtrar estado" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos</SelectItem>
+            <SelectItem value="presentes">Presentes</SelectItem>
+            <SelectItem value="ausentes">Ausentes</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-                            {mostrarLogo && empleado.id_empresa && (
-                              <TableCell>
-                                <EmpresaLogo id={empleado.id_empresa} wyh={20} />
-                              </TableCell>
-                            )}
+      <div className="overflow-x-auto border rounded-md">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Empleado</TableHead>
+              <TableHead>Entrada</TableHead>
+              <TableHead>Salida</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredTurnos.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="h-24 text-center">
+                  No se encontraron resultados.
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredTurnos.map((turno) => {
+                const presentes = turno.detalles_empleados.filter(emp => asistencias[emp.empleado_id]).length;
 
-                            <TableCell className="text-slate-600 font-mono text-sm">
-                              {asistencia ? formatearHora(asistencia.hora) : '--:--'}
-                            </TableCell>
-                            <TableCell>
-                              {!inasistencia && (
-                                <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold border ${estatusUI.clase}`}>
-                                {estatusUI.icono}
-                                {estatusUI.texto}
-                              </span>)}
-                              {inasistencia && (
-                                <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold border ${estatusUI.clase}`}>
-                                  {estatusUI.icono}
-                                  {`Falta confirmada por ${inasistencia.capturo ? getNombreEmpleadoPorId(inasistencia.capturo)?.nombre_corto : 'el capturista'}`}
-                                </span>
-                              )}
-                              
-                            </TableCell>
-                            <TableCell>
-                              {asistencia ? asistencia.ubicacion : '--'}
-                            </TableCell>
-                          </TableRow>
-                        </PopoverTrigger>
-                        <PopoverContent align="center">
-                          <PopoverHeader>
-                            <PopoverTitle>Turno Completo</PopoverTitle>
-                            <div >
-                              {turnohyd ? (
+                return (
+                  <React.Fragment key={turno.hora_entrada}>
+                    <TableRow className="bg-muted/50 hover:bg-muted/50 sticky top-0">
+                      <TableCell colSpan={8} className="font-semibold">
+                        <div className="flex justify-between w-full">
+                          <span>Turno de las {turno.hora_entrada}</span>
+                          <Badge variant="secondary">{presentes} / {turno.total_personas}</Badge>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+
+                    {turno.detalles_empleados.map(({ empleado_id }) => {
+                      const nombre = getNombreEmpleadoPorId(empleado_id)?.nombre_corto || `ID: ${empleado_id}`;
+                      const asistenciaInfo = asistencias[empleado_id];
+                      const inasistenciaInfo = inasistencias[empleado_id];
+                      const horarioInfo = horarios[empleado_id];
+
+                      console.log("asistenciaInfo", asistenciaInfo)
+                      const ubicacionInfo = ubicaciones[empleado_id];
+
+                      if (!asistenciaInfo) {
+                        return (
+                          <Popover key={empleado_id}>
+                            <PopoverTrigger asChild>
+                              <TableRow className="opacity-60">
+                                <TableCell>
+                                  <ul>
+                                    <li>
+                                      <UserAvatar employeeId={empleado_id} name={nombre} className='w-6 h-6' />
+                                    </li>
+                                    <li>{nombre}</li>
+                                  </ul>
+                                </TableCell>
+                                <TableCell>
+                                  <ul>
+                                    <li>
+                                      {horarioInfo?.entrada || turno.hora_entrada}
+                                    </li>
+                                    <li>
+                                      {inasistenciaInfo && (
+                                        <Badge variant={getStatusBadge("inasistencias")}>
+                                          Inasistencia confirmada por {getNombreEmpleadoPorId(inasistenciaInfo.capturo)?.nombre_corto}
+                                          </Badge>
+                                      )}
+                                      {!inasistenciaInfo && (
+                                        <ul>
+                                          <li>
+                                            <Badge variant="outline">Ausente</Badge>
+                                          </li>
+                                          <li>
+                                            <Badge variant={'outline'}>{ubicacionInfo?.nombre_ubicacion || 'Sin ubicación'}</Badge>
+                                          </li>
+                                        </ul>
+                                      )}
+                                    </li>
+
+                                  </ul>
+                                </TableCell>
+                              </TableRow>
+                            </PopoverTrigger>
+                            <PopoverContent>
+                              <PopoverHeader>
+                                <PopoverTitle>Ausencia registrada</PopoverTitle>
                                 <>
-                                  <div >
-                                    <span>Entrada: </span>
-                                    <span>{formatearHora(turnohyd.entrada)}</span>
-                                  </div>
-                                  <div >
-                                    <span>Salida Descanso: </span>
-                                    <span>{formatearHora(turnohyd.salida_descanso)}</span>
-                                  </div>
-                                  <div >
-                                    <span>Regreso Descanso: </span>
-                                    <span>{formatearHora(turnohyd.regreso_descanso)}</span>
-                                  </div>
-                                  <div >
-                                    <span >Salida: </span>
-                                    <span>{formatearHora(turnohyd.salida)}</span>
-                                  </div>
-                                  <div>
-                                    {!asistencia && !inasistencia &&(
-                                      <ConfirmarInasistenciaDialog id_empleado = {empleado.empleado_id} />                                    
-                                    )}
-                                    {!asistencia &&(
-                                      <Button variant="outline">Justificar Falta</Button>
-                                    )}
-                                  </div>
+                                  {!inasistenciaInfo && (
+                                    <ConfirmarInasistenciaDialog id_empleado={empleado_id} />
+                                  )}
+
+                                  <Button variant="outline">Justificar Falta</Button>
+
                                 </>
-                              ) : (
-                                <span>Sin horario asignado</span>
-                              )}
-                            </div>
-                          </PopoverHeader>
-                        </PopoverContent>
-                      </Popover>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        );
-      })}
+                              </PopoverHeader>
+                            </PopoverContent>
+                          </Popover>
+                        );
+                      }
+
+                      return (
+                        <TableRow key={empleado_id}>
+                          <TableCell>
+                            <ul>
+                              <li>
+                                <UserAvatar employeeId={empleado_id} name={nombre} className='w-6 h-6' />
+                              </li>
+                              <li>{nombre}</li>
+                            </ul></TableCell>
+                          <TableCell>
+                            <ul>
+                              <li>
+                                {asistenciaInfo?.hora_entrada_real}
+                              </li>
+                              <li>
+                                <Badge variant={getStatusBadge(asistenciaInfo?.estado_entrada)}>
+                                  {asistenciaInfo?.estado_entrada}
+                                </Badge>
+                              </li>
+                              <li>
+                                {asistenciaInfo?.ubicacion_entrada}
+                              </li>
+                            </ul>
+                          </TableCell>
+                          <TableCell>
+                            <ul>
+                              <li>
+                                {asistenciaInfo?.hora_salida_real}
+                              </li>
+                              <li>
+                                {asistenciaInfo?.hora_salida_real && (
+                                  <Badge variant={getStatusBadge(asistenciaInfo?.estado_salida)}>
+                                    {asistenciaInfo?.estado_salida}
+                                  </Badge>
+                                )}
+                              </li>
+                            </ul>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </React.Fragment>
+                )
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
-}
+};

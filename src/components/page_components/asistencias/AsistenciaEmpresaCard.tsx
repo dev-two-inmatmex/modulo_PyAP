@@ -1,153 +1,177 @@
-'use client';
-import { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { Calendar as CalendarIcon, Loader2 } from "lucide-react";
-import { type DateRange } from "react-day-picker";
-import { toast } from "sonner";
+/*'use client';
 
-import { cn } from "@/lib/utils";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PorcentajeAsistencia, SegmentoAsistencia } from "./AsistenciaPorcentaje";
+import { AsistenciaTablaTurnos } from "./AsistenciaTablasTurnos";
+import { AsistenciaReporteRow } from "@/services/asistencias";
+import { vista_empleado_ubicacion} from "@/services/ubicaciones";
+import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose
+} from '@/components/ui/dialog';
 
-import { PorcentajeAsistencia } from "./AsistenciaPorcentaje";
-import { HistogramaAsistencia } from "./AsistenciaHistograma";
-import { TablasTurnos } from "./AsistenciaTablasTurnos";
-import { HistorialAsistencia } from "./AsistenciaHistorial";
-import { getAsistenciaReporte, type AsistenciaReporteRow } from "@/services/asistencias";
-import { type Inasistencias } from "@/services/asistencias";
+// Prop types based on page data from AsistenciasPage
+type TurnoDetalle = {
+  empleado_id: number;
+};
+
+type TurnoData = {
+  hora_entrada: string;
+  detalles_empleados: TurnoDetalle[];
+  total_personas: number;
+};
+
+type AsistenciasMap = Record<string, AsistenciaReporteRow>;
+type InasistenciasMap = Record<string, { capturo: string; }>;
+type TurnoCompletoMap = Record<string, { entrada: string; salida: string; }>;
+type ubicacionesMap = Record<string, vista_empleado_ubicacion>;
+
 interface AsistenciaCardProps {
-  empresaId: number | null | undefined;
-  nombreEmpresa: string | null;
-  turnosHoy: any[];
-  asistenciasMap: any;
-  turnoCompletoMap: any;
-  inasistenciasMap: any;
-  segmentoDona: any[];
+  empresaId: number | null;
+  nombreEmpresa: string;
+  turnosHoy: TurnoData[];
+  asistenciasMap: AsistenciasMap;
+  ubicacionesMap: ubicacionesMap;
+  turnoCompletoMap: TurnoCompletoMap;
+  inasistenciasMap: InasistenciasMap;
+  segmentoDona: SegmentoAsistencia[];
   totalEsperadosHoy: number;
-  fechaDelDia: string;
 }
 
 export function AsistenciaEmpresaCard({
-  empresaId, nombreEmpresa, turnosHoy, asistenciasMap, turnoCompletoMap, inasistenciasMap, segmentoDona, totalEsperadosHoy, fechaDelDia
+  nombreEmpresa,
+  turnosHoy,
+  asistenciasMap,
+  turnoCompletoMap,
+  inasistenciasMap,
+  segmentoDona,
+  totalEsperadosHoy,
+  ubicacionesMap
 }: AsistenciaCardProps) {
-  // Estados del componente
-  const [viewMode, setViewMode] = useState<"hoy" | "rango">("hoy");
-  const [date, setDate] = useState<DateRange | undefined>();
-  //const [historialData, setHistorialData] = useState<HistorialAsistenciaRow[]>([]);
-  const [historialData, setHistorialData] = useState<AsistenciaReporteRow[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Efecto que pide los datos a Supabase cuando eliges fechas en el calendario
-  useEffect(() => {
-    if (viewMode === 'rango' && date?.from && date?.to) {
-      setIsLoading(true);
-      const fromStr = format(date.from, 'yyyy-MM-dd');
-      const toStr = format(date.to, 'yyyy-MM-dd');
-
-      getAsistenciaReporte(fromStr, toStr, empresaId)
-        .then((data) => {
-          // 👇 LUPA 1: Vemos qué llega de la base de datos
-          console.log("Datos crudos de Supabase:", data);
-          if (data.length === 0) {
-            toast.warning("Supabase devolvió 0 registros para estas fechas.");
-          } else {
-            toast.success(`¡Se encontraron ${data.length} registros!`);
-          }
-          setHistorialData(data);
-        })
-        .catch((err) => {
-          // 👇 LUPA 2: Atrapamos si la función SQL no existe o falló
-          console.error("Error fatal en Supabase:", err);
-          toast.error("Error de Supabase: " + err.message);
-        })
-        .finally(() => setIsLoading(false));
-    }
-  }, [viewMode, date, empresaId]);
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-lg border shadow-sm">
-        <h2 className="text-xl font-bold tracking-tight">
-          Asistencia: <span className="text-primary">{nombreEmpresa}</span>
-        </h2>
+    <Card className="col-span-1 lg:col-span-3">
+      <CardHeader>
+        <CardTitle>{nombreEmpresa}</CardTitle>
+        <CardDescription>Resumen de Asistencia y Puntualidad para Hoy</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <PorcentajeAsistencia segmentos={segmentoDona} totalEsperados={totalEsperadosHoy} />
 
-        <div className="grid w-full grid-cols-1">
-          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "hoy" | "rango")}>
-            <TabsList className="">
-              <TabsTrigger value="hoy">Hoy</TabsTrigger>
-              <TabsTrigger value="rango">Rango</TabsTrigger>
-            </TabsList>
-          </Tabs>
+        </div>
+        
+        <AsistenciaTablaTurnos
+          turnos={turnosHoy}
+          asistencias={asistenciasMap}
+          inasistencias={inasistenciasMap}
+          horarios={turnoCompletoMap}
+          ubicaciones={ubicacionesMap}
+        />
+      </CardContent>
+    </Card>
+    
+  );
+}*/
 
-          {viewMode === "rango" && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant={"outline"} className={cn("w-65 justify-start text-left font-normal", !date && "text-muted-foreground")}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date?.from ? (
-                    date.to ? (
-                      <>
-                        {format(date.from, "LLL dd", { locale: es })} - {format(date.to, "LLL dd", { locale: es })}
-                      </>
-                    ) : (
-                      format(date.from, "LLL dd", { locale: es })
-                    )
-                  ) : (
-                    <span>Selecciona fechas...</span>
-                  )}
+'use client';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PorcentajeAsistencia, SegmentoAsistencia } from "./AsistenciaPorcentaje";
+import { AsistenciaTablaTurnos } from "./AsistenciaTablasTurnos";
+import { AsistenciaReporteRow } from "@/services/asistencias";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { InformeAsistencias } from "./InformeAsistencias";
+import { FileText } from "lucide-react";
+
+type TurnoDetalle = {
+  empleado_id: number;
+};
+
+type TurnoData = {
+  hora_entrada: string;
+  detalles_empleados: TurnoDetalle[];
+  total_personas: number;
+};
+
+type AsistenciasMap = Record<string, AsistenciaReporteRow>;
+type InasistenciasMap = Record<string, { capturo: string; }>;
+type TurnoCompletoMap = Record<string, { entrada: string; salida: string; }>;
+type ubicacionesMap = Record<string, vista_empleado_ubicacion>;
+
+interface AsistenciaCardProps {
+  empresaId: number | null;
+  nombreEmpresa: string;
+  turnosHoy: TurnoData[];
+  asistenciasMap: AsistenciasMap;
+  turnoCompletoMap: TurnoCompletoMap;
+  inasistenciasMap: InasistenciasMap;
+  segmentoDona: SegmentoAsistencia[];
+  totalEsperadosHoy: number;
+  ubicacionesMap: ubicacionesMap;
+}
+
+export function AsistenciaEmpresaCard({
+  empresaId,
+  nombreEmpresa,
+  turnosHoy,
+  asistenciasMap,
+  turnoCompletoMap,
+  inasistenciasMap,
+  segmentoDona,
+  totalEsperadosHoy,
+  ubicacionesMap
+}: AsistenciaCardProps) {
+
+  return (
+    <Card className="col-span-1 lg:col-span-3">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+            <CardTitle>{nombreEmpresa}</CardTitle>
+            <CardDescription>Resumen de Asistencia y Puntualidad para Hoy</CardDescription>
+        </div>
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button variant="outline">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Ver Informe
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="range" captionLayout="dropdown" defaultMonth={date?.from} selected={date} onSelect={setDate} numberOfMonths={2} locale={es} />
-              </PopoverContent>
-            </Popover>
-          )}
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl">
+                <DialogHeader>
+                    <DialogTitle>Informe de Asistencias - {nombreEmpresa}</DialogTitle>
+                </DialogHeader>
+                <InformeAsistencias empresaId={empresaId} />
+            </DialogContent>
+        </Dialog>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <PorcentajeAsistencia segmentos={segmentoDona} totalEsperados={totalEsperadosHoy} />
         </div>
-      </div>
-
-      {viewMode === "hoy" ? (
-        <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
-            <PorcentajeAsistencia segmentos={segmentoDona} totalEsperados={totalEsperadosHoy} />
-          <TablasTurnos
-            turnos={turnosHoy}
-            asistencias={asistenciasMap}
-            turnoCompleto={turnoCompletoMap}
-            inasistencias={inasistenciasMap}
-            mostrarLogo={empresaId === null}
-          />
-        </div>
-      ) : (
-        <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="col-span-1 md:col-span-2 lg:col-span-4">
-              {/* Le pasamos los datos del historial al histograma (si tu histograma los soporta) */}
-              <HistogramaAsistencia />
-            </div>
-          </div>
-
-          <div className="relative">
-            {isLoading && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-lg">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            )}
-            {!date?.from || !date?.to ? (
-              <div className="p-12 text-center border-2 border-dashed rounded-lg text-muted-foreground">
-                <CalendarIcon className="mx-auto h-12 w-12 opacity-20 mb-4" />
-                <p>Selecciona una fecha de inicio y fin en el calendario de arriba para generar el reporte.</p>
-              </div>
-            ) : (
-              <HistorialAsistencia
-                historial={historialData}
-                mostrarLogo={empresaId === null}
-              />
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+        
+        <AsistenciaTablaTurnos
+          turnos={turnosHoy}
+          asistencias={asistenciasMap}
+          inasistencias={inasistenciasMap}
+          horarios={turnoCompletoMap}
+          ubicaciones={ubicacionesMap}
+        />
+      </CardContent>
+    </Card>
   );
 }
+
+
+
+
+

@@ -1,7 +1,7 @@
 import EmpresaLogo from "@/components/reutilizables/EmpresaLogo";
 import { HorarioVista } from "@/components/page_components/horarios/HorarioVista";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getEmpleadoDatos } from "@/services/empleados";
+import { getEmpleados } from "@/services/empleados";
 import { getEmpresas } from "@/services/empresas";
 import { getHorariosEmpleado } from "@/services/horarios";
 import { getOpcionesDescansos, getOpcionesHorarios } from '@/services/horarios';
@@ -11,7 +11,7 @@ export default async function HorariosPage() {
     const empresas = await getEmpresas();
     const horariosDisponibles = await getOpcionesHorarios();
     const descansosDisponibles = await getOpcionesDescansos();
-    const empleados = await getEmpleadoDatos();
+    const empleados = await getEmpleados();
     
     // Al llamar la función sin ID, asumimos que te trae TODOS los turnos de la vista
     const todosLosTurnos = await getHorariosEmpleado();

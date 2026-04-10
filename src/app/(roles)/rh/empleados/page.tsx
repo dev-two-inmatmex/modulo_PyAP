@@ -1,6 +1,6 @@
 import { createServidorClient } from "@/lib/supabase/server";
 import DirectorioEmpleados from "@/components/page_components/empleados/DirectorioEmpleados";
-import { getEmpleadoDatos, getEmpleadoPuestos } from "@/services/empleados";
+import { getEmpleados, getEmpleadoPuestos } from "@/services/empleados";
 import { getPuestos, getSecciones } from "@/services/puestos-secciones";
 import { getEmpresas } from "@/services/empresas";
 
@@ -8,7 +8,7 @@ export default async function EmpleadosPage() {
   const supabase = await createServidorClient();
   
   // 1. Traemos los datos desde los servicios
-  const empleados = await getEmpleadoDatos();
+  const empleados = await getEmpleados();
   const puestos = await getPuestos();
   const secciones = await getSecciones();
   const empleado_puestos = await getEmpleadoPuestos();

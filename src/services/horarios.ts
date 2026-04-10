@@ -1,7 +1,7 @@
 "use server"
 import { createServidorClient } from "@/lib/supabase/server";
 import { Database } from "@/types/database.types";
-type turno = Database["public"]["Views"]["vista_horarios_empleados"]["Row"];
+export type turno = Database["public"]["Views"]["vista_horarios_empleados"]["Row"];
 type turnos = Database["public"]["Views"]["vista_horarios_empleados_semanal"]["Row"];
 
 /**
@@ -51,6 +51,7 @@ export async function getHorarioEmpleadoDelDia(
   }
   return data || [];
 }
+
 
 export type DiaSemana = 'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes' | 'sabado' | 'domingo';
 

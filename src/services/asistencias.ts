@@ -70,6 +70,28 @@ export async function getAsistenciaReporte(
 
   return data as [];
 }
+/**
+ * Obtiene el historial de asistencias (no incluye horas extra) desde la base de datos.
+ * @returns {Promise<AsistenciaReporteRow[]>} Un arreglo de objetos que representan el historial de asistencias.
+ */
+export async function getAsistencias(
+  fecha: string
+): Promise<AsistenciaReporteRow[]> {
+  const supabase = await createServidorClient();
+  let query = supabase
+    .from('asistencia_diaria')
+    .select(`*`);
+
+  if(fecha) query = query.eq('fecha', fecha)
+  
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(`Error al obtener las asistencias: ${error.message}`);
+  }
+
+  return data as [];
+}
 
 export type Inasistencias = Database['public']['Tables']['registro_inasistencias_confirmadas']['Row'];
 export async function getInasistencias(
