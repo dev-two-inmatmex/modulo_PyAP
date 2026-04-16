@@ -1,97 +1,80 @@
+export const dynamic = 'force-dynamic';
 import { createServidorClient } from "@/lib/supabase/server";
-import { ChecadorReloj } from "@/components/page_components/checador/ChecadorReloj";
-import { ChecadorHistorial } from "@/components/page_components/checador/ChecadorHistorial";
-import type { RegistroChequeo } from "@/services/types";
-import { getHorarioEmpleadoDelDia } from "@/services/horarios";
+import { getDescansoHoyUser, getHorarioHoyUser, getHorasExtra } from "@/services/horarios";
+import { getInasistenciaUser, getRegistrosChecadorHoyUser } from "@/services/asistencias";
+import { getUbicacionesPermitidas } from "@/services/ubicaciones";
+import { useHoy } from "@/hooks/useHoy";
+import { AlertCircle } from "lucide-react";
+import { ChecadorCard } from "@/components/page_components/checador/ChecadorCard";
+import { RealtimeAsistencias } from "@/hooks/useRealtimeChecadorRegistros";
 
 export default async function ChecadorPage() {
   const supabase = await createServidorClient();
+  const { getFormatosBD } = useHoy();
+  const fecha = getFormatosBD().fecha;
+  const hoyEs = getFormatosBD().nombredeldiaDBEs;
+  const ubicaciones = await getUbicacionesPermitidas();
+  //console.log("ubicaciones", ubicaciones)
+  const tienesInasistencias = await getInasistenciaUser(fecha);
+  //console.log("inasistencias", tienesInasistencias)
+  const registros = await getRegistrosChecadorHoyUser(fecha);
+  //console.log("registros", registros)
+  const horarioData = await getHorarioHoyUser(hoyEs);
+  //console.log("horario", horarioData)
+  const descansoData = await getDescansoHoyUser(hoyEs);
+  //console.log("descanso", descansoData)
+  const horario = horarioData ? horarioData[hoyEs] : null;
+  const descanso = descansoData ? descansoData[hoyEs] : null;
+  //console.log("horario: ", horarioData, "descanso: ", descanso)
+
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return <div>Usuario no autenticado</div>;
+    console.error("Usuario no autenticado");
+    return [];
   }
 
-  const today = new Intl.DateTimeFormat('sv-SE', {
-    timeZone: 'America/Mexico_City',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).format(new Date());
+  const horasExtra = await getHorasExtra(fecha, user.id);
+  console.log("horas extra", horasExtra)
 
-  /*const nombreDia = new Intl.DateTimeFormat('es-MX', {
-    timeZone: 'America/Mexico_City',
-    weekday: 'long'
-  }).format(new Date());*/
-
-  //const diaActual = nombreDia.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
-  const { data: registrosDeHoy, error: registrosError } = await supabase
-    .from("registro_checador")
-    .select("*")
-    .eq("id_empleado", user.id)
-    .eq("fecha", today);
-
-  if (registrosError) {
-    console.error("Error fetching check-in records:", registrosError.message);
-  }
-  const registros = registrosDeHoy as unknown as RegistroChequeo[];
-
-  const turnoDeHoy = await getHorarioEmpleadoDelDia(user.id);
-  const empleadoTurnoRel = turnoDeHoy[0];
-
-  const isAdmin = user.user_metadata?.is_admin === true;
-  if (empleadoTurnoRel || isAdmin) {
-
-    /* Le decimos a Supabase: "Tráeme el turno del usuario donde la columna de hoy (ej. 'martes') sea TRUE"
-    const { data: turnoData, error: horarioError } = await supabase
-      .from("empleado_turno")
-      .select(`
-        id_empleado,
-        horarios ( hora_entrada, hora_salida ),
-        descansos ( inicio_descanso, fin_descanso )
-      `)
-      .eq('id_empleado', user.id)
-      .eq(diaActual, true) // 👈 ¡Esta es la magia!
-      .maybeSingle();
-
-    if (horarioError) console.error("Error fetching horario:", horarioError.message);
-    if (turnoData && turnoData.horarios && turnoData.descansos) {
-      // @ts-ignore - Ignoramos tipado estricto aquí por la anidación de Supabase
-      const horarios = Array.isArray(turnoData.horarios) ? turnoData.horarios[0] : turnoData.horarios;
-      // @ts-ignore
-      const descansos = Array.isArray(turnoData.descansos) ? turnoData.descansos[0] : turnoData.descansos;
-
-      empleadoTurnoRel = {
-        id: turnoData.id_empleado,
-        entrada: horarios.hora_entrada,
-        salida_descanso: descansos.inicio_descanso,
-        regreso_descanso: descansos.fin_descanso,
-        salida: horarios.hora_salida
-      };
-    }*/
-
-    
-
-    let queryUbicaciones = supabase
-      .from('config_ubicaciones')
-      .select('id, nombre_ubicacion, latitud, longitud, radio_permitido, tipo');
-
-    if (!isAdmin) {
-      queryUbicaciones = queryUbicaciones.eq("tipo", 'produccion');
-    }
-    const { data: ubicaciones } = await queryUbicaciones;
-
-
+  if (tienesInasistencias && tienesInasistencias.length > 0) {
     return (
-      <div className="container mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-        <div className="md:col-span-1 flex justify-center">
-          <ChecadorReloj registros={registros} turnoAsignado={empleadoTurnoRel} userId={user.id} ubicacionesValidas={ubicaciones || []} />
-        </div>
-        <div className="md:col-span-2">
-          <ChecadorHistorial registros={registros} userId={user.id} />
-        </div>
+      <div className="flex flex-col gap-4 justify-center items-center h-screen text-center p-4">
+        <AlertCircle className="w-16 h-16 text-blue-500" />
+        <p className="font-semibold text-lg">Se considero que no llegaste. Si no es así Contacta a Recursos Humanos.</p>
       </div>
     );
   }
+
+  if (!horario) {
+    return (
+      <div className="flex flex-col gap-4 justify-center items-center h-screen text-center p-4">
+        <AlertCircle className="w-16 h-16 text-yellow-500" />
+        <p className="font-semibold text-lg">No tienes un turno de trabajo asignado para el día de hoy.</p>
+      </div>
+    );
+  }
+
+  if (!ubicaciones || ubicaciones.length === 0) {
+    return (
+      <div className="flex flex-col gap-4 justify-center items-center h-screen text-center p-4">
+        <AlertCircle className="w-16 h-16 text-red-500" />
+        <p className="font-semibold text-lg">No tienes una ubicación de trabajo configurada. Contacta a Recursos Humanos.</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <RealtimeAsistencias />
+      <ChecadorCard
+        userId={user.id}
+        horario={horario}
+        descanso={descanso}
+        registros={registros}
+        ubicacionesValidas={ubicaciones}
+        horasExtra={horasExtra}
+      />
+    </>
+  );
 }

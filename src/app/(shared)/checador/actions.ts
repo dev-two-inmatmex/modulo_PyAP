@@ -152,3 +152,115 @@ export async function registrarChequeo(
     revalidatePath('/checador');
     return { success: `Se ha registrado tu ${friendlyAction} con éxito.` };
 }
+
+
+
+export async function registrarChequeoPrueba(
+    action: ChequeoAction,
+    dateInTimezone: string,
+    timeInTimezone: string,
+    locationId: number,
+    expectedTime: string | null,
+    faceDescriptor?: number[] 
+) {
+    const supabase = await createServidorClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { success: false, message: "Usuario no autenticado." };
+    }
+
+    // Validar si la biometría es necesaria para esta acción
+    const requiereBiometria = action === 'entrada' || action === 'salida';
+    if (requiereBiometria) {
+        if (!faceDescriptor || faceDescriptor.length === 0) {
+            return { success: false, message: "Se requiere escaneo facial para la entrada y la salida." };
+        }
+        const { data: biometricResult, error: rpcError } = await supabase.rpc('verificar_identidad_biometrica', {
+            id_empleado_param: user.id,
+            descriptor_param: faceDescriptor
+        });
+        if (rpcError || biometricResult === null) {
+            return { error: "Error en el servidor de biometría." };
+        }
+        const score = biometricResult as number;
+        if (biometricResult > 0.55) { // Umbral para distancia de Coseno
+            return { error: `Identidad no verificada. (Score: ${score.toFixed(4)})` };
+        }
+    }
+
+    const { error } = await supabase.from('registro_checador').insert({
+        id_empleado: user.id,
+        tipo_registro: action,
+        fecha: dateInTimezone,
+        registro: timeInTimezone,
+        //huso_horario: 'America/Mexico_City',
+        id_ubicacion: locationId,
+        hora_esperada: expectedTime
+    });
+
+    if (error) {
+        console.error(`Error registrando ${action}:`, error);
+        return { success: false, message: `Error de base de datos: ${error.message}` };
+    }
+
+    revalidatePath('/checador');
+    
+    const tipoNormalizado = action.replace('_', ' ');
+    return { success: true, message: `¡${tipoNormalizado.charAt(0).toUpperCase() + tipoNormalizado.slice(1)} registrada correctamente!` };
+}
+
+export async function enviarSolicitudRetardo(
+    id_empleado: string,
+    dateInTimezone: string,
+    timeInTimezone: string,
+    expectedTime: string,
+    motivo: string,
+    faceDescriptor?: number[] 
+) {
+    const supabase = await createServidorClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user || user.id !== id_empleado) {
+        return { success: false, message: "Usuario no autenticado o no coincide." };
+    }
+
+    // 1. VALIDACIÓN BIOMÉTRICA CRÍTICA
+    if (!faceDescriptor || faceDescriptor.length === 0) {
+        return { success: false, message: "Se requiere escaneo facial para solicitar el acceso." };
+    }
+    
+    const { data: biometricResult, error: rpcError } = await supabase.rpc('verificar_identidad_biometrica', {
+        id_empleado_param: user.id,
+        descriptor_param: faceDescriptor
+    });
+    
+    if (rpcError || biometricResult === null) {
+        return { success: false, message: "Error en el servidor de biometría." };
+    }
+    
+    const score = biometricResult as number;
+    if (score > 0.55) { // Tu umbral de distancia de Coseno
+        return { success: false, message: `Identidad no verificada. (Score: ${score.toFixed(4)})` };
+    }
+
+    // 2. INSERCIÓN EN LA TABLA DE ESPERA
+    // Si la biometría pasa, guardamos la solicitud
+    const { error } = await supabase.from('registro_solicitud_asistencia_30min_despues').insert({
+        id_empleado: user.id,
+        fecha: dateInTimezone,
+        hora: timeInTimezone,
+        hora_esperada: expectedTime,
+        motivo: motivo
+    });
+
+    if (error) {
+        console.error("Error guardando solicitud de retardo:", error);
+        return { success: false, message: `Error de base de datos: ${error.message}` };
+    }
+
+    // Opcional: Revalidar la ruta si tienes una tabla de status para el empleado
+    revalidatePath('/checador');
+    
+    return { success: true, message: "Solicitud enviada. Espera en recepción a que RH autorice tu acceso." };
+}

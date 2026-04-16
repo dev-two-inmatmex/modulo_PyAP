@@ -184,3 +184,93 @@ export async function getDescansos(): Promise<Descansos[]> {
   }
   return data || [];
 }
+
+
+export type Empleados_horarios = Database["public"]["Tables"]["empleados_turno_horarios"]["Row"];
+
+export async function getHorarioHoyUser(
+  diaActual: string,
+)/*: Promise<Empleados_horarios[]> */ {
+  const supabase = await createServidorClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Usuario no autenticado.");
+  }
+
+  let query = supabase
+    .from('empleados_turno_horarios')
+    .select(`${diaActual}:horarios!empreados_horarios_${diaActual}_fkey (
+      hora_entrada,
+      hora_salida
+    )`)
+    .eq('id_empleado', user.id)
+    .lte('ejecutar_a_partir_de', new Date().toISOString())
+    .order('ejecutar_a_partir_de', { ascending: false })
+    .limit(1)
+    .single();
+  const { data, error } = await query;
+  if (error) {
+    throw new Error(`Error al consultar la vista de horarios de empleados: ${error.message}`);
+  }
+  return data || [];
+}
+
+
+export type Empleados_descansos = Database["public"]["Tables"]["empleados_turno_descansos"]["Row"];
+
+export async function getDescansoHoyUser(
+  diaActual: string,
+) {
+  const supabase = await createServidorClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Usuario no autenticado.");
+  }
+
+  let query = supabase
+    .from('empleados_turno_descansos')
+    .select(`${diaActual}:descansos!empleados_turno_descansos_${diaActual}_fkey (
+      inicio_descanso,
+      fin_descanso
+    )`)
+    .eq('id_empleado', user.id)
+    .lte('ejecutar_a_partir_de', new Date().toISOString())
+    .order('ejecutar_a_partir_de', { ascending: false })
+    .limit(1)
+    .single();
+  const { data, error } = await query;
+  if (error) {
+    throw new Error(`Error al consultar la vista de descansos de empleados: ${error.message}`);
+  }
+  return data || [];
+}
+
+export type Empleado_asignacion_horas_extra = Database["public"]["Tables"]["registro_asignacion_horas_extra"]["Row"];
+
+export async function getHorasExtra(
+  fecha?: string | null,
+  id_empleado?: string | null,
+): Promise<Empleado_asignacion_horas_extra[]> {
+  const supabase = await createServidorClient();
+  let query = supabase
+    .from('registro_asignacion_horas_extra')
+    .select('*');
+
+  if (fecha) {
+    query = query.eq('dia_asignado', fecha);
+  }
+  if (id_empleado) {
+    query = query.eq('id_empleado', id_empleado);
+  }
+  const { data, error } = await query;
+  if (error) {
+    throw new Error(`Error al consultar la vista de horas extra de empleados: ${error.message}`);
+  }
+  return data || [];
+}
+
+
+
+
+
+

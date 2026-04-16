@@ -116,7 +116,7 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-120">
         <DialogHeader><DialogTitle>Verificación Biométrica</DialogTitle></DialogHeader>
         <div className="relative w-full aspect-video rounded-md overflow-hidden bg-slate-900">
           <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
@@ -126,7 +126,7 @@ export function ScannerBiometrico({ onResult, children }: ScannerBiometricoProps
           </div>
         </div>
 
-        <div className="text-center text-sm text-muted-foreground min-h-[60px] flex flex-col items-center justify-center gap-2">
+        <div className="text-center text-sm text-muted-foreground min-h-15 flex flex-col items-center justify-center gap-2">
           {isScanning ? (
             <>
               <RefreshCw className="h-5 w-5 animate-spin text-green-600" />

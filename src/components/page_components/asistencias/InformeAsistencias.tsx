@@ -82,7 +82,7 @@ export function InformeAsistencias({ empresaId }: Props) {
 
   // Process the raw report data into the new grid-friendly structure
   const processedData: ProcessedData = useMemo(() => {
-    return reportData.reduce((acc: ProcessedData, row) => {
+    return reportData.reduce((acc: ProcessedData, row:any) => {
       const empleadoId = row.id_empleado;
       if (!acc[empleadoId]) {
         const empleadoInfo = row.empleados as { nombres: string, apellido_paterno: string } | null;

@@ -7,6 +7,8 @@
  * ó
  * const fecha = getFormatosBD().fecha;
  * const hora = getFormatosBD().hora;
+ * const nombredeldiaES = getFormatosBD().nombredeldiaES; ideal para el nombre del dia ej.: Sábado
+ * const nombredeldiaDBEs = getFormatosBD().nombredeldiaDBEs; ideal para el nombre del dia en la base de datos ej.: sabado
  */
 export function useHoy() {
   const getFormatosBD = () => {
@@ -31,9 +33,18 @@ export function useHoy() {
         hour12: false
     }).format(now);
 
+    const nombredeldiaES = new Intl.DateTimeFormat('es-MX', {
+      timeZone: 'America/Mexico_City',
+      weekday: 'long'
+    }).format(new Date());
+
+    const nombredeldiaDBEs = nombredeldiaES.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
     return {
       fecha,
       hora,
+      nombredeldiaES,
+      nombredeldiaDBEs,
     };
   };
 
