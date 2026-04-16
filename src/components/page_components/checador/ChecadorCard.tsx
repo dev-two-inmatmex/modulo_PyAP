@@ -83,7 +83,7 @@ export function ChecadorCard({ registros, horario, descanso, userId, ubicaciones
     return { action: null, label: 'Trabajando', message: `Tu salida es a las ${formatHorario(horaSalidaEfectiva)}`, horaEsperada: null };
   }, [registros, horario, descanso, horaMinutos, formatHorario, horaEntradaEfectiva, horaSalidaEfectiva, salidaAnticipada, tieneEntrada, tieneRegresoDescanso, tieneSalida]);
 
-  const handleAction = (action: ChequeoAction, faceDescriptor?: number[]) => {
+  /*const handleAction = (action: ChequeoAction, faceDescriptor?: number[]) => {
     if (action !== 'solicitud_tardia') {
       startTransition(async () => {
         const formatosBD = getFormatosBD();
@@ -94,6 +94,52 @@ export function ChecadorCard({ registros, horario, descanso, userId, ubicaciones
         const result = await registrarChequeoPrueba(action, formatosBD.dateInTimezone, formatosBD.timeInTimezone, ubicacionDetectada.id, chequeoState.horaEsperada, faceDescriptor);
         if (result.success) toast.success(result.message);
         else toast.error(result.message);
+      });
+    }
+  };*/
+  const handleAction = (action: ChequeoAction, faceDescriptor?: number[]) => {
+    if (action !== 'solicitud_tardia') {
+      startTransition(async () => {
+        const formatosBD = getFormatosBD();
+        if (!ubicacionDetectada || !formatosBD) {
+          toast.error("No se pudo obtener la ubicación o la hora. Intenta de nuevo.");
+          return;
+        }
+
+        // 1. Calculamos la hora dinámicamente según la acción recibida
+        // en lugar de depender de lo que diga "chequeoState"
+        let horaEsperadaEnvio: string | null = null;
+        switch (action) {
+          case 'entrada':
+            horaEsperadaEnvio = horario.hora_entrada;
+            break;
+          case 'salida_descanso':
+            horaEsperadaEnvio = descanso?.inicio_descanso ?? null;
+            break;
+          case 'regreso_descanso':
+            horaEsperadaEnvio = descanso?.fin_descanso ?? null;
+            break;
+          case 'salida':
+            horaEsperadaEnvio = horario.hora_salida; 
+            break;
+        }
+
+        // 2. Enviamos "horaEsperadaEnvio" en lugar de "chequeoState.horaEsperada"
+        const result = await registrarChequeoPrueba(
+          action, 
+          formatosBD.dateInTimezone, 
+          formatosBD.timeInTimezone, 
+          ubicacionDetectada.id, 
+          horaEsperadaEnvio, // <-- Variable calculada
+          faceDescriptor
+        );
+
+        if (result.success) {
+          toast.success(result.message);
+          setSalidaAnticipada(false); // Apagamos el switch tras el éxito
+        } else {
+          toast.error(result.message);
+        }
       });
     }
   };
