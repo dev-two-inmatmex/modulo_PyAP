@@ -36,7 +36,7 @@ export default async function ChecadorPage() {
   }
 
   const horasExtra = await getHorasExtra(fecha, user.id);
-  console.log("horas extra", horasExtra)
+  //console.log("horas extra", horasExtra)
 
   if (tienesInasistencias && tienesInasistencias.length > 0) {
     return (

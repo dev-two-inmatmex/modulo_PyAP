@@ -30,10 +30,11 @@ export type Database = {
           horas_trabajadas: number | null
           id: string
           id_empleado: string
-          id_empresa: number
+          id_empresa: number | null
           inicio_descanso_programado: string | null
           salida_programada: string | null
           ubicacion_entrada: string | null
+          ubicacion_regreso_descanso: string | null
           ubicacion_salida: string | null
           ubicacion_salida_descanso: string | null
           updated_at: string | null
@@ -53,10 +54,11 @@ export type Database = {
           horas_trabajadas?: number | null
           id?: string
           id_empleado: string
-          id_empresa: number
+          id_empresa?: number | null
           inicio_descanso_programado?: string | null
           salida_programada?: string | null
           ubicacion_entrada?: string | null
+          ubicacion_regreso_descanso?: string | null
           ubicacion_salida?: string | null
           ubicacion_salida_descanso?: string | null
           updated_at?: string | null
@@ -76,10 +78,11 @@ export type Database = {
           horas_trabajadas?: number | null
           id?: string
           id_empleado?: string
-          id_empresa?: number
+          id_empresa?: number | null
           inicio_descanso_programado?: string | null
           salida_programada?: string | null
           ubicacion_entrada?: string | null
+          ubicacion_regreso_descanso?: string | null
           ubicacion_salida?: string | null
           ubicacion_salida_descanso?: string | null
           updated_at?: string | null
@@ -2046,82 +2049,6 @@ export type Database = {
         }
         Relationships: []
       }
-      pruebas_registro_checador: {
-        Row: {
-          estatus_puntualidad: string | null
-          fecha: string | null
-          hora_esperada: string | null
-          id: number
-          id_empleado: string | null
-          id_ubicacion: number | null
-          registro: string | null
-          tipo_registro: string | null
-        }
-        Insert: {
-          estatus_puntualidad?: string | null
-          fecha?: string | null
-          hora_esperada?: string | null
-          id?: number
-          id_empleado?: string | null
-          id_ubicacion?: number | null
-          registro?: string | null
-          tipo_registro?: string | null
-        }
-        Update: {
-          estatus_puntualidad?: string | null
-          fecha?: string | null
-          hora_esperada?: string | null
-          id?: number
-          id_empleado?: string | null
-          id_ubicacion?: number | null
-          registro?: string | null
-          tipo_registro?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pruebas_registro_checador_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pruebas_registro_checador_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_empleado_datos_editables"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pruebas_registro_checador_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_empleado_ubicacion_chequeo"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pruebas_registro_checador_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_empleados_empresa"
-            referencedColumns: ["id_empleado"]
-          },
-          {
-            foreignKeyName: "pruebas_registro_checador_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pruebas_registro_checador_id_ubicacion_fkey"
-            columns: ["id_ubicacion"]
-            isOneToOne: false
-            referencedRelation: "config_ubicaciones"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       publicaciones: {
         Row: {
           company: string | null
@@ -2948,6 +2875,7 @@ export type Database = {
           id: number
           id_empleado: string | null
           id_rh_autorizador: string | null
+          id_ubicacion: number | null
           motivo: string | null
         }
         Insert: {
@@ -2959,6 +2887,7 @@ export type Database = {
           id?: number
           id_empleado?: string | null
           id_rh_autorizador?: string | null
+          id_ubicacion?: number | null
           motivo?: string | null
         }
         Update: {
@@ -2970,6 +2899,7 @@ export type Database = {
           id?: number
           id_empleado?: string | null
           id_rh_autorizador?: string | null
+          id_ubicacion?: number | null
           motivo?: string | null
         }
         Relationships: [
@@ -3583,6 +3513,10 @@ export type Database = {
     Functions: {
       admin_revoke_user_sessions: {
         Args: { target_user_id: string }
+        Returns: undefined
+      }
+      generar_asistencia_diaria: {
+        Args: { p_fecha: string }
         Returns: undefined
       }
       verificar_identidad_biometrica: {

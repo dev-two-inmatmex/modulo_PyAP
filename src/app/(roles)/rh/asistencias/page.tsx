@@ -8,7 +8,7 @@ import { getVistaEmpleadosEmpresa } from "@/services/empleados";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getEmpresas } from "@/services/empresas";
 import { EmpresaColor } from "@/services/empresas-data_estilos";
-import { getHorarioEmpleadoDelDia, type turno } from "@/services/horarios";
+import { getHorarioEmpleadoDelDia, getHorasExtra, type turno, type Empleado_asignacion_horas_extra } from "@/services/horarios";
 import { AsistenciaEmpresaCard } from "@/components/page_components/asistencias/AsistenciaEmpresaCard";
 import EmpresaLogo from "@/components/reutilizables/EmpresaLogo";
 import { getInasistencias } from "@/services/asistencias";
@@ -22,6 +22,7 @@ export default async function AsistenciasPage() {
   const { getFormatosBD } = useHoy();
   const inasistenciasConfirmadas = await getInasistencias(getFormatosBD().fecha);
   const asistenciasHoy = await getAsistencias(getFormatosBD().fecha);
+  const horasExtraHoy = await getHorasExtra(getFormatosBD().fecha);
   const turnosDelDia = await getHorarioEmpleadoDelDia();
   const empleadoUbicacion = await getVistaEmpleadoUbicacion();
   
@@ -44,7 +45,13 @@ export default async function AsistenciasPage() {
     }
     return acc;
   }, {});
-  //console.log("horariosMap", horariosMap)
+  const horasExtraMap = (horasExtraHoy || []).reduce((acc: any, curr: any) => {
+    if (!acc[curr.id_empleado]) acc[curr.id_empleado] = [];
+    acc[curr.id_empleado].push(curr);
+    return acc;
+  }, {});
+
+  console.log("horasExtraMap", horasExtraMap)
 
   const asistenciasMap = (asistenciasHoy || []).reduce((acc: Record<string, AsistenciaReporteRow>, curr: AsistenciaReporteRow) => {
     if (curr.hora_entrada_real) {
@@ -52,17 +59,11 @@ export default async function AsistenciasPage() {
     }
     return acc;
   }, {});
-  //console.log("asistenciasMap", asistenciasMap)
-
-  // 3. Process and filter the main employee list
-  //console.log("empleadoEmpresaView", empleadoEmpresaView)
   const empleadosActivosConTurnoHoy = (empleadoEmpresaView || [])
     .filter(emp =>
-        emp.id_estatus === 1 &&      // Is active?
+        emp.id_estatus === 1 &&      
           horariosMap[emp.id_empleado as string] 
     );
-  //console.log("empleadosActivosConTurnoHoy", empleadosActivosConTurnoHoy)
-
 
   const turnosAgrupadosEmpresa = empleadosActivosConTurnoHoy.reduce((acc, empleado: any) => {
     const turno = horariosMap[empleado.id_empleado as string];
