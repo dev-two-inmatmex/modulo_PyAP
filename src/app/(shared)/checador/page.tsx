@@ -7,6 +7,7 @@ import { useHoy } from "@/hooks/useHoy";
 import { AlertCircle } from "lucide-react";
 import { ChecadorCard } from "@/components/page_components/checador/ChecadorCard";
 import { RealtimeAsistencias } from "@/hooks/useRealtimeChecadorRegistros";
+import { RealtimeInasistencias } from "@/hooks/useRealtimeInasistenciasConfirmadas";
 
 export default async function ChecadorPage() {
   const supabase = await createServidorClient();
@@ -66,6 +67,7 @@ export default async function ChecadorPage() {
 
   return (
     <>
+      <RealtimeInasistencias />
       <RealtimeAsistencias />
       <ChecadorCard
         userId={user.id}

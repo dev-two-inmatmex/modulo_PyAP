@@ -120,13 +120,6 @@ export type Database = {
             referencedRelation: "vista_horarios_empleados"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "asistencia_diaria_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
         ]
       }
       cat_area_funcional: {
@@ -406,13 +399,6 @@ export type Database = {
             referencedRelation: "vista_horarios_empleados"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "config_ubicaciones_creado_por_fkey"
-            columns: ["creado_por"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
         ]
       }
       descansos: {
@@ -556,13 +542,6 @@ export type Database = {
             referencedRelation: "vista_horarios_empleados"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "empleado_avatar_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: true
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
         ]
       }
       empleado_domicilio: {
@@ -635,13 +614,6 @@ export type Database = {
             referencedRelation: "vista_horarios_empleados"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "empleado_domicilio_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
         ]
       }
       empleado_estatus: {
@@ -697,13 +669,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "empleado_estatus_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "empleado_estatus_id_estatus_fkey"
             columns: ["id_estatus"]
             isOneToOne: false
@@ -716,121 +681,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vista_empleados_empresa"
             referencedColumns: ["id_estatus"]
-          },
-        ]
-      }
-      empleado_horas_extra: {
-        Row: {
-          cantidad_horas: number | null
-          "creada por": string | null
-          "creada-el": string | null
-          fecha_asignada: string | null
-          id: number
-          id_empleado: string | null
-          posicion: string | null
-        }
-        Insert: {
-          cantidad_horas?: number | null
-          "creada por"?: string | null
-          "creada-el"?: string | null
-          fecha_asignada?: string | null
-          id?: number
-          id_empleado?: string | null
-          posicion?: string | null
-        }
-        Update: {
-          cantidad_horas?: number | null
-          "creada por"?: string | null
-          "creada-el"?: string | null
-          fecha_asignada?: string | null
-          id?: number
-          id_empleado?: string | null
-          posicion?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "empleado_horas_extra_creada por_fkey"
-            columns: ["creada por"]
-            isOneToOne: false
-            referencedRelation: "empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleado_horas_extra_creada por_fkey"
-            columns: ["creada por"]
-            isOneToOne: false
-            referencedRelation: "vista_empleado_datos_editables"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleado_horas_extra_creada por_fkey"
-            columns: ["creada por"]
-            isOneToOne: false
-            referencedRelation: "vista_empleado_ubicacion_chequeo"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleado_horas_extra_creada por_fkey"
-            columns: ["creada por"]
-            isOneToOne: false
-            referencedRelation: "vista_empleados_empresa"
-            referencedColumns: ["id_empleado"]
-          },
-          {
-            foreignKeyName: "empleado_horas_extra_creada por_fkey"
-            columns: ["creada por"]
-            isOneToOne: false
-            referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleado_horas_extra_creada por_fkey"
-            columns: ["creada por"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleado_horas_extra_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleado_horas_extra_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_empleado_datos_editables"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleado_horas_extra_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_empleado_ubicacion_chequeo"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleado_horas_extra_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_empleados_empresa"
-            referencedColumns: ["id_empleado"]
-          },
-          {
-            foreignKeyName: "empleado_horas_extra_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleado_horas_extra_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
           },
         ]
       }
@@ -896,13 +746,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "empleado_puesto_asignado_por_fkey"
-            columns: ["asignado_por"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "empleado_puesto_id_empleado_fkey"
             columns: ["id_empleado"]
             isOneToOne: false
@@ -935,13 +778,6 @@ export type Database = {
             columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleado_puesto_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]
           },
           {
@@ -1005,13 +841,6 @@ export type Database = {
             referencedRelation: "vista_horarios_empleados"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "empleado_sueldo_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
         ]
       }
       empleado_telefonos: {
@@ -1070,13 +899,6 @@ export type Database = {
             columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "usuario_telefonos_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]
           },
         ]
@@ -1165,13 +987,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "empleado_turno_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "empleado_turno_id_horario_fkey"
             columns: ["id_horario"]
             isOneToOne: false
@@ -1230,13 +1045,6 @@ export type Database = {
             columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleado_ubicacion_chequeo_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]
           },
           {
@@ -1370,13 +1178,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "empleados_bajas_permanentes_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "empleados_estatus_bajas_permanentes_capturado_por_fkey"
             columns: ["capturado_por"]
             isOneToOne: false
@@ -1409,13 +1210,6 @@ export type Database = {
             columns: ["capturado_por"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleados_estatus_bajas_permanentes_capturado_por_fkey"
-            columns: ["capturado_por"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]
           },
         ]
@@ -1485,13 +1279,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "empleados_estatus_incapacidad_capturado_por_fkey"
-            columns: ["capturado_por"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "empleados_estatus_incapacidad_id_empleado_fkey"
             columns: ["id_empleado"]
             isOneToOne: false
@@ -1524,13 +1311,6 @@ export type Database = {
             columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleados_estatus_incapacidad_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]
           },
         ]
@@ -1600,13 +1380,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "registro_empleado_estado_vacaciones_capturado_por_fkey"
-            columns: ["capturado_por"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "registro_empleado_estado_vacaciones_id_empleado_fkey"
             columns: ["id_empleado"]
             isOneToOne: false
@@ -1639,13 +1412,6 @@ export type Database = {
             columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "registro_empleado_estado_vacaciones_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]
           },
         ]
@@ -1740,13 +1506,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "empleados_turno_descansos_id_capturista_fkey"
-            columns: ["id_capturista"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "empleados_turno_descansos_id_empleado_fkey"
             columns: ["id_empleado"]
             isOneToOne: false
@@ -1779,13 +1538,6 @@ export type Database = {
             columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleados_turno_descansos_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]
           },
           {
@@ -1922,13 +1674,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "empreados_horarios_id_capturista_fkey"
-            columns: ["id_capturista"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "empreados_horarios_id_empleado_fkey"
             columns: ["id_empleado"]
             isOneToOne: false
@@ -1961,13 +1706,6 @@ export type Database = {
             columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empreados_horarios_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]
           },
           {
@@ -2376,13 +2114,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "pruebas_registro_checador_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "pruebas_registro_checador_id_ubicacion_fkey"
             columns: ["id_ubicacion"]
             isOneToOne: false
@@ -2525,6 +2256,7 @@ export type Database = {
           hora_inicio: string
           horas_calculadas: number | null
           id: number
+          id_autorizador: string | null
           id_capturista: string | null
           id_empleado: string | null
         }
@@ -2536,6 +2268,7 @@ export type Database = {
           hora_inicio: string
           horas_calculadas?: number | null
           id?: number
+          id_autorizador?: string | null
           id_capturista?: string | null
           id_empleado?: string | null
         }
@@ -2547,6 +2280,7 @@ export type Database = {
           hora_inicio?: string
           horas_calculadas?: number | null
           id?: number
+          id_autorizador?: string | null
           id_capturista?: string | null
           id_empleado?: string | null
         }
@@ -2587,13 +2321,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "empleado_asignacion_horas_extra_id_capturista_fkey"
-            columns: ["id_capturista"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "empleado_asignacion_horas_extra_id_empleado_fkey"
             columns: ["id_empleado"]
             isOneToOne: false
@@ -2629,16 +2356,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "empleado_asignacion_horas_extra_id_empleado_fkey"
-            columns: ["id_empleado"]
+            foreignKeyName: "registro_asignacion_horas_extra_id_autorizador_fkey"
+            columns: ["id_autorizador"]
             isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
+            referencedRelation: "empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registro_asignacion_horas_extra_id_autorizador_fkey"
+            columns: ["id_autorizador"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_datos_editables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registro_asignacion_horas_extra_id_autorizador_fkey"
+            columns: ["id_autorizador"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_ubicacion_chequeo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registro_asignacion_horas_extra_id_autorizador_fkey"
+            columns: ["id_autorizador"]
+            isOneToOne: false
+            referencedRelation: "vista_empleados_empresa"
+            referencedColumns: ["id_empleado"]
+          },
+          {
+            foreignKeyName: "registro_asignacion_horas_extra_id_autorizador_fkey"
+            columns: ["id_autorizador"]
+            isOneToOne: false
+            referencedRelation: "vista_horarios_empleados"
             referencedColumns: ["id"]
           },
         ]
       }
       registro_checador: {
         Row: {
+          diferencia_minutos: number | null
           estatus_puntualidad: string | null
           exactitud_geografica: number | null
           fecha: string | null
@@ -2652,6 +2408,7 @@ export type Database = {
           tipo_registro: string | null
         }
         Insert: {
+          diferencia_minutos?: number | null
           estatus_puntualidad?: string | null
           exactitud_geografica?: number | null
           fecha?: string | null
@@ -2665,6 +2422,7 @@ export type Database = {
           tipo_registro?: string | null
         }
         Update: {
+          diferencia_minutos?: number | null
           estatus_puntualidad?: string | null
           exactitud_geografica?: number | null
           fecha?: string | null
@@ -2714,17 +2472,111 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "registro_checador_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "registro_checador_id_ubicacion_fkey"
             columns: ["id_ubicacion"]
             isOneToOne: false
             referencedRelation: "config_ubicaciones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      registro_cumplimiento_horas_extra: {
+        Row: {
+          cantidad_horas: number | null
+          "creada por": string | null
+          "creada-el": string | null
+          fecha_asignada: string | null
+          id: number
+          id_empleado: string | null
+          posicion: string | null
+        }
+        Insert: {
+          cantidad_horas?: number | null
+          "creada por"?: string | null
+          "creada-el"?: string | null
+          fecha_asignada?: string | null
+          id?: number
+          id_empleado?: string | null
+          posicion?: string | null
+        }
+        Update: {
+          cantidad_horas?: number | null
+          "creada por"?: string | null
+          "creada-el"?: string | null
+          fecha_asignada?: string | null
+          id?: number
+          id_empleado?: string | null
+          posicion?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empleado_horas_extra_creada por_fkey"
+            columns: ["creada por"]
+            isOneToOne: false
+            referencedRelation: "empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleado_horas_extra_creada por_fkey"
+            columns: ["creada por"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_datos_editables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleado_horas_extra_creada por_fkey"
+            columns: ["creada por"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_ubicacion_chequeo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleado_horas_extra_creada por_fkey"
+            columns: ["creada por"]
+            isOneToOne: false
+            referencedRelation: "vista_empleados_empresa"
+            referencedColumns: ["id_empleado"]
+          },
+          {
+            foreignKeyName: "empleado_horas_extra_creada por_fkey"
+            columns: ["creada por"]
+            isOneToOne: false
+            referencedRelation: "vista_horarios_empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleado_horas_extra_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "empleados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleado_horas_extra_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_datos_editables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleado_horas_extra_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_empleado_ubicacion_chequeo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empleado_horas_extra_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_empleados_empresa"
+            referencedColumns: ["id_empleado"]
+          },
+          {
+            foreignKeyName: "empleado_horas_extra_id_empleado_fkey"
+            columns: ["id_empleado"]
+            isOneToOne: false
+            referencedRelation: "vista_horarios_empleados"
             referencedColumns: ["id"]
           },
         ]
@@ -2791,13 +2643,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "registro_empleado_cambio_turno_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "registro_empleado_cambio_turno_modificado_por_fkey"
             columns: ["modificado_por"]
             isOneToOne: false
@@ -2830,13 +2675,6 @@ export type Database = {
             columns: ["modificado_por"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "registro_empleado_cambio_turno_modificado_por_fkey"
-            columns: ["modificado_por"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]
           },
         ]
@@ -2900,13 +2738,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "registro_inasistencias_confirmadas_capturo_fkey"
-            columns: ["capturo"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "registro_inasistencias_confirmadas_id_empleado_fkey"
             columns: ["id_empleado"]
             isOneToOne: false
@@ -2939,13 +2770,6 @@ export type Database = {
             columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "registro_inasistencias_confirmadas_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]
           },
         ]
@@ -3009,13 +2833,6 @@ export type Database = {
             columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "registro_incidencias_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]
           },
         ]
@@ -3085,13 +2902,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_autorizador"
-            columns: ["id_autorizador"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "fk_empleado"
             columns: ["id_empleado"]
             isOneToOne: false
@@ -3124,13 +2934,6 @@ export type Database = {
             columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_empleado"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]
           },
         ]
@@ -3203,13 +3006,6 @@ export type Database = {
             columns: ["id_empleado"]
             isOneToOne: false
             referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "registro_solicitud_asistencia_30min_despues_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
             referencedColumns: ["id"]
           },
         ]
@@ -3721,45 +3517,6 @@ export type Database = {
         }
         Relationships: []
       }
-      vista_empleados_hora_entrada: {
-        Row: {
-          detalles_empleados: Json | null
-          entrada: string | null
-          id_empresa: number | null
-          id_estatus: number | null
-          total_personas: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "empleado_estatus_id_estatus_fkey"
-            columns: ["id_estatus"]
-            isOneToOne: false
-            referencedRelation: "estatus"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleado_estatus_id_estatus_fkey"
-            columns: ["id_estatus"]
-            isOneToOne: false
-            referencedRelation: "vista_empleados_empresa"
-            referencedColumns: ["id_estatus"]
-          },
-          {
-            foreignKeyName: "empleados_id_empresa_fkey"
-            columns: ["id_empresa"]
-            isOneToOne: false
-            referencedRelation: "empresas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "empleados_id_empresa_fkey"
-            columns: ["id_empresa"]
-            isOneToOne: false
-            referencedRelation: "vista_empleados_empresa"
-            referencedColumns: ["id_empresa"]
-          },
-        ]
-      }
       vista_horarios_empleados: {
         Row: {
           entrada: string | null
@@ -3820,78 +3577,6 @@ export type Database = {
             referencedRelation: "vista_horarios_empleados"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "empleado_turno_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      vista_lista_empleados: {
-        Row: {
-          area: string | null
-          estatus: string | null
-          id: string | null
-          nombre_completo: string | null
-          puesto: string | null
-        }
-        Relationships: []
-      }
-      vista_registro_checador_resumida: {
-        Row: {
-          estatus: string | null
-          fecha: string | null
-          hora_esperada: string | null
-          id_empleado: string | null
-          nombre_ubicacion: string | null
-          registro: string | null
-          tipo_registro: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "registro_checador_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "registro_checador_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_empleado_datos_editables"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "registro_checador_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_empleado_ubicacion_chequeo"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "registro_checador_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_empleados_empresa"
-            referencedColumns: ["id_empleado"]
-          },
-          {
-            foreignKeyName: "registro_checador_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_horarios_empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "registro_checador_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "vista_lista_empleados"
-            referencedColumns: ["id"]
-          },
         ]
       }
     }
@@ -3899,27 +3584,6 @@ export type Database = {
       admin_revoke_user_sessions: {
         Args: { target_user_id: string }
         Returns: undefined
-      }
-      generar_asistencia_diaria: {
-        Args: { p_fecha: string }
-        Returns: undefined
-      }
-      obtener_historial_asistencia: {
-        Args: {
-          empresa_id_param?: number
-          fecha_fin_param: string
-          fecha_inicio_param: string
-        }
-        Returns: {
-          dia_nombre: string
-          empleado_id: string
-          entrada: string
-          estatus: string
-          fecha: string
-          motivo_ausencia: string
-          nombre_completos: string
-          salida: string
-        }[]
       }
       verificar_identidad_biometrica: {
         Args: { descriptor_param: Json; id_empleado_param: string }
