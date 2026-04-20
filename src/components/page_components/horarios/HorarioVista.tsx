@@ -1,6 +1,5 @@
 'use client';
 
-import type { Database } from '@/types/database.types';
 import {
   Table,
   TableBody,
@@ -10,26 +9,28 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UserAvatar } from "@/components/reutilizables/UserAvatar";
-import EmpresaLogo from '../../reutilizables/EmpresaLogo'; // Ajusté la ruta de importación para que sea consistente
-
-// 👇 1. Importamos tu nuevo Modal y sus tipos
+import EmpresaLogo from '../../reutilizables/EmpresaLogo';
 import { 
   EditarHorarioModal, TurnoOption, DescansoOption
 } from "../horarios/EditarHorarioEmpleado";
-import { type HorarioDraft, type DiaSemana, getHorarioBaseActualEmpleado } from "@/services/horarios";
+import { useNombreEmpleado } from "@/components/providers/NombreEmpleadoProvider";
 
-export type TurnoSemanal = Database['public']['Views']['vista_horarios_empleados_semanal']['Row'];
+// Tipos adaptados a la respuesta exacta de tus funciones
+type InfoDiaHorario = { hora_entrada: string | null; hora_salida: string | null } | null;
+type InfoDiaDescanso = { inicio_descanso: string | null; fin_descanso: string | null } | null;
 
-export interface EmpleadoConTurnos {
-  id: string | null; // Asegúrate de que no sea null
+export interface EmpleadoProcesado {
+  id: string;
   nombres: string | null;
   id_empresa: number | null;
-  turnos: TurnoSemanal[];
+  configuracion: {
+    turnos: Record<string, any> | null; 
+    descansos: Record<string, any> | null;
+  }
 }
 
-// 👇 2. Agregamos los catálogos a las Props para que el padre (page.tsx) nos los pase
 interface HorarioVistaProps {
-  empleados: EmpleadoConTurnos[];
+  empleados: EmpleadoProcesado[];
   mostrarLogo?: boolean;
   horariosDisponibles: TurnoOption[];
   descansosDisponibles: DescansoOption[];
@@ -45,6 +46,7 @@ const DIAS_SEMANA = [
   { id: 'domingo', label: 'Domingo' }
 ] as const;
 
+// Utilidad para limpiar el formato de hora (ej: de "08:00:00" a "08:00")
 const formatHora = (hora: string | null) => hora ? hora.slice(0, 5) : '--:--';
 
 export function HorarioVista({ 
@@ -54,19 +56,18 @@ export function HorarioVista({
   descansosDisponibles 
 }: HorarioVistaProps) {
   
+  const { getNombreEmpleadoPorId: getEmployeeById } = useNombreEmpleado();
   if (!empleados || empleados.length === 0) {
     return <div className="text-center p-8 text-muted-foreground border rounded-md bg-muted/20">No hay empleados para mostrar en esta vista.</div>;
   }
 
   return (
-    <div className="grid w-full grid-cols-1 rounded-md border shadow-sm">
+    <div className="grid w-full grid-cols-1 rounded-md border shadow-sm overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Empleado</TableHead>
-            {mostrarLogo && (
-              <TableHead>Emp.</TableHead>
-            )}
+            {mostrarLogo && <TableHead>Emp.</TableHead>}
             {DIAS_SEMANA.map(({ id, label }) => (
               <TableHead key={id} className="text-center font-bold text-foreground border-l">
                 {label}
@@ -76,65 +77,66 @@ export function HorarioVista({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {empleados.map((empleado) => {
-            
-            // Convertimos la data de este empleado en específico para el Modal
-            //const horarioActualBase = getHorarioBaseActualEmpleado(empleado?.id);
-
-            return (
-              <TableRow key={empleado.id} className="hover:bg-muted/50">
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <UserAvatar
-                      employeeId={empleado.id}
-                      name={empleado.nombres || 'Desconocido'}
-                      className="w-10 h-10"
-                    />
-                    <span>{empleado.nombres}</span>
-                  </div>
-                </TableCell>
-
-                {mostrarLogo && empleado.id_empresa && (
-                  <TableCell>
-                    <EmpresaLogo id={empleado.id_empresa} wyh={20} />
-                  </TableCell>
-                )}
-
-                {DIAS_SEMANA.map(({ id }) => {
-                  const turnoDelDia = empleado.turnos.find((t) => t[id as keyof TurnoSemanal] === true);
-
-                  if (!turnoDelDia) {
-                    return (
-                      <TableCell key={id}>
-                        <span className="inline-flex w-full items-center justify-center bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 rounded-sm px-2 py-1.5 font-medium text-xs">
-                          Libre
-                        </span>
-                      </TableCell>
-                    );
-                  }
-
-                  return (
-                    <TableCell key={id}>
-                      <div className="inline-flex w-full items-center justify-center bg-muted/40 border border-muted-foreground/20 rounded-sm px-2 py-1.5">
-                        <span className="text-[11px] font-semibold text-foreground whitespace-nowrap">
-                          {formatHora(turnoDelDia.entrada)} - {formatHora(turnoDelDia.salida)}
-                        </span>
-                      </div>
-                    </TableCell>
-                  );
-                })}
-
-                <TableCell className="text-center">
-                  <EditarHorarioModal 
-                    empleadoId={empleado.id}
-                    empleadoNombre={empleado.nombres || 'Desconocido'}
-                    horariosDisponibles={horariosDisponibles}
-                    descansosDisponibles={descansosDisponibles}
+          {empleados.map((emp) => (
+            <TableRow key={emp.id} className="hover:bg-muted/50">
+              <TableCell>
+                <div className="flex items-center gap-3">
+                  <UserAvatar
+                    employeeId={emp.id}
+                    name={getEmployeeById(emp.id)?.nombre_corto || 'Desconocido'}
+                    className="w-10 h-10"
                   />
+                  <span className="font-medium">{getEmployeeById(emp.id)?.nombre_corto}</span>
+                </div>
+              </TableCell>
+              {mostrarLogo && (
+                <TableCell>
+                  {emp.id_empresa ? <EmpresaLogo id={emp.id_empresa} wyh={24} /> : '-'}
                 </TableCell>
-              </TableRow>
-            );
-          })}
+              )}
+
+              {DIAS_SEMANA.map(dia => {
+                // Extraemos la información de este día específico
+                const infoTurno = emp.configuracion.turnos?.[dia.id] as InfoDiaHorario;
+                const infoDescanso = emp.configuracion.descansos?.[dia.id] as InfoDiaDescanso;
+
+                return (
+                  <TableCell key={dia.id} className="p-2 border-l min-w-30">
+                    <div className="flex flex-col gap-1.5 items-center">
+                      
+                      {infoTurno && infoTurno.hora_entrada ? (
+                        <div className="text-[11px] bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-100 w-full text-center font-semibold">
+                          {formatHora(infoTurno.hora_entrada)} - {formatHora(infoTurno.hora_salida)}
+                        </div>
+                      ) : (
+                        <div className="text-[11px] text-muted-foreground bg-muted/40 px-2 py-1 rounded w-full text-center italic border border-transparent">
+                          Descanso
+                        </div>
+                      )}
+                      {infoDescanso && infoDescanso.inicio_descanso ? (
+                        <div className="text-[10px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-100 w-full text-center flex justify-center items-center gap-1">
+                          ☕ {formatHora(infoDescanso.inicio_descanso)} - {formatHora(infoDescanso.fin_descanso)}
+                        </div>
+                      ) : (
+                        <div className="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100 w-full text-center">
+                          Sin Pausa
+                        </div>
+                      )}
+
+                    </div>
+                  </TableCell>
+                );
+              })}
+              <TableCell className="text-center border-l">
+                <EditarHorarioModal 
+                  empleadoId={emp.id}
+                  empleadoNombre={getEmployeeById(emp.id)?.nombre_corto || 'Desconocido'}
+                  horariosDisponibles={horariosDisponibles}
+                  descansosDisponibles={descansosDisponibles}
+                />
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </div>

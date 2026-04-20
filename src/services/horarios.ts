@@ -1,23 +1,24 @@
 "use server"
 import { createServidorClient } from "@/lib/supabase/server";
 import { Database } from "@/types/database.types";
-export type turno = Database["public"]["Views"]["vista_horarios_empleados"]["Row"];
-type turnos = Database["public"]["Views"]["vista_horarios_empleados_semanal"]["Row"];
-
-/**
- * Obtiene todos los horarios de los empleados.
- * @returns Un arreglo de horarios de todos los empleados.
- */
-export async function getHorariosEmpleado(
-  id_empleado?: string | null,
-): Promise<turnos[]> {
+export type empleados_turno_horarios = Database["public"]["Tables"]["empleados_turno_horarios"]["Row"];
+export async function getHorariosSemanal(){
   const supabase = await createServidorClient();
+
   let query = supabase
-    .from('vista_horarios_empleados_semanal')
-    .select('*');
-  if (id_empleado) {
-    query = query.eq('id_empleado', id_empleado);
-  }
+  .from('empleados_turno_horarios')
+  .select(`
+    id_empleado,
+    lunes:horarios!empreados_horarios_lunes_fkey(hora_entrada, hora_salida),
+    martes:horarios!empreados_horarios_martes_fkey(hora_entrada, hora_salida),
+    miercoles:horarios!empreados_horarios_miercoles_fkey(hora_entrada, hora_salida),
+    jueves:horarios!empreados_horarios_jueves_fkey(hora_entrada, hora_salida),
+    viernes:horarios!empreados_horarios_viernes_fkey(hora_entrada, hora_salida),
+    sabado:horarios!empreados_horarios_sabado_fkey(hora_entrada, hora_salida),
+    domingo:horarios!empreados_horarios_domingo_fkey(hora_entrada, hora_salida)
+  `)
+  .order('ejecutar_a_partir_de', { ascending: false });
+
   const { data, error } = await query;
   if (error) {
     throw new Error(`Error al consultar la vista de horarios de empleados: ${error.message}`);
@@ -25,32 +26,70 @@ export async function getHorariosEmpleado(
   return data || [];
 }
 
-/**
- * Obtiene el horario de los empleados por día de la semana.
- * @param id_empleado - (Opcional) El ID del estatus (Por defecto es 1: Activo).
- * @returns Un arreglo de horarios(del dia de la semana) de todos los empleados.
- */
-export async function getHorarioEmpleadoDelDia(
-  id_empleado?: string | null
-): Promise<turno[]> {
 
+type empleados_turno_descansos = Database["public"]["Tables"]["empleados_turno_descansos"]["Row"];
+
+export async function getDescansosSemanal(){
   const supabase = await createServidorClient();
 
   let query = supabase
-    .from('vista_horarios_empleados')
-    .select('*');
-
-  if (id_empleado) {
-    query = query.eq('id', id_empleado);
-  }
+  .from('empleados_turno_descansos')
+  .select(`
+      id_empleado,
+      lunes:descansos!empleados_turno_descansos_lunes_fkey(inicio_descanso, fin_descanso),
+      martes:descansos!empleados_turno_descansos_martes_fkey(inicio_descanso, fin_descanso),
+      miercoles:descansos!empleados_turno_descansos_miercoles_fkey(inicio_descanso, fin_descanso),
+      jueves:descansos!empleados_turno_descansos_jueves_fkey(inicio_descanso, fin_descanso),
+      viernes:descansos!empleados_turno_descansos_viernes_fkey(inicio_descanso, fin_descanso),
+      sabado:descansos!empleados_turno_descansos_sabado_fkey(inicio_descanso, fin_descanso),
+      domingo:descansos!empleados_turno_descansos_domingo_fkey(inicio_descanso, fin_descanso)
+    `)
+    .order('ejecutar_a_partir_de', { ascending: false })
 
   const { data, error } = await query;
-
   if (error) {
-    throw new Error(`Error al consultar la vista de horarios de empleados: ${error.message}`);
+    throw new Error(`Error al consultar la vista de descansos de empleados: ${error.message}`);
   }
   return data || [];
 }
+
+
+export async function getIdsConfiguracionActual(empleadoId: string) {
+  const supabase = await createServidorClient();
+
+  // Traemos el último turno registrado
+  const { data: turno } = await supabase
+    .from('empleados_turno_horarios')
+    .select('lunes, martes, miercoles, jueves, viernes, sabado, domingo')
+    .eq('id_empleado', empleadoId)
+    .order('ejecutar_a_partir_de', { ascending: false })
+    .limit(1)
+    .single();
+
+  // Traemos el último descanso registrado
+  const { data: descanso } = await supabase
+    .from('empleados_turno_descansos')
+    .select('lunes, martes, miercoles, jueves, viernes, sabado, domingo')
+    .eq('id_empleado', empleadoId)
+    .order('ejecutar_a_partir_de', { ascending: false })
+    .limit(1)
+    .single();
+
+  return { 
+    turnos: turno || null, 
+    descansos: descanso || null 
+  };
+}
+
+
+
+
+
+
+
+
+
+
 
 
 export type DiaSemana = 'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes' | 'sabado' | 'domingo';
@@ -213,6 +252,45 @@ export async function getHorarioHoyUser(
     throw new Error(`Error al consultar la vista de horarios de empleados: ${error.message}`);
   }
   return data || [];
+}
+
+export async function getHorariosHoy(
+  diaActual: string,
+) {
+  const supabase = await createServidorClient();
+  
+  // 1. Agregamos "as any" al final del string del select para evitar el ParserError
+  const query = supabase
+    .from('empleados_turno_horarios')
+    .select(`
+      id_empleado,
+      ejecutar_a_partir_de,
+      ${diaActual}:horarios!empreados_horarios_${diaActual}_fkey (
+        hora_entrada,
+        hora_salida
+      )
+    ` as any)
+    .lte('ejecutar_a_partir_de', new Date().toISOString())
+    .order('ejecutar_a_partir_de', { ascending: false });
+
+  const { data, error } = await query;
+  
+  if (error) {
+    throw new Error(`Error al consultar los horarios de empleados: ${error.message}`);
+  }
+
+  const horariosActivos = [];
+  const empleadosProcesados = new Set();
+
+  // 2. Le indicamos a TypeScript que data es un arreglo (as any[])
+  for (const registro of (data as any[] || [])) {
+    if (!empleadosProcesados.has(registro.id_empleado)) {
+      horariosActivos.push(registro);
+      empleadosProcesados.add(registro.id_empleado);
+    }
+  }
+
+  return horariosActivos;
 }
 
 

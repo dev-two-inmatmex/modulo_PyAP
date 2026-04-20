@@ -1,4 +1,4 @@
-'use server';
+/*'use server';
 
 import { createServidorClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
@@ -90,4 +90,155 @@ export async function guardarNuevoHorario(
   revalidatePath('/rh/horarios'); // 👈 Asegúrate de que esta sea la ruta correcta de tu página de horarios
   
   return { success: "¡Horario actualizado y registrado en auditoría exitosamente!" };
+}*/
+'use server';
+
+import { createServidorClient } from "@/lib/supabase/server";// Ajusta el path según tu proyecto
+import { revalidatePath } from "next/cache";
+
+// Tipo auxiliar para procesar el objeto del cliente
+type SemanaConfig = Record<string, string>;
+
+// Utilidad para convertir el valor del Select ("descanso" o "1") a un número válido o null
+const procesarValorDia = (valor: string): number | null => {
+  return (valor === "descanso" || valor === "") ? null : Number(valor);
+};
+
+export async function guardarTurnosSemana(
+  empleadoId: string,
+  turnos: SemanaConfig,
+  fechaActual: string,
+  horaActual: string
+) {
+  const supabase = await createServidorClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) return { error: "No estás autenticado." };
+
+  const payloadInsert = {
+    id_empleado: empleadoId,
+    fecha: fechaActual,
+    hora: horaActual,
+    ejecutar_a_partir_de: fechaActual, // Se aplica inmediatamente
+    id_capturista: user.id, // Suponiendo que el user.id de Auth coincide con un uuid en tabla empleados
+    lunes: procesarValorDia(turnos.lunes),
+    martes: procesarValorDia(turnos.martes),
+    miercoles: procesarValorDia(turnos.miercoles),
+    jueves: procesarValorDia(turnos.jueves),
+    viernes: procesarValorDia(turnos.viernes),
+    sabado: procesarValorDia(turnos.sabado),
+    domingo: procesarValorDia(turnos.domingo),
+  };
+
+  const { error } = await supabase
+    .from('empleados_turno_horarios')
+    .insert(payloadInsert);
+
+  if (error) {
+    return { error: `Error al guardar los horarios: ${error.message}` };
+  }
+
+  revalidatePath('/(roles)/rh/horarios', 'page');
+  return { success: "¡Turnos actualizados correctamente!" };
+}
+
+export async function guardarDescansosSemana(
+  empleadoId: string,
+  descansos: SemanaConfig,
+  fechaActual: string,
+  horaActual: string
+) {
+  const supabase = await createServidorClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) return { error: "No estás autenticado." };
+
+  const payloadInsert = {
+    id_empleado: empleadoId,
+    fecha: fechaActual,
+    hora: horaActual,
+    ejecutar_a_partir_de: fechaActual, // Se aplica inmediatamente
+    id_capturista: user.id, 
+    lunes: procesarValorDia(descansos.lunes),
+    martes: procesarValorDia(descansos.martes),
+    miercoles: procesarValorDia(descansos.miercoles),
+    jueves: procesarValorDia(descansos.jueves),
+    viernes: procesarValorDia(descansos.viernes),
+    sabado: procesarValorDia(descansos.sabado),
+    domingo: procesarValorDia(descansos.domingo),
+  };
+
+  const { error } = await supabase
+    .from('empleados_turno_descansos')
+    .insert(payloadInsert);
+
+  if (error) {
+    return { error: `Error al guardar los descansos: ${error.message}` };
+  }
+
+  revalidatePath('/(roles)/rh/horarios', 'page');
+  return { success: "¡Descansos actualizados correctamente!" };
+}
+
+import { getIdsConfiguracionActual } from "@/services/horarios";
+
+export async function asignarDiasLibres(
+  empleadoId: string,
+  diasLibresSeleccionados: string[], // Ej: ['lunes', 'domingo']
+  fechaActual: string,
+  horaActual: string
+) {
+  const supabase = await createServidorClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) return { error: "No estás autenticado." };
+
+  // 1. Obtenemos cómo está su semana HOY (para no borrarle sus otros días)
+  const configuracionActual = await getIdsConfiguracionActual(empleadoId);
+  const turnosActuales = configuracionActual.turnos || {};
+  const descansosActuales = configuracionActual.descansos || {};
+
+  // 2. Preparamos los objetos copiando lo actual
+  const nuevosTurnos = { ...turnosActuales };
+  const nuevosDescansos = { ...descansosActuales };
+
+  // 3. Aplicamos el Día Libre (null) a los días seleccionados
+  diasLibresSeleccionados.forEach(dia => {
+    nuevosTurnos[dia] = null;
+    nuevosDescansos[dia] = null;
+  });
+
+  // 4. Insertamos en ambas tablas
+  const basePayload = {
+    id_empleado: empleadoId,
+    fecha: fechaActual,
+    hora: horaActual,
+    ejecutar_a_partir_de: fechaActual,
+    id_capturista: user.id,
+  };
+
+  const payloadTurnos = {
+    ...basePayload,
+    lunes: nuevosTurnos.lunes, martes: nuevosTurnos.martes, miercoles: nuevosTurnos.miercoles,
+    jueves: nuevosTurnos.jueves, viernes: nuevosTurnos.viernes, sabado: nuevosTurnos.sabado, domingo: nuevosTurnos.domingo
+  };
+
+  const payloadDescansos = {
+    ...basePayload,
+    lunes: nuevosDescansos.lunes, martes: nuevosDescansos.martes, miercoles: nuevosDescansos.miercoles,
+    jueves: nuevosDescansos.jueves, viernes: nuevosDescansos.viernes, sabado: nuevosDescansos.sabado, domingo: nuevosDescansos.domingo
+  };
+
+  // Ejecutamos ambas inserciones al mismo tiempo (Promesas en paralelo)
+  const [resTurnos, resDescansos] = await Promise.all([
+    supabase.from('empleados_turno_horarios').insert(payloadTurnos),
+    supabase.from('empleados_turno_descansos').insert(payloadDescansos)
+  ]);
+
+  if (resTurnos.error || resDescansos.error) {
+    return { error: "Hubo un problema al aplicar los días libres." };
+  }
+
+  revalidatePath('/(roles)/rh/horarios', 'page');
+  return { success: "Días libres asignados correctamente." };
 }

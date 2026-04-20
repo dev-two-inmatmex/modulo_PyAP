@@ -2,8 +2,6 @@
 import { createServidorClient } from '@/lib/supabase/server';
 import { Database } from '@/types/database.types';
 
-type GrupoHoraEntradaDB = Database['public']['Views']['vista_empleados_hora_entrada']['Row'];
-
 export type AsistenciaReporteRow = Database['public']['Tables']['asistencia_diaria']['Row'] & {
   empleados?: { nombres: string; apellido_paterno: string; apellido_materno: string } | null;
 };

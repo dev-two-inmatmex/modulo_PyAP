@@ -1,58 +1,42 @@
-'use client';
+/*'use client';
 
 import { useState, useEffect } from "react";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
-import { Pencil, CalendarDays, ArrowRight, Save, Clock } from "lucide-react";
+import { Pencil, Save, Clock, Coffee } from "lucide-react";
 import { toast } from "sonner";
-import type { HorarioDraft, AsignacionDia, DiaSemana } from "@/services/horarios";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useHoy } from "@/hooks/useHoy";
 
-import { guardarNuevoHorario } from "@/app/(roles)/rh/horarios/actions";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { getHorarioBaseActualEmpleado } from "@/services/horarios";
+import { guardarTurnosSemana, guardarDescansosSemana } from "@/app/(roles)/rh/horarios/actions";
 
 export interface TurnoOption { id: number; nombre: string; entrada: string; salida: string; }
 export interface DescansoOption { id: number; nombre: string; inicio: string; fin: string; }
 
 interface EditarHorarioProps {
-  empleadoId: string | null | undefined;
+  empleadoId: string;
   empleadoNombre: string;
   horariosDisponibles: TurnoOption[];
   descansosDisponibles: DescansoOption[];
+  turnoActual?: Record<string, number | null>; 
+  descansoActual?: Record<string, number | null>;
 }
 
-const DIAS_SEMANA_FORM = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'] as const;
+const DIAS_SEMANA = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'] as const;
+type DiaSemana = typeof DIAS_SEMANA[number];
 
-// Constantes para dibujar el Timetable escolar
-const START_HOUR = 7; // Empieza 7:00 AM
-const END_HOUR = 19;  // Termina 7:00 PM (Da margen para turnos de 18:00)
-const TOTAL_HOURS = END_HOUR - START_HOUR;
-const ROW_HEIGHT = 60; // 60 pixeles por cada hora
+type SemanaConfig = Record<DiaSemana, string>;
 
-// Función matemática para convertir la hora ("08:30") a un número decimal (8.5)
-const parseTime = (timeStr: string) => {
-  if (!timeStr) return 0;
-  const [h, m] = timeStr.split(':').map(Number);
-  return h + m / 60;
+const configVacia: SemanaConfig = {
+  lunes: "", martes: "", miercoles: "", jueves: "", viernes: "", sabado: "", domingo: ""
 };
-
-const plantillaVacia: HorarioDraft = {
-  lunes: { id_horario: null, id_descanso: null },
-  martes: { id_horario: null, id_descanso: null },
-  miercoles: { id_horario: null, id_descanso: null },
-  jueves: { id_horario: null, id_descanso: null },
-  viernes: { id_horario: null, id_descanso: null },
-  sabado: { id_horario: null, id_descanso: null },
-  domingo: { id_horario: null, id_descanso: null },
-};
-
 
 export function EditarHorarioModal({
   empleadoId, empleadoNombre, horariosDisponibles, descansosDisponibles
@@ -60,89 +44,71 @@ export function EditarHorarioModal({
 
   const [isOpen, setIsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoadingDraft, setIsLoadingDraft] = useState(false);
-  const [horarioDraft, setHorarioDraft] = useState<HorarioDraft>(plantillaVacia);
-  const [horarioActualBase, setHorarioActualBase] = useState<HorarioDraft>(plantillaVacia);
-  const [diasSeleccionados, setDiasSeleccionados] = useState<DiaSemana[]>([]);
-  const [horarioSeleccionado, setHorarioSeleccionado] = useState<string>("");
-  const [descansoSeleccionado, setDescansoSeleccionado] = useState<string>("");
+  const { getFormatosBD } = useHoy();
 
+  // Estados independientes para Horarios y Descansos
+  const [turnos, setTurnos] = useState<SemanaConfig>(configVacia);
+  const [descansos, setDescansos] = useState<SemanaConfig>(configVacia);
+
+  // Limpiar al cerrar
   useEffect(() => {
-    async function cargarHorarioReal() {
-      if (isOpen && empleadoId) {
-        setIsLoadingDraft(true);
-        try {
-          // Ejecutamos tu función en el servidor
-          const datosReales = await getHorarioBaseActualEmpleado(empleadoId);
+    if (!isOpen) {
+      setTurnos(configVacia);
+      setDescansos(configVacia);
+    }
+  }, [isOpen]);
 
-          setHorarioActualBase(datosReales);
-          setHorarioDraft(datosReales);
-
-          // Imprimimos para confirmar en consola
-          console.log("✅ Datos cargados con tu función:", datosReales);
-        } catch (error) {
-          console.error("Error al cargar horario:", error);
-          toast.error("Error al cargar el horario actual del empleado.");
-        } finally {
-          setIsLoadingDraft(false);
-        }
+  const handleSelectChange = (tipo: 'turno' | 'descanso', dia: DiaSemana, valor: string) => {
+    if (tipo === 'turno') {
+      setTurnos(prev => ({ ...prev, [dia]: valor }));
+      // Si seleccionan "descanso" en el turno, forzamos "descanso" en su tabla de descansos
+      if (valor === "descanso") {
+        setDescansos(prev => ({ ...prev, [dia]: "descanso" }));
       }
-    }
-
-    if (isOpen) {
-      cargarHorarioReal();
-      setDiasSeleccionados([]);
-      setHorarioSeleccionado("");
-      setDescansoSeleccionado("");
     } else {
-      // Limpiamos si se cierra
-      setHorarioDraft(plantillaVacia);
-      setHorarioActualBase(plantillaVacia);
+      setDescansos(prev => ({ ...prev, [dia]: valor }));
     }
-  }, [isOpen, empleadoId]);
-
-  const toggleDia = (dia: DiaSemana) => {
-    setDiasSeleccionados(prev =>
-      prev.includes(dia) ? prev.filter(d => d !== dia) : [...prev, dia]
-    );
   };
 
-  const aplicarCambioPreview = () => {
-    if (diasSeleccionados.length === 0) {
-      toast.error("Selecciona al menos un día para aplicar el cambio.");
+  // Función para guardar HORARIOS
+  const handleGuardarTurnos = async () => {
+    // Validar que ningún día esté vacío ("")
+    if (Object.values(turnos).some(val => val === "")) {
+      toast.error("Por favor selecciona una opción para todos los días en Horarios.");
       return;
     }
 
-    const newHorarioId = horarioSeleccionado === "descanso" ? null : Number(horarioSeleccionado);
-    const newDescansoId = descansoSeleccionado === "descanso" || !descansoSeleccionado ? null : Number(descansoSeleccionado);
-
-    const nuevoDraft = { ...horarioDraft };
-    diasSeleccionados.forEach(dia => {
-      nuevoDraft[dia] = { id_horario: newHorarioId, id_descanso: newDescansoId };
-    });
-
-    setHorarioDraft(nuevoDraft);
-    setDiasSeleccionados([]);
-  };
-
-  const getDetallesDia = (asignacion: AsignacionDia) => {
-    if (!asignacion.id_horario) return null;
-    const h = horariosDisponibles.find(x => x.id === asignacion.id_horario);
-    const d = descansosDisponibles.find(x => x.id === asignacion.id_descanso);
-    return { horario: h, descanso: d };
-  };
-
-  const handleGuardarCambios = async () => {
     setIsSaving(true);
+    const { fecha, hora } = getFormatosBD();
+
     try {
-      const result = await guardarNuevoHorario(empleadoId?.toString(), horarioDraft);
+      const result = await guardarTurnosSemana(empleadoId, turnos, fecha, hora);
       if (result.error) toast.error(result.error);
-      else {
-        toast.success(result.success || "¡Horario actualizado y registrado!");
-        setIsOpen(false);
-      }
+      else toast.success(result.success);
     } catch (error: any) {
-      toast.error(error.message || "Ocurrió un error inesperado al guardar.");
+      toast.error(error.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Función para guardar DESCANSOS
+  const handleGuardarDescansos = async () => {
+    // Validar que ningún día esté vacío ("")
+    if (Object.values(descansos).some(val => val === "")) {
+      toast.error("Por favor selecciona una opción para todos los días en Descansos.");
+      return;
+    }
+
+    setIsSaving(true);
+    const { fecha, hora } = getFormatosBD();
+
+    try {
+      const result = await guardarDescansosSemana(empleadoId, descansos, fecha, hora);
+      if (result.error) toast.error(result.error);
+      else toast.success(result.success);
+    } catch (error: any) {
+      toast.error(error.message);
     } finally {
       setIsSaving(false);
     }
@@ -151,212 +117,421 @@ export function EditarHorarioModal({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 h-8 w-8">
+        <Button variant="ghost" size="icon" className="text-blue-600 hover:bg-blue-50">
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="grid w-full grid-cols-1 p-6 overflow-hidden sm:max-w-2xl max-h-[90vh]">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CalendarDays className="h-6 w-6 text-primary" />
-            Asignar Horario: {empleadoNombre}
-          </DialogTitle>
+          <DialogTitle>Gestionar Horarios: {empleadoNombre}</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="max-h-[60vh] w-full">
-          <div className="grid w-full grid-cols-1">
-            <div className="space-y-6 bg-slate-50 p-4 rounded-xl border h-fit sticky top-0">
-              <div>
-                <Label className="text-base font-semibold mb-3 block">1. Selecciona los días</Label>
-                <div className="grid grid-cols-1">
-                  {DIAS_SEMANA_FORM.map((dia) => (
-                    <div key={dia} className="flex items-center space-x-2 bg-white p-2 rounded-md border shadow-sm hover:border-blue-200 transition-colors">
-                      <Checkbox
-                        id={`chk-form-${dia}`}
-                        checked={diasSeleccionados.includes(dia as DiaSemana)}
-                        onCheckedChange={() => toggleDia(dia as DiaSemana)}
-                      />
-                      <label htmlFor={`chk-form-${dia}`} className="text-sm font-medium leading-none cursor-pointer capitalize w-full">
-                        {dia}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
-              <div className="space-y-4 border-t pt-4">
-                <Label className="text-base font-semibold block">2. Asigna el Turno</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 ">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Turno de Entrada/Salida</Label>
-                    <Select value={horarioSeleccionado} onValueChange={setHorarioSeleccionado}>
-                      <SelectTrigger className="bg-white">
-                        <SelectValue placeholder="Selecciona un turno..." />
+        <Tabs defaultValue="horarios" className="w-full mt-2">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="horarios" className="flex items-center gap-2">
+              <Clock className="w-4 h-4" /> Turnos (Horarios)
+            </TabsTrigger>
+            <TabsTrigger value="descansos" className="flex items-center gap-2">
+              <Coffee className="w-4 h-4" /> Comidas / Descansos
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="horarios" className="space-y-4 pt-4">
+            <ScrollArea className="h-[45vh] pr-4">
+              <div className="space-y-3">
+                {DIAS_SEMANA.map((dia) => (
+                  <div key={dia} className="grid grid-cols-[100px_1fr] items-center gap-4 border-b pb-3">
+                    <Label className="capitalize font-semibold">{dia}</Label>
+                    <Select value={turnos[dia]} onValueChange={(val) => handleSelectChange('turno', dia, val)}>
+                      <SelectTrigger className={turnos[dia] === "descanso" ? "bg-slate-100 text-slate-500" : ""}>
+                        <SelectValue placeholder="Seleccionar turno..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="descanso" className="font-semibold text-slate-500">Día Libre (Eliminar turno)</SelectItem>
+                        <SelectItem value="descanso" className="font-bold text-emerald-600">Día de Descanso (Libre)</SelectItem>
                         {horariosDisponibles.map(h => (
                           <SelectItem key={h.id} value={h.id.toString()}>
-                            {h.nombre} ({h.entrada} - {h.salida})
+                            {h.nombre} ({h.entrada.slice(0, 5)} - {h.salida.slice(0, 5)})
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
+                ))}
+              </div>
+            </ScrollArea>
+            <Button onClick={handleGuardarTurnos} disabled={isSaving} className="w-full bg-blue-600 hover:bg-blue-700">
+              <Save className="w-4 h-4 mr-2" /> {isSaving ? "Guardando..." : "Guardar Horarios"}
+            </Button>
+          </TabsContent>
 
-                  {horarioSeleccionado !== "descanso" && horarioSeleccionado !== "" && (
-                    <div className="space-y-2 animate-in fade-in zoom-in-95">
-                      <Label className="text-xs text-muted-foreground">Descanso (Obligatorio) *</Label>
-                      <Select value={descansoSeleccionado} onValueChange={setDescansoSeleccionado}>
-                        <SelectTrigger className="bg-white">
-                          <SelectValue placeholder="Selecciona horario de descanso..." />
+          <TabsContent value="descansos" className="space-y-4 pt-4">
+            <ScrollArea className="h-[45vh] pr-4">
+              <div className="space-y-3">
+                {DIAS_SEMANA.map((dia) => {
+                  const esDiaLibre = turnos[dia] === "descanso";
+                  
+                  return (
+                    <div key={dia} className="grid grid-cols-[100px_1fr] items-center gap-4 border-b pb-3">
+                      <Label className="capitalize font-semibold">{dia}</Label>
+                      <Select 
+                        value={descansos[dia]} 
+                        onValueChange={(val) => handleSelectChange('descanso', dia, val)}
+                        disabled={esDiaLibre} // 👈 Inhabilitamos si el turno es descanso
+                      >
+                        <SelectTrigger className={esDiaLibre || descansos[dia] === "descanso" ? "bg-slate-100 text-slate-500" : ""}>
+                          <SelectValue placeholder={esDiaLibre ? "No aplica (Día libre)" : "Seleccionar descanso..."} />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="descanso" className="font-bold text-emerald-600">Día de Descanso / Sin Pausa</SelectItem>
                           {descansosDisponibles.map(d => (
                             <SelectItem key={d.id} value={d.id.toString()}>
-                              {d.nombre} ({d.inicio} - {d.fin})
+                              {d.nombre} ({d.inicio.slice(0, 5)} - {d.fin.slice(0, 5)})
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-
                     </div>
-                  )}
-                </div>
-
-                <Button
-                  className="w-full mt-4"
-                  onClick={aplicarCambioPreview}
-                  disabled={
-                    diasSeleccionados.length === 0 ||
-                    !horarioSeleccionado ||
-                    (horarioSeleccionado !== "descanso" && !descansoSeleccionado)
-                  }
-                >
-                  Pintar en la Cuadrícula <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-
+                  );
+                })}
               </div>
-            </div>
-            <div className="lg:col-span-8 flex flex-col bg-white border rounded-xl shadow-sm overflow-hidden h-150">
+            </ScrollArea>
+            <Button onClick={handleGuardarDescansos} disabled={isSaving} className="w-full bg-orange-600 hover:bg-orange-700">
+              <Save className="w-4 h-4 mr-2" /> {isSaving ? "Guardando..." : "Guardar Descansos"}
+            </Button>
+          </TabsContent>
 
-              <div className="p-3 border-b bg-slate-50 flex justify-between items-center z-20">
-                <Label className="text-base font-semibold flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-blue-500" /> Vista Previa
-                </Label>
-                <div className="flex gap-3 text-xs font-medium text-slate-600">
-                  <span className="flex items-center gap-1"><div className="w-3 h-3 bg-slate-200 rounded-sm"></div> Actual</span>
-                  <span className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-100 border border-blue-400 rounded-sm"></div> Modificado</span>
-                </div>
-              </div>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
+  );
+}*/
+'use client';
 
-              <div className="flex-1 overflow-auto relative bg-white">
-                <div className="min-w-175 relative">
+import { useState, useEffect } from "react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Pencil, Save, Clock, Coffee, Loader2, CalendarOff } from "lucide-react";
+import { toast } from "sonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useHoy } from "@/hooks/useHoy";
 
-                  <div className="flex border-b sticky top-0 bg-white/95 backdrop-blur-sm z-30 shadow-sm">
-                    <div className="w-16 border-r shrink-0"></div>
-                    {DIAS_SEMANA_FORM.map(dia => (
-                      <div key={`head-${dia}`} className="flex-1 text-center py-2 text-xs font-bold uppercase tracking-wider text-slate-600 border-r">
-                        {dia.slice(0, 3)}
-                      </div>
-                    ))}
-                  </div>
+import { guardarTurnosSemana, guardarDescansosSemana } from "@/app/(roles)/rh/horarios/actions";
+import { getIdsConfiguracionActual } from "@/services/horarios"; 
 
-                  <div className="flex relative" style={{ height: `${TOTAL_HOURS * ROW_HEIGHT}px` }}>
+export interface TurnoOption { id: number; nombre: string; entrada: string; salida: string; }
+export interface DescansoOption { id: number; nombre: string; inicio: string; fin: string; }
 
-                    <div className="w-16 border-r shrink-0 flex flex-col relative bg-slate-50/50 z-20">
-                      {Array.from({ length: TOTAL_HOURS + 1 }).map((_, i) => (
-                        <div key={`hora-${i}`} className="absolute w-full text-right pr-2 text-[10px] font-mono text-slate-400"
-                          style={{ top: `${i * ROW_HEIGHT - 7}px` }}>
-                          {START_HOUR + i}:00
-                        </div>
-                      ))}
-                    </div>
+interface EditarHorarioProps {
+  empleadoId: string;
+  empleadoNombre: string;
+  horariosDisponibles: TurnoOption[];
+  descansosDisponibles: DescansoOption[];
+}
 
+const DIAS_SEMANA = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'] as const;
+type DiaSemana = typeof DIAS_SEMANA[number];
 
-                    <div className="absolute inset-0 left-16 flex flex-col pointer-events-none z-0">
-                      {Array.from({ length: TOTAL_HOURS * 2 }).map((_, i) => (
-                        <div key={`linea-${i}`}
-                          className={`w-full border-b ${i % 2 === 0 ? 'border-slate-200' : 'border-slate-100 border-dashed'}`}
-                          style={{ height: `${ROW_HEIGHT / 2}px` }} />
-                      ))}
-                    </div>
+type SemanaConfigStr = Record<DiaSemana, string>;
+type SemanaConfigBool = Record<DiaSemana, boolean>;
 
-                    {DIAS_SEMANA_FORM.map(dia => {
-                      const diaTyped = dia as DiaSemana;
-                      const asignacion = horarioDraft[diaTyped];
-                      const isModificado = JSON.stringify(asignacion) !== JSON.stringify(horarioActualBase[diaTyped]);
-                      const detalles = getDetallesDia(asignacion);
+const configStrVacia: SemanaConfigStr = { lunes: "", martes: "", miercoles: "", jueves: "", viernes: "", sabado: "", domingo: "" };
+const configBoolVacia: SemanaConfigBool = { lunes: false, martes: false, miercoles: false, jueves: false, viernes: false, sabado: false, domingo: false };
 
+export function EditarHorarioModal({
+  empleadoId, empleadoNombre, horariosDisponibles, descansosDisponibles
+}: EditarHorarioProps) {
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoadingDraft, setIsLoadingDraft] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const { getFormatosBD } = useHoy();
+
+  // Estados Base (Para saber si hay cambios)
+  const [turnosOriginales, setTurnosOriginales] = useState<SemanaConfigStr>(configStrVacia);
+  const [descansosOriginales, setDescansosOriginales] = useState<SemanaConfigStr>(configStrVacia);
+  const [diasLibresOriginales, setDiasLibresOriginales] = useState<SemanaConfigBool>(configBoolVacia);
+
+  // Estados Editables
+  const [turnos, setTurnos] = useState<SemanaConfigStr>(configStrVacia);
+  const [descansos, setDescansos] = useState<SemanaConfigStr>(configStrVacia);
+  const [diasLibres, setDiasLibres] = useState<SemanaConfigBool>(configBoolVacia);
+
+  const cargarDatosActuales = async () => {
+    setIsLoadingDraft(true);
+    try {
+      const bd = await getIdsConfiguracionActual(empleadoId);
+      
+      const turnosMap = { ...configStrVacia };
+      const descansosMap = { ...configStrVacia };
+      const libresMap = { ...configBoolVacia };
+
+      DIAS_SEMANA.forEach(dia => {
+        // Si el turno viene nulo de la base de datos, significa que es día libre
+        const esLibre = !bd.turnos || bd.turnos[dia] === null;
+        
+        libresMap[dia] = esLibre;
+        turnosMap[dia] = esLibre ? "descanso" : String(bd.turnos[dia]);
+        descansosMap[dia] = esLibre ? "descanso" : (bd.descansos && bd.descansos[dia] ? String(bd.descansos[dia]) : "");
+      });
+
+      setTurnosOriginales(turnosMap);
+      setDescansosOriginales(descansosMap);
+      setDiasLibresOriginales(libresMap);
+
+      setTurnos(turnosMap);
+      setDescansos(descansosMap);
+      setDiasLibres(libresMap);
+
+    } catch (error) {
+      toast.error("Error al cargar la configuración actual.");
+    } finally {
+      setIsLoadingDraft(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) cargarDatosActuales();
+  }, [isOpen, empleadoId]);
+
+  // --- MANEJADORES DE GUARDADO INDEPENDIENTES ---
+
+  const handleGuardarTurnos = async () => {
+    // Solo validamos los días que NO son libres
+    const faltanDatos = DIAS_SEMANA.some(dia => !diasLibres[dia] && turnos[dia] === "");
+    if (faltanDatos) {
+      toast.error("Asigna un turno a todos los días laborables.");
+      return;
+    }
+    
+    setIsSaving(true);
+    const { fecha, hora } = getFormatosBD();
+
+    try {
+      // Usa tu action existente que actualiza la tabla empleados_turno_horarios
+      const result = await guardarTurnosSemana(empleadoId, turnos, fecha, hora);
+      if (result.error) toast.error(result.error);
+      else {
+        toast.success(result.success);
+        setTurnosOriginales(turnos); 
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleGuardarDescansos = async () => {
+    const faltanDatos = DIAS_SEMANA.some(dia => !diasLibres[dia] && descansos[dia] === "");
+    if (faltanDatos) {
+      toast.error("Asigna un descanso a todos los días laborables.");
+      return;
+    }
+    
+    setIsSaving(true);
+    const { fecha, hora } = getFormatosBD();
+
+    try {
+      // Usa tu action existente que actualiza la tabla empleados_turno_descansos
+      const result = await guardarDescansosSemana(empleadoId, descansos, fecha, hora);
+      if (result.error) toast.error(result.error);
+      else {
+        toast.success(result.success);
+        setDescansosOriginales(descansos);
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleGuardarDiasLibres = async () => {
+    // Si quitaron un día libre, tenemos que asegurarnos que le hayan asignado un turno y descanso en las otras tabs
+    const requiereAsignacion = DIAS_SEMANA.some(dia => !diasLibres[dia] && (turnos[dia] === "descanso" || turnos[dia] === ""));
+    if (requiereAsignacion) {
+      toast.error("Has habilitado un nuevo día laborable. Ve a las pestañas de Turnos y Descansos para asignarle sus horas antes de guardar.");
+      return;
+    }
+
+    setIsSaving(true);
+    const { fecha, hora } = getFormatosBD();
+
+    try {
+      // Al guardar días libres, impactamos AMBAS tablas para mantener consistencia
+      const resTurnos = await guardarTurnosSemana(empleadoId, turnos, fecha, hora);
+      const resDescansos = await guardarDescansosSemana(empleadoId, descansos, fecha, hora);
+
+      if (resTurnos.error || resDescansos.error) {
+        toast.error("Hubo un error al actualizar ambos registros.");
+      } else {
+        toast.success("Días de descanso actualizados correctamente en ambas tablas.");
+        cargarDatosActuales(); // Recargamos todo para sincronizar los estados originales
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // --- CÁLCULOS VISUALES ---
+  const diasLaborables = DIAS_SEMANA.filter(dia => !diasLibres[dia]);
+  const hayCambiosEnTurnos = JSON.stringify(turnos) !== JSON.stringify(turnosOriginales);
+  const hayCambiosEnDescansos = JSON.stringify(descansos) !== JSON.stringify(descansosOriginales);
+  const hayCambiosEnDiasLibres = JSON.stringify(diasLibres) !== JSON.stringify(diasLibresOriginales);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="text-blue-600 hover:bg-blue-50">
+          <Pencil className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="sm:max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Gestionar Horarios: {empleadoNombre}</DialogTitle>
+        </DialogHeader>
+
+        {isLoadingDraft ? (
+          <div className="flex flex-col items-center justify-center py-10 opacity-60">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-2" />
+            <span className="text-sm">Cargando datos actuales...</span>
+          </div>
+        ) : (
+          <Tabs defaultValue="turnos" className="w-full mt-2">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="turnos" className="flex items-center gap-1 relative text-xs sm:text-sm">
+                <Clock className="w-3.5 h-3.5" /> Turnos
+                {hayCambiosEnTurnos && <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />}
+              </TabsTrigger>
+              <TabsTrigger value="descansos" className="flex items-center gap-1 relative text-xs sm:text-sm">
+                <Coffee className="w-3.5 h-3.5" /> Descansos
+                {hayCambiosEnDescansos && <span className="absolute top-1 right-1 w-2 h-2 bg-orange-500 rounded-full animate-pulse" />}
+              </TabsTrigger>
+              <TabsTrigger value="dias-libres" className="flex items-center gap-1 relative text-xs sm:text-sm">
+                <CalendarOff className="w-3.5 h-3.5" /> Días Libres
+                {hayCambiosEnDiasLibres && <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />}
+              </TabsTrigger>
+            </TabsList>
+
+            {/* TAB 1: SOLO TURNOS */}
+            <TabsContent value="turnos" className="space-y-4 pt-4">
+              <ScrollArea className="h-[45vh] pr-4">
+                <div className="space-y-3">
+                  {diasLaborables.length === 0 ? (
+                    <div className="text-center text-muted-foreground p-4 text-sm bg-slate-50 rounded-md border">Toda la semana está marcada como libre.</div>
+                  ) : (
+                    diasLaborables.map((dia) => {
+                      const isModificado = turnos[dia] !== turnosOriginales[dia];
                       return (
-                        <div key={`col-${dia}`} className="flex-1 border-r relative z-10">
-
-                          {detalles?.horario && (
-                            <div
-                              className={`absolute left-1 right-1 rounded-md p-1.5 overflow-hidden transition-all duration-300 shadow-sm border-l-4
-                              ${isModificado
-                                  ? 'bg-blue-100/90 border-blue-500 z-20 ring-1 ring-blue-300'
-                                  : 'bg-slate-100/70 border-slate-300 z-10 grayscale-50'}`}
-                              style={{
-                                top: `${(parseTime(detalles.horario.entrada) - START_HOUR) * ROW_HEIGHT}px`,
-                                height: `${(parseTime(detalles.horario.salida) - parseTime(detalles.horario.entrada)) * ROW_HEIGHT}px`
-                              }}
-                            >
-                              <div className={`text-[10px] font-bold leading-tight truncate ${isModificado ? 'text-blue-900' : 'text-slate-600'}`}>
-                                {detalles.horario.nombre}
-                              </div>
-                              <div className={`text-[9px] font-mono mt-0.5 ${isModificado ? 'text-blue-700' : 'text-slate-500'}`}>
-                                {detalles.horario.entrada.slice(0, 5)} - {detalles.horario.salida.slice(0, 5)}
-                              </div>
-
-                              {isModificado && (
-                                <div className="absolute bottom-1 right-1 text-[8px] bg-blue-500 text-white px-1 rounded uppercase font-bold tracking-widest opacity-80">
-                                  Nuevo
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {detalles?.descanso && (
-                            <div
-                              className={`absolute left-2 right-2 border-l-4 rounded-sm flex items-center justify-center
-                              ${isModificado ? 'bg-orange-100/95 border-orange-400 z-30 shadow-md' : 'bg-slate-200/80 border-slate-400 z-20'}`}
-                              style={{
-                                top: `${(parseTime(detalles.descanso.inicio) - START_HOUR) * ROW_HEIGHT}px`,
-                                height: `${(parseTime(detalles.descanso.fin) - parseTime(detalles.descanso.inicio)) * ROW_HEIGHT}px`
-                              }}
-                            >
-                              <span className={`text-[9px] font-bold uppercase tracking-widest ${isModificado ? 'text-orange-900' : 'text-slate-600'}`}>
-                                Descanso
-                              </span>
-                            </div>
-                          )}
-
+                        <div key={dia} className="grid grid-cols-[100px_1fr] items-center gap-4 border-b pb-3">
+                          <Label className="capitalize font-semibold">{dia}</Label>
+                          <Select value={turnos[dia]} onValueChange={(val) => setTurnos(prev => ({ ...prev, [dia]: val }))}>
+                            <SelectTrigger className={isModificado ? "border-blue-400 bg-blue-50" : ""}>
+                              <SelectValue placeholder="Seleccionar turno..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {horariosDisponibles.map(h => (
+                                <SelectItem key={h.id} value={h.id.toString()}>
+                                  {h.nombre} ({h.entrada.slice(0, 5)} - {h.salida.slice(0, 5)})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       );
-                    })}
-                  </div>
+                    })
+                  )}
                 </div>
-              </div>
+              </ScrollArea>
+              <Button onClick={handleGuardarTurnos} disabled={isSaving || !hayCambiosEnTurnos} className="w-full bg-blue-600 hover:bg-blue-700">
+                <Save className="w-4 h-4 mr-2" /> Guardar Solo Turnos
+              </Button>
+            </TabsContent>
 
-            </div>
-          </div>
-        </ScrollArea>
-        <DialogFooter className="mt-2 border-t pt-4 bg-white">
-          <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isSaving}>
-            Cancelar
-          </Button>
-          <Button onClick={handleGuardarCambios} className="bg-blue-600 hover:bg-blue-700" disabled={
-            isSaving ||
-            diasSeleccionados.length === 0 || // Faltan días
-            !horarioSeleccionado ||           // Falta turno
-            (horarioSeleccionado !== "descanso" && !descansoSeleccionado)
-          }>
-            <Save className="w-4 h-4 mr-2" />
-            {isSaving ? "Guardando Masivamente..." : "Confirmar y Guardar Cambios"}
-          </Button>
-        </DialogFooter>
+            {/* TAB 2: SOLO DESCANSOS */}
+            <TabsContent value="descansos" className="space-y-4 pt-4">
+              <ScrollArea className="h-[45vh] pr-4">
+                <div className="space-y-3">
+                  {diasLaborables.length === 0 ? (
+                    <div className="text-center text-muted-foreground p-4 text-sm bg-slate-50 rounded-md border">Toda la semana está marcada como libre.</div>
+                  ) : (
+                    diasLaborables.map((dia) => {
+                      const isModificado = descansos[dia] !== descansosOriginales[dia];
+                      return (
+                        <div key={dia} className="grid grid-cols-[100px_1fr] items-center gap-4 border-b pb-3">
+                          <Label className="capitalize font-semibold">{dia}</Label>
+                          <Select value={descansos[dia]} onValueChange={(val) => setDescansos(prev => ({ ...prev, [dia]: val }))}>
+                            <SelectTrigger className={isModificado ? "border-orange-400 bg-orange-50" : ""}>
+                              <SelectValue placeholder="Seleccionar descanso..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {descansosDisponibles.map(d => (
+                                <SelectItem key={d.id} value={d.id.toString()}>
+                                  {d.nombre} ({d.inicio.slice(0, 5)} - {d.fin.slice(0, 5)})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </ScrollArea>
+              <Button onClick={handleGuardarDescansos} disabled={isSaving || !hayCambiosEnDescansos} className="w-full bg-orange-600 hover:bg-orange-700">
+                <Save className="w-4 h-4 mr-2" /> Guardar Solo Descansos
+              </Button>
+            </TabsContent>
 
+            {/* TAB 3: GESTIÓN DE DÍAS LIBRES */}
+            <TabsContent value="dias-libres" className="space-y-4 pt-4">
+              <ScrollArea className="h-[45vh] pr-4">
+                <div className="space-y-2 bg-slate-50 p-4 rounded-lg border">
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Selecciona los días de descanso para este empleado. Al guardar, se actualizarán ambas tablas de turnos y descansos.
+                  </p>
+                  {DIAS_SEMANA.map((dia) => {
+                    const isModificado = diasLibres[dia] !== diasLibresOriginales[dia];
+                    return (
+                      <div key={dia} className={`flex items-center justify-between space-x-2 p-3 rounded-md border bg-white ${isModificado ? 'border-emerald-400 shadow-sm' : ''}`}>
+                        <Label htmlFor={`lib-${dia}`} className="capitalize font-semibold cursor-pointer w-full">
+                          {dia}
+                        </Label>
+                        <Checkbox
+                          id={`lib-${dia}`}
+                          checked={diasLibres[dia]}
+                          onCheckedChange={(checked) => {
+                            const isChecked = checked as boolean;
+                            setDiasLibres(prev => ({ ...prev, [dia]: isChecked }));
+                            // Forzamos "descanso" en los selects en tiempo real
+                            setTurnos(prev => ({ ...prev, [dia]: isChecked ? "descanso" : (turnosOriginales[dia] === "descanso" ? "" : turnosOriginales[dia]) }));
+                            setDescansos(prev => ({ ...prev, [dia]: isChecked ? "descanso" : (descansosOriginales[dia] === "descanso" ? "" : descansosOriginales[dia]) }));
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+              <Button onClick={handleGuardarDiasLibres} disabled={isSaving || !hayCambiosEnDiasLibres} className="w-full bg-emerald-600 hover:bg-emerald-700">
+                <Save className="w-4 h-4 mr-2" /> Aplicar Días Libres
+              </Button>
+            </TabsContent>
+
+          </Tabs>
+        )}
       </DialogContent>
     </Dialog>
   );
