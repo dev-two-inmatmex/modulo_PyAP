@@ -1,211 +1,3 @@
-/*'use client';
-
-import { useState, useEffect } from "react";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
-} from "@/components/ui/select";
-import { Pencil, Save, Clock, Coffee } from "lucide-react";
-import { toast } from "sonner";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useHoy } from "@/hooks/useHoy";
-
-import { guardarTurnosSemana, guardarDescansosSemana } from "@/app/(roles)/rh/horarios/actions";
-
-export interface TurnoOption { id: number; nombre: string; entrada: string; salida: string; }
-export interface DescansoOption { id: number; nombre: string; inicio: string; fin: string; }
-
-interface EditarHorarioProps {
-  empleadoId: string;
-  empleadoNombre: string;
-  horariosDisponibles: TurnoOption[];
-  descansosDisponibles: DescansoOption[];
-  turnoActual?: Record<string, number | null>; 
-  descansoActual?: Record<string, number | null>;
-}
-
-const DIAS_SEMANA = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'] as const;
-type DiaSemana = typeof DIAS_SEMANA[number];
-
-type SemanaConfig = Record<DiaSemana, string>;
-
-const configVacia: SemanaConfig = {
-  lunes: "", martes: "", miercoles: "", jueves: "", viernes: "", sabado: "", domingo: ""
-};
-
-export function EditarHorarioModal({
-  empleadoId, empleadoNombre, horariosDisponibles, descansosDisponibles
-}: EditarHorarioProps) {
-
-  const [isOpen, setIsOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const { getFormatosBD } = useHoy();
-
-  // Estados independientes para Horarios y Descansos
-  const [turnos, setTurnos] = useState<SemanaConfig>(configVacia);
-  const [descansos, setDescansos] = useState<SemanaConfig>(configVacia);
-
-  // Limpiar al cerrar
-  useEffect(() => {
-    if (!isOpen) {
-      setTurnos(configVacia);
-      setDescansos(configVacia);
-    }
-  }, [isOpen]);
-
-  const handleSelectChange = (tipo: 'turno' | 'descanso', dia: DiaSemana, valor: string) => {
-    if (tipo === 'turno') {
-      setTurnos(prev => ({ ...prev, [dia]: valor }));
-      // Si seleccionan "descanso" en el turno, forzamos "descanso" en su tabla de descansos
-      if (valor === "descanso") {
-        setDescansos(prev => ({ ...prev, [dia]: "descanso" }));
-      }
-    } else {
-      setDescansos(prev => ({ ...prev, [dia]: valor }));
-    }
-  };
-
-  // Función para guardar HORARIOS
-  const handleGuardarTurnos = async () => {
-    // Validar que ningún día esté vacío ("")
-    if (Object.values(turnos).some(val => val === "")) {
-      toast.error("Por favor selecciona una opción para todos los días en Horarios.");
-      return;
-    }
-
-    setIsSaving(true);
-    const { fecha, hora } = getFormatosBD();
-
-    try {
-      const result = await guardarTurnosSemana(empleadoId, turnos, fecha, hora);
-      if (result.error) toast.error(result.error);
-      else toast.success(result.success);
-    } catch (error: any) {
-      toast.error(error.message);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // Función para guardar DESCANSOS
-  const handleGuardarDescansos = async () => {
-    // Validar que ningún día esté vacío ("")
-    if (Object.values(descansos).some(val => val === "")) {
-      toast.error("Por favor selecciona una opción para todos los días en Descansos.");
-      return;
-    }
-
-    setIsSaving(true);
-    const { fecha, hora } = getFormatosBD();
-
-    try {
-      const result = await guardarDescansosSemana(empleadoId, descansos, fecha, hora);
-      if (result.error) toast.error(result.error);
-      else toast.success(result.success);
-    } catch (error: any) {
-      toast.error(error.message);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-blue-600 hover:bg-blue-50">
-          <Pencil className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
-
-      <DialogContent className="sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle>Gestionar Horarios: {empleadoNombre}</DialogTitle>
-        </DialogHeader>
-
-        <Tabs defaultValue="horarios" className="w-full mt-2">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="horarios" className="flex items-center gap-2">
-              <Clock className="w-4 h-4" /> Turnos (Horarios)
-            </TabsTrigger>
-            <TabsTrigger value="descansos" className="flex items-center gap-2">
-              <Coffee className="w-4 h-4" /> Comidas / Descansos
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="horarios" className="space-y-4 pt-4">
-            <ScrollArea className="h-[45vh] pr-4">
-              <div className="space-y-3">
-                {DIAS_SEMANA.map((dia) => (
-                  <div key={dia} className="grid grid-cols-[100px_1fr] items-center gap-4 border-b pb-3">
-                    <Label className="capitalize font-semibold">{dia}</Label>
-                    <Select value={turnos[dia]} onValueChange={(val) => handleSelectChange('turno', dia, val)}>
-                      <SelectTrigger className={turnos[dia] === "descanso" ? "bg-slate-100 text-slate-500" : ""}>
-                        <SelectValue placeholder="Seleccionar turno..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="descanso" className="font-bold text-emerald-600">Día de Descanso (Libre)</SelectItem>
-                        {horariosDisponibles.map(h => (
-                          <SelectItem key={h.id} value={h.id.toString()}>
-                            {h.nombre} ({h.entrada.slice(0, 5)} - {h.salida.slice(0, 5)})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-            <Button onClick={handleGuardarTurnos} disabled={isSaving} className="w-full bg-blue-600 hover:bg-blue-700">
-              <Save className="w-4 h-4 mr-2" /> {isSaving ? "Guardando..." : "Guardar Horarios"}
-            </Button>
-          </TabsContent>
-
-          <TabsContent value="descansos" className="space-y-4 pt-4">
-            <ScrollArea className="h-[45vh] pr-4">
-              <div className="space-y-3">
-                {DIAS_SEMANA.map((dia) => {
-                  const esDiaLibre = turnos[dia] === "descanso";
-                  
-                  return (
-                    <div key={dia} className="grid grid-cols-[100px_1fr] items-center gap-4 border-b pb-3">
-                      <Label className="capitalize font-semibold">{dia}</Label>
-                      <Select 
-                        value={descansos[dia]} 
-                        onValueChange={(val) => handleSelectChange('descanso', dia, val)}
-                        disabled={esDiaLibre} // 👈 Inhabilitamos si el turno es descanso
-                      >
-                        <SelectTrigger className={esDiaLibre || descansos[dia] === "descanso" ? "bg-slate-100 text-slate-500" : ""}>
-                          <SelectValue placeholder={esDiaLibre ? "No aplica (Día libre)" : "Seleccionar descanso..."} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="descanso" className="font-bold text-emerald-600">Día de Descanso / Sin Pausa</SelectItem>
-                          {descansosDisponibles.map(d => (
-                            <SelectItem key={d.id} value={d.id.toString()}>
-                              {d.nombre} ({d.inicio.slice(0, 5)} - {d.fin.slice(0, 5)})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  );
-                })}
-              </div>
-            </ScrollArea>
-            <Button onClick={handleGuardarDescansos} disabled={isSaving} className="w-full bg-orange-600 hover:bg-orange-700">
-              <Save className="w-4 h-4 mr-2" /> {isSaving ? "Guardando..." : "Guardar Descansos"}
-            </Button>
-          </TabsContent>
-
-        </Tabs>
-      </DialogContent>
-    </Dialog>
-  );
-}*/
 'use client';
 
 import { useState, useEffect } from "react";
@@ -223,6 +15,7 @@ import { Pencil, Save, Clock, Coffee, Loader2, CalendarOff } from "lucide-react"
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useHoy } from "@/hooks/useHoy";
+import { Input } from "@/components/ui/input";
 
 import { guardarTurnosSemana, guardarDescansosSemana } from "@/app/(roles)/rh/horarios/actions";
 import { getIdsConfiguracionActual } from "@/services/horarios"; 
@@ -249,11 +42,12 @@ const configBoolVacia: SemanaConfigBool = { lunes: false, martes: false, miercol
 export function EditarHorarioModal({
   empleadoId, empleadoNombre, horariosDisponibles, descansosDisponibles
 }: EditarHorarioProps) {
-
+  const { getFormatosBD } = useHoy();
+  const formatosBD = getFormatosBD();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoadingDraft, setIsLoadingDraft] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const { getFormatosBD } = useHoy();
+  const [fechaEfectiva, setFechaEfectiva] = useState<string>(formatosBD.fecha);
 
   // Estados Base (Para saber si hay cambios)
   const [turnosOriginales, setTurnosOriginales] = useState<SemanaConfigStr>(configStrVacia);
@@ -317,7 +111,7 @@ export function EditarHorarioModal({
 
     try {
       // Usa tu action existente que actualiza la tabla empleados_turno_horarios
-      const result = await guardarTurnosSemana(empleadoId, turnos, fecha, hora);
+      const result = await guardarTurnosSemana(empleadoId, turnos, fecha, hora, fechaEfectiva);
       if (result.error) toast.error(result.error);
       else {
         toast.success(result.success);
@@ -342,7 +136,7 @@ export function EditarHorarioModal({
 
     try {
       // Usa tu action existente que actualiza la tabla empleados_turno_descansos
-      const result = await guardarDescansosSemana(empleadoId, descansos, fecha, hora);
+      const result = await guardarDescansosSemana(empleadoId, descansos, fecha, hora, fechaEfectiva);
       if (result.error) toast.error(result.error);
       else {
         toast.success(result.success);
@@ -368,8 +162,8 @@ export function EditarHorarioModal({
 
     try {
       // Al guardar días libres, impactamos AMBAS tablas para mantener consistencia
-      const resTurnos = await guardarTurnosSemana(empleadoId, turnos, fecha, hora);
-      const resDescansos = await guardarDescansosSemana(empleadoId, descansos, fecha, hora);
+      const resTurnos = await guardarTurnosSemana(empleadoId, turnos, fecha, hora, fechaEfectiva);
+      const resDescansos = await guardarDescansosSemana(empleadoId, descansos, fecha, hora, fechaEfectiva);
 
       if (resTurnos.error || resDescansos.error) {
         toast.error("Hubo un error al actualizar ambos registros.");
@@ -409,6 +203,22 @@ export function EditarHorarioModal({
             <span className="text-sm">Cargando datos actuales...</span>
           </div>
         ) : (
+          <div className="flex flex-col space-y-4 w-full">
+            
+            {/* 👇 NUEVO CONTRO DE FECHA DE APLICACIÓN */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-blue-50/50 border border-blue-100 p-3 rounded-md gap-2">
+               <div className="flex flex-col">
+                 <Label className="text-sm font-bold text-blue-900">Aplicar cambios a partir de:</Label>
+                 <span className="text-[10px] text-blue-600/80">Los cambios afectarán la asistencia desde esta fecha.</span>
+               </div>
+               <Input 
+                 type="date" 
+                 value={fechaEfectiva} 
+                 onChange={(e) => setFechaEfectiva(e.target.value)}
+                 className="w-full sm:w-auto bg-white"
+                 // Opcional: min={formatosBD.fecha} si no quieres que editen hacia el pasado
+               />
+            </div>
           <Tabs defaultValue="turnos" className="w-full mt-2">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="turnos" className="flex items-center gap-1 relative text-xs sm:text-sm">
@@ -531,6 +341,7 @@ export function EditarHorarioModal({
             </TabsContent>
 
           </Tabs>
+          </div>
         )}
       </DialogContent>
     </Dialog>

@@ -108,7 +108,8 @@ export async function guardarTurnosSemana(
   empleadoId: string,
   turnos: SemanaConfig,
   fechaActual: string,
-  horaActual: string
+  horaActual: string,
+  fechaEfectiva: string
 ) {
   const supabase = await createServidorClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -119,8 +120,8 @@ export async function guardarTurnosSemana(
     id_empleado: empleadoId,
     fecha: fechaActual,
     hora: horaActual,
-    ejecutar_a_partir_de: fechaActual, // Se aplica inmediatamente
-    id_capturista: user.id, // Suponiendo que el user.id de Auth coincide con un uuid en tabla empleados
+    ejecutar_a_partir_de: fechaEfectiva,
+    id_capturista: user.id,
     lunes: procesarValorDia(turnos.lunes),
     martes: procesarValorDia(turnos.martes),
     miercoles: procesarValorDia(turnos.miercoles),
@@ -146,7 +147,8 @@ export async function guardarDescansosSemana(
   empleadoId: string,
   descansos: SemanaConfig,
   fechaActual: string,
-  horaActual: string
+  horaActual: string,
+  fechaEfectiva: string
 ) {
   const supabase = await createServidorClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -157,7 +159,7 @@ export async function guardarDescansosSemana(
     id_empleado: empleadoId,
     fecha: fechaActual,
     hora: horaActual,
-    ejecutar_a_partir_de: fechaActual, // Se aplica inmediatamente
+    ejecutar_a_partir_de: fechaEfectiva,
     id_capturista: user.id, 
     lunes: procesarValorDia(descansos.lunes),
     martes: procesarValorDia(descansos.martes),
