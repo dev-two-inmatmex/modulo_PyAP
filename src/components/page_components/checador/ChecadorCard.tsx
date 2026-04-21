@@ -16,6 +16,7 @@ import type { RegistroChequeo } from '@/services/asistencias';
 import type { config_ubicaciones as ConfigUbicacion } from '@/services/ubicaciones';
 import type { Empleado_asignacion_horas_extra as HorasExtraAsignacion } from '@/services/horarios';
 import { SolicitudTardiaDialog } from './ChecadorSolicitudTardia';
+import type {versolicitud_asistencia_30min_despues} from '@/services/solicitudes-asistenciatardia';
 
 type ChequeoAction = 'entrada' | 'salida_descanso' | 'regreso_descanso' | 'salida' | 'solicitud_tardia';
 type Horario = { hora_entrada: string; hora_salida: string; };
@@ -26,7 +27,7 @@ const timeToMins = (time: string): number => {
   return h * 60 + m;
 };
 
-export function ChecadorCard({ registros, horario, descanso, userId, ubicacionesValidas, horasExtra }: { registros: RegistroChequeo[], horario: Horario, descanso: Descanso, userId: string, ubicacionesValidas: ConfigUbicacion[], horasExtra: HorasExtraAsignacion[] }) {
+export function ChecadorCard({ registros, horario, descanso, userId, ubicacionesValidas, horasExtra, solicitudes }: { registros: RegistroChequeo[], horario: Horario, descanso: Descanso, userId: string, ubicacionesValidas: ConfigUbicacion[], horasExtra: HorasExtraAsignacion[], solicitudes: versolicitud_asistencia_30min_despues[] }) {
 
   const [salidaAnticipada, setSalidaAnticipada] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -60,12 +61,18 @@ export function ChecadorCard({ registros, horario, descanso, userId, ubicaciones
     if (currentMins === 0) return { action: null, label: "Sincronizando...", message: "Obteniendo hora del servidor...", horaEsperada: null };
     if (!tieneEntrada) {
 
-      if (currentMins > minEntradaEfectiva + 30) {
+      if ((currentMins > minEntradaEfectiva + 30)&& solicitudes.length == 0 ) {
         return {
           action: 'solicitud_tardia' as const,
           label: "Pedir Acceso por Retardo",
           message: "Límite excedido. Tu entrada debe ser autorizada por RH.",
           horaEsperada: horario.hora_entrada
+        };
+      }
+      if (solicitudes.length > 0) {
+        return {
+          label: "Solicitud en Espera de Autorización",
+          message: "Solicitud de entrada por retardo recibida por RH. Espera la autorizacion.",
         };
       }
 
@@ -83,20 +90,6 @@ export function ChecadorCard({ registros, horario, descanso, userId, ubicaciones
     return { action: null, label: 'Trabajando', message: `Tu salida es a las ${formatHorario(horaSalidaEfectiva)}`, horaEsperada: null };
   }, [registros, horario, descanso, horaMinutos, formatHorario, horaEntradaEfectiva, horaSalidaEfectiva, salidaAnticipada, tieneEntrada, tieneRegresoDescanso, tieneSalida]);
 
-  /*const handleAction = (action: ChequeoAction, faceDescriptor?: number[]) => {
-    if (action !== 'solicitud_tardia') {
-      startTransition(async () => {
-        const formatosBD = getFormatosBD();
-        if (!ubicacionDetectada || !formatosBD) {
-          toast.error("No se pudo obtener la ubicación o la hora. Intenta de nuevo.");
-          return;
-        }
-        const result = await registrarChequeoPrueba(action, formatosBD.dateInTimezone, formatosBD.timeInTimezone, ubicacionDetectada.id, chequeoState.horaEsperada, faceDescriptor);
-        if (result.success) toast.success(result.message);
-        else toast.error(result.message);
-      });
-    }
-  };*/
   const handleAction = (action: ChequeoAction, faceDescriptor?: number[]) => {
     if (action !== 'solicitud_tardia') {
       startTransition(async () => {
@@ -156,6 +149,8 @@ export function ChecadorCard({ registros, horario, descanso, userId, ubicaciones
           id_empleado={userId}
           hora_esperada={chequeoState.horaEsperada!}
           formatosBD={getFormatosBD()}
+          ubicacion ={ ubicacionDetectada}
+          solicitud = {solicitudes}
         />
       );
     }

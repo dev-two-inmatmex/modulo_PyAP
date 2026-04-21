@@ -10,7 +10,7 @@ import { AlertCircle, Camera } from "lucide-react";
 import { ScannerBiometrico } from '@/components/reutilizables/ScannerBiometrico';
 import { enviarSolicitudRetardo } from '@/app/(shared)/checador/actions';
 
-export function SolicitudTardiaDialog({ id_empleado, hora_esperada, id_ubicacion, formatosBD }: any) {
+export function SolicitudTardiaDialog({ id_empleado, hora_esperada, ubicacion, formatosBD, solicitud }: any) {
     const [open, setOpen] = useState(false);
     const [motivo, setMotivo] = useState("");
     const [isPending, startTransition] = useTransition();
@@ -27,7 +27,8 @@ export function SolicitudTardiaDialog({ id_empleado, hora_esperada, id_ubicacion
                 id_empleado, 
                 formatosBD.dateInTimezone, 
                 formatosBD.timeInTimezone, 
-                hora_esperada, 
+                hora_esperada,
+                ubicacion.id, 
                 motivo,
                 faceDescriptor // Pasamos el rostro al backend
             );
@@ -45,7 +46,7 @@ export function SolicitudTardiaDialog({ id_empleado, hora_esperada, id_ubicacion
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="w-full text-lg py-6 bg-amber-600 hover:bg-amber-700 text-white" size="lg">
+                <Button className="w-full text-lg py-6 bg-amber-600 hover:bg-amber-700 text-white" size="lg" disabled={!ubicacion || solicitud.length > 0}>
                     <AlertCircle className="mr-2 h-6 w-6" /> Pedir Acceso por Retardo
                 </Button>
             </DialogTrigger>
@@ -63,7 +64,7 @@ export function SolicitudTardiaDialog({ id_empleado, hora_esperada, id_ubicacion
                         placeholder="Escribe el motivo de tu retardo (Ej. Tráfico pesado, accidente en el transporte...)" 
                         value={motivo}
                         onChange={(e) => setMotivo(e.target.value)}
-                        className="min-h-[100px]"
+                        className="min-h-25"
                         disabled={isPending}
                     />
                 </div>

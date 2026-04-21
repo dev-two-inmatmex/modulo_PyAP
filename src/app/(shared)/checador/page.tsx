@@ -9,8 +9,16 @@ import { ChecadorCard } from "@/components/page_components/checador/ChecadorCard
 import { RealtimeAsistencias } from "@/hooks/useRealtimeChecadorRegistros";
 import { RealtimeInasistencias } from "@/hooks/useRealtimeInasistenciasConfirmadas";
 
+import { getSolicitudesAsistencia30MinDespues } from '@/services/solicitudes-asistenciatardia';
+
 export default async function ChecadorPage() {
   const supabase = await createServidorClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        throw new Error("Usuario no autenticado.");
+    }
+  
   const { getFormatosBD } = useHoy();
   const fecha = getFormatosBD().fecha;
   const hoyEs = getFormatosBD().nombredeldiaDBEs;
@@ -27,13 +35,8 @@ export default async function ChecadorPage() {
   const horario = horarioData ? horarioData[hoyEs] : null;
   const descanso = descansoData ? descansoData[hoyEs] : null;
   //console.log("horario: ", horarioData, "descanso: ", descanso)
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    console.error("Usuario no autenticado");
-    return [];
-  }
+  const solicitudes = await getSolicitudesAsistencia30MinDespues(fecha, user.id);
+  console.log("solicitudes", solicitudes)
 
   const horasExtra = await getHorasExtra(fecha, user.id);
   //console.log("horas extra", horasExtra)
@@ -76,6 +79,7 @@ export default async function ChecadorPage() {
         registros={registros}
         ubicacionesValidas={ubicaciones}
         horasExtra={horasExtra}
+        solicitudes={solicitudes}
       />
     </>
   );

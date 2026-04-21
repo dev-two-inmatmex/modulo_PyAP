@@ -1,4 +1,4 @@
-"use client"
+/*"use client"
 
 import * as React from "react"
 import { Users, TrendingUp } from "lucide-react"
@@ -126,6 +126,157 @@ export function PorcentajeAsistencia({ segmentos, totalEsperados }: PorcentajeAs
         <div className="flex items-center gap-1 text-center leading-none text-muted-foreground">
           <Users className="h-3 w-3" /> Faltan {pendientesCount} por checar
         </div>
+      </CardFooter>
+    </Card>
+  )
+}*/
+"use client"
+
+import * as React from "react"
+import { Users, TrendingUp, UserX } from "lucide-react"
+import { Label, Pie, PieChart } from "recharts"
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
+
+export interface SegmentoAsistencia {
+  id: number | string;
+  label: string;
+  count: number;
+  color: string;
+}
+
+export interface PorcentajeAsistenciaProps {
+  segmentos: SegmentoAsistencia[];
+  totalEsperados: number;
+  totalInasistencias: number; // NUEVO: Prop para las faltas confirmadas
+}
+
+export function PorcentajeAsistencia({ segmentos, totalEsperados, totalInasistencias }: PorcentajeAsistenciaProps) {
+  // 1. Calculamos totales
+  const totalLlegadas = segmentos.reduce((acc, curr) => acc + curr.count, 0)
+  
+  // A los esperados, le restamos los que ya llegaron y los que ya confirmamos que NO llegarán
+  const pendientesCount = Math.max(0, totalEsperados - totalLlegadas - totalInasistencias)
+  
+  // El porcentaje central seguirá mostrando el nivel de "Llenado" del edificio (solo asistencias)
+  const percentage = totalEsperados > 0 ? Math.round((totalLlegadas / totalEsperados) * 100) : 0
+
+  // 2. Preparamos la configuración de colores para Shadcn
+  const chartConfig = React.useMemo(() => {
+    const config: Record<string, { label: string; color: string }> = {
+      inasistencias: { label: "Faltas Confirmadas", color: "#000000" }, // Color negro
+      pendientes: { label: "Faltan por checar", color: "var(--muted)" } // Color gris
+    }
+    segmentos.forEach(seg => {
+      config[seg.id] = { label: seg.label, color: seg.color }
+    })
+    return config
+  }, [segmentos])
+
+  // 3. Unimos los datos en el orden que queremos que aparezcan en la dona
+  const chartData = React.useMemo(() => {
+    const data = segmentos.map(seg => ({
+      name: seg.id,
+      value: seg.count,
+      fill: seg.color
+    }))
+    
+    // Mostramos la rebanada negra si hay inasistencias confirmadas
+    if (totalInasistencias > 0) {
+      data.push({ name: "inasistencias", value: totalInasistencias, fill: "#000000" })
+    }
+
+    // Mostramos la rebanada gris si aún falta gente por reportarse
+    if (pendientesCount > 0) {
+      data.push({ name: "pendientes", value: pendientesCount, fill: "var(--muted)" })
+    }
+    return data
+  }, [segmentos, pendientesCount, totalInasistencias])
+
+  return (
+    <Card className="flex h-full flex-col shadow-sm">
+      <CardHeader className="items-center pb-0">
+        <CardTitle>Progreso de Asistencia</CardTitle>
+        <CardDescription>Llegadas en tiempo real</CardDescription>
+      </CardHeader>
+      <CardContent className="flex-1 pb-0">
+        <ChartContainer
+          config={chartConfig}
+          className="mx-auto aspect-square max-h-62.5"
+        >
+          <PieChart>
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <Pie
+              data={chartData}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={65}
+              strokeWidth={5}
+            >
+              <Label
+                content={({ viewBox }) => {
+                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                    return (
+                      <text
+                        x={viewBox.cx}
+                        y={viewBox.cy}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                      >
+                        <tspan
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                          className="fill-foreground text-4xl font-bold"
+                        >
+                          {percentage}%
+                        </tspan>
+                        <tspan
+                          x={viewBox.cx}
+                          y={(viewBox.cy || 0) + 24}
+                          className="fill-muted-foreground text-sm"
+                        >
+                          Completado
+                        </tspan>
+                      </text>
+                    )
+                  }
+                }}
+              />
+            </Pie>
+          </PieChart>
+        </ChartContainer>
+      </CardContent>
+      <CardFooter className="mt-4 flex flex-col items-start gap-2 pb-6 text-sm mx-auto">
+        <div className="flex items-center gap-2 font-medium leading-none text-primary">
+          <TrendingUp className="h-4 w-4" /> {totalLlegadas} de {totalEsperados} empleados registrados 
+        </div>
+        
+        {totalInasistencias > 0 && (
+          <div className="flex items-center gap-2 font-medium leading-none text-black">
+            <UserX className="h-4 w-4" /> {totalInasistencias} Faltas confirmadas
+          </div>
+        )}
+
+        {pendientesCount > 0 && (
+          <div className="flex items-center gap-2 font-medium leading-none text-muted-foreground">
+            <Users className="h-4 w-4" /> Faltan {pendientesCount} por checar
+          </div>
+        )}
       </CardFooter>
     </Card>
   )

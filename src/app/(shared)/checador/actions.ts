@@ -215,6 +215,7 @@ export async function enviarSolicitudRetardo(
     dateInTimezone: string,
     timeInTimezone: string,
     expectedTime: string,
+    id_ubicacion: number,
     motivo: string,
     faceDescriptor?: number[] 
 ) {
@@ -251,6 +252,7 @@ export async function enviarSolicitudRetardo(
         fecha: dateInTimezone,
         hora: timeInTimezone,
         hora_esperada: expectedTime,
+        id_ubicacion: id_ubicacion,
         motivo: motivo
     });
 

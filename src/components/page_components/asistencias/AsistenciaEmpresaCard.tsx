@@ -33,6 +33,7 @@ interface AsistenciaCardProps {
   inasistenciasMap: InasistenciasMap;
   segmentoDona: SegmentoAsistencia[];
   totalEsperadosHoy: number;
+  totalInasistenciasHoy: number;
   ubicacionesMap: ubicacionesMap;
 }
 
@@ -45,6 +46,7 @@ export function AsistenciaEmpresaCard({
   inasistenciasMap,
   segmentoDona,
   totalEsperadosHoy,
+  totalInasistenciasHoy,
   ubicacionesMap
 }: AsistenciaCardProps) {
 
@@ -72,7 +74,11 @@ export function AsistenciaEmpresaCard({
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <PorcentajeAsistencia segmentos={segmentoDona} totalEsperados={totalEsperadosHoy} />
+          <PorcentajeAsistencia
+          segmentos={segmentoDona}
+          totalEsperados={totalEsperadosHoy}
+          totalInasistencias={totalInasistenciasHoy}
+          />
         </div>
         
         <AsistenciaTablaTurnos
