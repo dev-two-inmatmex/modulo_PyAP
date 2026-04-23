@@ -46,6 +46,7 @@ export type vista_empleados_empresa = Database["public"]["Views"]["vista_emplead
  */
 export async function getVistaEmpleadosEmpresa(
     id_estatus?: number,
+    id_empresa?: number,
 ): Promise<vista_empleados_empresa[]> {
     const supabase = await createServidorClient();
     let query = supabase
@@ -53,6 +54,9 @@ export async function getVistaEmpleadosEmpresa(
         .select('*');
     if (id_estatus) {
         query = query.eq('id_estatus', id_estatus);
+    }
+    if (id_empresa) {
+        query = query.eq('id_empresa', id_empresa);
     }
     const { data, error } = await query;
     if (error) {

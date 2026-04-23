@@ -58,7 +58,7 @@ export function AsistenciaEmpresaCard({
   faltaSalidaAlertas,
   excedeDescansoAlertas
 }: AsistenciaCardProps) {
-
+  console.log(empleadosViewAlertas)
   // Filtramos solicitudes pendientes para el contador
   const solicitudesPendientes = solicitudesAlertas.filter(s => s.aceptar_asistencia_tardia === null);
   
@@ -114,7 +114,7 @@ export function AsistenciaEmpresaCard({
                     <DialogHeader>
                         <DialogTitle>Informe de Asistencias - {nombreEmpresa}</DialogTitle>
                     </DialogHeader>
-                    <InformeAsistencias empresaId={empresaId} />
+                    <InformeAsistencias empleadosView={null,empleadosViewAlertas}/>
                 </DialogContent>
             </Dialog>
         </div>

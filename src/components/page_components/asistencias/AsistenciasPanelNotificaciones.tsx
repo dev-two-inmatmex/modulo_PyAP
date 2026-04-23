@@ -2,7 +2,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, Clock, Coffee, DoorOpen } from "lucide-react";
 import { useNombreEmpleado } from "@/components/providers/NombreEmpleadoProvider";
-import { getEmpleadoNombreCompleto } from "@/services/empleados-nombre_completo";
 
 export interface AlertaSalida {
   id_empleado: string;
