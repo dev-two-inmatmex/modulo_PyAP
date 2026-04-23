@@ -114,7 +114,7 @@ export function AsistenciaEmpresaCard({
                     <DialogHeader>
                         <DialogTitle>Informe de Asistencias - {nombreEmpresa}</DialogTitle>
                     </DialogHeader>
-                    <InformeAsistencias empleadosView={null,empleadosViewAlertas}/>
+                    <InformeAsistencias empresaId={empresaId} />
                 </DialogContent>
             </Dialog>
         </div>
