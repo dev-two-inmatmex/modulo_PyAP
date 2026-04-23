@@ -35,7 +35,7 @@ export default async function ChecadorPage() {
   const horario = horarioData ? horarioData[hoyEs] : null;
   const descanso = descansoData ? descansoData[hoyEs] : null;
   //console.log("horario: ", horarioData, "descanso: ", descanso)
-  const solicitudes = await getSolicitudesAsistencia30MinDespues(fecha, user.id);
+  const solicitudes = await getSolicitudesAsistencia30MinDespues(fecha, user.id,);
   console.log("solicitudes", solicitudes)
 
   const horasExtra = await getHorasExtra(fecha, user.id);

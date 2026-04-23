@@ -147,7 +147,7 @@ interface UbicacionesTabProps {
 // Carga dinámica del mapa para evitar problemas de SSR
 const MapaEdicion = dynamic(() => import('@/components/page_components/configuracion_Admin/MapaEdicion'), { 
   ssr: false, 
-  loading: () => <div className="h-[400px] w-full bg-gray-200 animate-pulse rounded-md"></div> 
+  loading: () => <div className="h-100 w-full bg-gray-200 animate-pulse rounded-md"></div> 
 });
 
 const DEFAULT_LOCATION = {
@@ -224,7 +224,7 @@ export function UbicacionesTab({ ubicacionInicial, onFinished }: UbicacionesTabP
             id="radius-slider"
             min={30}
             max={100}
-            step={10}
+            step={5}
             value={[radius]}
             onValueChange={(value) => setRadius(value[0])}
             disabled={isPending}
