@@ -244,7 +244,7 @@ export default async function AsistenciasPage() {
           }];
 
           // Filtrar alertas para esta empresa específica
-          const solicitudesEmpresa = solicitudes.filter(s => empleadoEmpresaMap[s.id_empleado] === empresa.id);
+          const solicitudesEmpresa = solicitudes.filter((s:any) => empleadoEmpresaMap[s.id_empleado] === empresa.id);
           const faltaSalidaEmpresa = alertasFaltaSalida.filter(a => a.id_empresa === empresa.id);
           const excedeDescansoEmpresa = alertasExcedeDescanso.filter(a => a.id_empresa === empresa.id);
 
