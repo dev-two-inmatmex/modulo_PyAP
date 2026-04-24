@@ -47,8 +47,62 @@ export async function fetchAsistenciaReporteAction(
 import { getVistaEmpleadosEmpresa } from "@/services/empleados";
 
 export async function fetchEmpleadosReporteAction(empresaId: number | null) {
-  // Pasamos 'undefined' en el id_estatus para que traiga TODOS (activos e inactivos)
-  // Pasamos empresaId o undefined si queremos todas las empresas
   const empleados = await getVistaEmpleadosEmpresa(undefined, empresaId || undefined);
   return empleados;
+}
+
+
+export async function responderSolicitudAsistenciaTardia(
+  solicitudId: number,
+  hora_aceptacion: string,
+  aceptar: boolean,
+  faceDescriptor: number[]|null,
+) {
+  const supabase = await createServidorClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return { success: false, message: "No se pudo autenticar al autorizador." };
+  }
+
+  // 1. Verificación biométrica usando la función RPC
+  if (!faceDescriptor || faceDescriptor.length === 0) {
+    return { success: false, message: "Se requiere escaneo facial para autorizar." };
+  }
+
+  const { data: biometricResult, error: rpcError } = await supabase.rpc('verificar_identidad_biometrica', {
+    id_empleado_param: user.id, // Verificamos la identidad de quien está logueado
+    descriptor_param: faceDescriptor
+  });
+
+  if (rpcError) {
+    console.error("Error en RPC de biometría:", rpcError);
+    return { success: false, message: "Error en el servidor de biometría." };
+  }
+
+  const score = biometricResult as number;
+  // Usamos el mismo umbral que en el checador para consistencia
+  if (score > 0.55) {
+    return { success: false, message: `Identidad no verificada. Su rostro no coincide (Score: ${score.toFixed(4)})` };
+  }
+
+  // 2. Si la verificación es exitosa, actualizamos la solicitud
+  const { error: updateError } = await supabase
+    .from("registro_solicitud_asistencia_30min_despues")
+    .update({
+      aceptar_asistencia_tardia: aceptar,
+      id_autorizador: user.id,
+      hora_aceptacion: hora_aceptacion,
+    })
+    .eq("id", solicitudId);
+
+  if (updateError) {
+    console.error("Error al actualizar la solicitud:", updateError);
+    return { success: false, message: "Error al guardar la respuesta." };
+  }
+
+  return { success: true, message: `Solicitud ${aceptar ? 'aprobada' : 'denegada'} correctamente.` };
 }

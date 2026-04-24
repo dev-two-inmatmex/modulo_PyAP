@@ -1,7 +1,7 @@
 "use server"
 import { createServidorClient } from "@/lib/supabase/server";
 import { Database } from "@/types/database.types";
-type registro_solicitud_asistencia_30min_despues = Database["public"]["Tables"]["registro_solicitud_asistencia_30min_despues"]["Row"];
+export type registro_solicitud_asistencia_30min_despues = Database["public"]["Tables"]["registro_solicitud_asistencia_30min_despues"]["Row"];
 export type versolicitud_asistencia_30min_despues = Pick<registro_solicitud_asistencia_30min_despues,"id"|"fecha"|"hora"|"id_empleado"|"aceptar_asistencia_tardia"|"motivo">;
 
 export async function getSolicitudesAsistencia30MinDespues(
@@ -22,6 +22,9 @@ let query = supabase
     }
     if (aceptado !== true) {
         query = query.or(`aceptar_asistencia_tardia.is.null,aceptar_asistencia_tardia.is.false`);
+        if (aceptado === null){
+            query = query.is('aceptar_asistencia_tardia', null);
+        }
     }
     const { data, error } = await query;
     if (error) {
