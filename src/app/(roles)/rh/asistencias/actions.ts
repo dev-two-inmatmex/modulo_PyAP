@@ -101,7 +101,7 @@ export async function responderSolicitudAsistenciaTardia(
 
   if (updateError) {
     console.error("Error al actualizar la solicitud:", updateError);
-    return { success: false, message: "Error al guardar la respuesta." };
+    return { success: false, message: `Error al guardar la respuesta: ${updateError.message}.` };
   }
 
   return { success: true, message: `Solicitud ${aceptar ? 'aprobada' : 'denegada'} correctamente.` };

@@ -23,7 +23,7 @@ export default async function ChecadorPage() {
   const fecha = getFormatosBD().fecha;
   const hoyEs = getFormatosBD().nombredeldiaDBEs;
   const ubicaciones = await getUbicacionesPermitidas();
-  //console.log("ubicaciones", ubicaciones)
+  console.log("ubicaciones", ubicaciones)
   const tienesInasistencias = await getInasistenciaUser(fecha);
   //console.log("inasistencias", tienesInasistencias)
   const registros = await getRegistrosChecadorHoyUser(fecha);
@@ -36,7 +36,7 @@ export default async function ChecadorPage() {
   const descanso = descansoData ? descansoData[hoyEs] : null;
   //console.log("horario: ", horarioData, "descanso: ", descanso)
   const solicitudes = await getSolicitudesAsistencia30MinDespues(fecha, user.id,);
-  console.log("solicitudes", solicitudes)
+  //console.log("solicitudes", solicitudes)
 
   const horasExtra = await getHorasExtra(fecha, user.id);
   //console.log("horas extra", horasExtra)

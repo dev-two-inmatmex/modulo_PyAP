@@ -1,5 +1,4 @@
 export const dynamic = 'force-dynamic';
-import { createServidorClient } from "@/lib/supabase/server";
 import RelojAsistencia from "@/components/page_components/asistencias/AsistenciaReloj";
 import { RealtimeAsistencias } from "@/hooks/useRealtimeChecadorRegistros";
 import { RealtimeInasistencias } from "@/hooks/useRealtimeInasistenciasConfirmadas";
@@ -8,7 +7,7 @@ import { getVistaEmpleadosEmpresa } from "@/services/empleados";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getEmpresas } from "@/services/empresas";
 import { EmpresaColor } from "@/services/empresas-data_estilos";
-import { getHorariosHoy, getHorasExtra, type Empleado_asignacion_horas_extra } from "@/services/horarios";
+import { getHorariosHoy, getHorasExtra } from "@/services/horarios";
 import { AsistenciaEmpresaCard } from "@/components/page_components/asistencias/AsistenciaEmpresaCard";
 import EmpresaLogo from "@/components/reutilizables/EmpresaLogo";
 import { getInasistencias } from "@/services/asistencias";
@@ -20,6 +19,7 @@ import { AlertaSalida, AlertaDescanso } from "@/components/page_components/asist
 
 export default async function AsistenciasPage() {
   const empleadoEmpresaView = await getVistaEmpleadosEmpresa(1);
+  console.log("empleado-empresa: ", empleadoEmpresaView)
   const empresas = await getEmpresas();
   const { getFormatosBD } = useHoy();
   

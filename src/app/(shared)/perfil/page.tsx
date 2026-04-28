@@ -8,6 +8,7 @@ export default async function ProfilePage() {
   const { data: { user }} = await supabase.auth.getUser();
 
   if (!user) {
+    //console.error("problema en supabase")
     return redirect("/login");
   }
 

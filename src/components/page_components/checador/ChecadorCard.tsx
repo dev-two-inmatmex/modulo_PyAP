@@ -149,7 +149,7 @@ export function ChecadorCard({ registros, horario, descanso, userId, ubicaciones
           id_empleado={userId}
           hora_esperada={chequeoState.horaEsperada!}
           formatosBD={getFormatosBD()}
-          ubicacion ={ ubicacionDetectada}
+          id_ubicacion ={ ubicacionDetectada?.id}
           solicitud = {solicitudes}
         />
       );

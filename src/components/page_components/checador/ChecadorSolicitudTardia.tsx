@@ -9,8 +9,14 @@ import { AlertCircle, Camera } from "lucide-react";
 // Importamos tu escáner
 import { ScannerBiometrico } from '@/components/reutilizables/ScannerBiometrico';
 import { enviarSolicitudRetardo } from '@/app/(shared)/checador/actions';
+/*type props={
+    id_empleado: string;
+    hora_esperada: string;
+    id_ubicacion: number;
 
-export function SolicitudTardiaDialog({ id_empleado, hora_esperada, ubicacion, formatosBD, solicitud }: any) {
+}*/
+
+export function SolicitudTardiaDialog({ id_empleado, hora_esperada, id_ubicacion, formatosBD, solicitud }: any) {
     const [open, setOpen] = useState(false);
     const [motivo, setMotivo] = useState("");
     const [isPending, startTransition] = useTransition();
@@ -28,7 +34,7 @@ export function SolicitudTardiaDialog({ id_empleado, hora_esperada, ubicacion, f
                 formatosBD.dateInTimezone, 
                 formatosBD.timeInTimezone, 
                 hora_esperada,
-                ubicacion.id, 
+                id_ubicacion, 
                 motivo,
                 faceDescriptor // Pasamos el rostro al backend
             );
@@ -46,7 +52,7 @@ export function SolicitudTardiaDialog({ id_empleado, hora_esperada, ubicacion, f
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="w-full text-lg py-6 bg-amber-600 hover:bg-amber-700 text-white" size="lg" disabled={!ubicacion || solicitud.length > 0}>
+                <Button className="w-full text-lg py-6 bg-amber-600 hover:bg-amber-700 text-white" size="lg" disabled={!id_ubicacion || solicitud.length > 0}>
                     <AlertCircle className="mr-2 h-6 w-6" /> Pedir Acceso por Retardo
                 </Button>
             </DialogTrigger>
@@ -76,7 +82,7 @@ export function SolicitudTardiaDialog({ id_empleado, hora_esperada, ubicacion, f
                     
                     {/* AQUÍ ESTÁ LA MAGIA: El botón de enviar ahora dispara la cámara */}
                     <ScannerBiometrico onResult={handleSubmit}>
-                        <Button disabled={isPending || motivo.trim().length < 10} className="bg-amber-600 hover:bg-amber-700">
+                        <Button disabled={isPending || motivo.trim().length < 10 || !id_ubicacion} className="bg-amber-600 hover:bg-amber-700">
                             {isPending ? "Enviando..." : <><Camera className="mr-2 h-4 w-4" /> Escanear y Enviar</>}
                         </Button>
                     </ScannerBiometrico>

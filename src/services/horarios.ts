@@ -9,15 +9,16 @@ export async function getHorariosSemanal(){
   .from('empleados_turno_horarios')
   .select(`
     id_empleado,
-    lunes:horarios!empreados_horarios_lunes_fkey(hora_entrada, hora_salida),
-    martes:horarios!empreados_horarios_martes_fkey(hora_entrada, hora_salida),
-    miercoles:horarios!empreados_horarios_miercoles_fkey(hora_entrada, hora_salida),
-    jueves:horarios!empreados_horarios_jueves_fkey(hora_entrada, hora_salida),
-    viernes:horarios!empreados_horarios_viernes_fkey(hora_entrada, hora_salida),
-    sabado:horarios!empreados_horarios_sabado_fkey(hora_entrada, hora_salida),
-    domingo:horarios!empreados_horarios_domingo_fkey(hora_entrada, hora_salida)
+    lunes:horarios!empleados_turno_horarios_lunes_fkey(hora_entrada, hora_salida),
+    martes:horarios!empleados_turno_horarios_martes_fkey(hora_entrada, hora_salida),
+    miercoles:horarios!empleados_turno_horarios_miercoles_fkey(hora_entrada, hora_salida),
+    jueves:horarios!empleados_turno_horarios_jueves_fkey(hora_entrada, hora_salida),
+    viernes:horarios!empleados_turno_horarios_viernes_fkey(hora_entrada, hora_salida),
+    sabado:horarios!empleados_turno_horarios_sabado_fkey(hora_entrada, hora_salida),
+    domingo:horarios!empleados_turno_horarios_domingo_fkey(hora_entrada, hora_salida)
   `)
-  .order('ejecutar_a_partir_de', { ascending: false });
+  .order('ejecutar_a_partir_de', { ascending: false })
+  .order('hora', { ascending: false });
 
   const { data, error } = await query;
   if (error) {
@@ -63,6 +64,7 @@ export async function getIdsConfiguracionActual(empleadoId: string) {
     .select('lunes, martes, miercoles, jueves, viernes, sabado, domingo')
     .eq('id_empleado', empleadoId)
     .order('ejecutar_a_partir_de', { ascending: false })
+    .order('hora', { ascending: false })
     .limit(1)
     .single();
 
@@ -72,6 +74,7 @@ export async function getIdsConfiguracionActual(empleadoId: string) {
     .select('lunes, martes, miercoles, jueves, viernes, sabado, domingo')
     .eq('id_empleado', empleadoId)
     .order('ejecutar_a_partir_de', { ascending: false })
+    .order('hora', { ascending: false })
     .limit(1)
     .single();
 
@@ -146,7 +149,7 @@ export async function getOpcionesDescansos() {
 
 
 // Obtiene el horario ACTUAL del empleado desde `empleado_turno` y lo formatea como un HorarioDraft
-export async function getHorarioBaseActualEmpleado(empleadoId: string | null): Promise<HorarioDraft> {
+/*export async function getHorarioBaseActualEmpleado(empleadoId: string | null): Promise<HorarioDraft> {
   const supabase = await createServidorClient();
 
   // Plantilla en blanco (Asume por defecto que descansa toda la semana)
@@ -188,7 +191,7 @@ export async function getHorarioBaseActualEmpleado(empleadoId: string | null): P
   }
 
   return horarioBase;
-}
+}*/
 
 export type Horarios = Database["public"]["Tables"]["horarios"]["Row"];
 export async function getHorarios(): Promise<Horarios[]> {
@@ -238,7 +241,7 @@ export async function getHorarioHoyUser(
 
   let query = supabase
     .from('empleados_turno_horarios')
-    .select(`${diaActual}:horarios!empreados_horarios_${diaActual}_fkey (
+    .select(`${diaActual}:horarios!empleados_turno_horarios_${diaActual}_fkey (
       hora_entrada,
       hora_salida
     )`)
@@ -265,7 +268,7 @@ export async function getHorariosHoy(
     .select(`
       id_empleado,
       ejecutar_a_partir_de,
-      ${diaActual}:horarios!empreados_horarios_${diaActual}_fkey (
+      ${diaActual}:horarios!empleados_turno_horarios_${diaActual}_fkey (
         hora_entrada,
         hora_salida
       )

@@ -100,6 +100,12 @@ const navItems: NavItem[] = [
         icon: Users,
         roles: ['RH', 'Administrador'],
       },
+      {
+        label: 'Ausencias',
+        href: '/rh/ausencias',
+        icon: Users,
+        roles: ['RH', 'Administrador'],
+      },
     ],
   },
   { label: 'Supervisor', href: '/supervisor', icon: Eye, roles: ['Supervisor', 'Administrador'] },

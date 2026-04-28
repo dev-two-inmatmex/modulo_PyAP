@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
   }
   
   const { data: rolesData } = await supabase
-  .from('v_usuario_roles')
+  .from('vista_usuario_roles')
   .select('nombre_rol')
   .eq('id_usuario', user.id)
 

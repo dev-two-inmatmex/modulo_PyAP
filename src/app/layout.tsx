@@ -50,7 +50,7 @@ export default async function RootLayout({
       { data: rolesData },
       { data: empleado }
     ] = await Promise.all([
-      supabase.from("v_usuario_roles").select("nombre_rol").eq("id_usuario", user.id),
+      supabase.from("vista_usuario_roles").select("nombre_rol").eq("id_usuario", user.id),
       supabase.from("empleados").select("nombres, apellido_paterno, apellido_materno").eq("id", user.id).single()
     ]);
 
