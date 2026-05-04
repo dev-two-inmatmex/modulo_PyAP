@@ -14,5 +14,5 @@ export async function logout() {
     console.error('Error during sign out:', error.message);
   }
 
-  redirect('/login');
+  redirect('/login'); 
 }

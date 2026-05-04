@@ -19,7 +19,7 @@ import { AlertaSalida, AlertaDescanso } from "@/components/page_components/asist
 
 export default async function AsistenciasPage() {
   const empleadoEmpresaView = await getVistaEmpleadosEmpresa(1);
-  console.log("empleado-empresa: ", empleadoEmpresaView)
+  //console.log("empleado-empresa: ", empleadoEmpresaView)
   const empresas = await getEmpresas();
   const { getFormatosBD } = useHoy();
   

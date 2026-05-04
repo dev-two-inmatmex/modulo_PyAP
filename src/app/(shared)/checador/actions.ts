@@ -38,7 +38,7 @@ export async function registrarChequeo(
             return { error: "Error en el servidor de biometría." };
         }
     
-        console.log('distancia biometrica:', biometricResult);
+        //console.log('distancia biometrica:', biometricResult);
         const score = biometricResult as number;
         if (biometricResult > 0.55) { // Umbral para distancia de Coseno
             return { error: `Identidad no verificada. (Score: ${score.toFixed(4)})` };
@@ -46,7 +46,7 @@ export async function registrarChequeo(
 
     } else {
         // Si es un descanso (salida_descanso o regreso_descanso)
-        console.log(`Chequeo de ${action} omitiendo biometría por regla de negocio.`);
+        //console.log(`Chequeo de ${action} omitiendo biometría por regla de negocio.`);
     }
 
     const today = dateWithTimezone;
@@ -152,8 +152,6 @@ export async function registrarChequeo(
     revalidatePath('/checador');
     return { success: `Se ha registrado tu ${friendlyAction} con éxito.` };
 }
-
-
 
 export async function registrarChequeoPrueba(
     action: ChequeoAction,

@@ -295,7 +295,7 @@ function EditForm({ empleado, edit_empleado, setOpen }: { empleado: empleados, e
             Si el empleado olvidó su contraseña o sospecha que fue comprometida, puedes generar una nueva contraseña temporal. Esto cerrará todas sus sesiones activas inmediatamente.
           </p>
           <ResetPasswordButton
-            employeeId={edit_empleado.id}
+            employeeId={empleado.id}
             employeeName={getNombreEmpleadoPorId(empleado.id).nombre_completo}
             employeeEmail={empleado.email}
           />

@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { EmployeeCard } from './EmployeeCard';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { AddEmployee } from "@/components/page_components/empleados/AddEmployee";
 import { AddEmployeeInfoBasica } from './AddEmpleadoConInfoBasica';
@@ -20,8 +21,8 @@ interface DirectorioEmpleadosProps {
   n_empleados: number;
   empleado_puestos_map: Record<string, number[]>;
   puestos_map: Record<number, { nombre: string, id_seccion: number, id_empresa: number }>;
-  secciones_map: Record<number, {nombre: string, id_empresa: number}>;
-  empresas_map: Record<number, {nombre:string}>;
+  secciones_map: Record<number, { nombre: string, id_empresa: number }>;
+  empresas_map: Record<number, { nombre: string }>;
 }
 
 const removeAccents = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -113,19 +114,21 @@ export default function DirectorioEmpleados({
 
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
         <Input
           placeholder="Buscar por nombre..."
           value={busqueda}
           onChange={(e) => { setBusqueda(e.target.value); setPaginaActual(1); }}
-          className="md:col-span-5"
+          className="col-span-full"
         />
         <Select value={filtroPuesto} onValueChange={(value) => { setFiltroPuesto(value); setPaginaActual(1); }}>
           <SelectTrigger><SelectValue placeholder="Filtrar por puesto" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos los puestos</SelectItem>
             {puestos.map((puesto) => (
-              <SelectItem key={puesto.id} value={puesto.nombre_puesto}>{puesto.nombre_puesto}</SelectItem>
+              <SelectItem key={puesto.id} value={puesto.nombre_puesto}>
+                <span className="whitespace-normal wrap-break-word">{puesto.nombre_puesto}</span>
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -134,7 +137,9 @@ export default function DirectorioEmpleados({
           <SelectContent>
             <SelectItem value="all">Todas las áreas</SelectItem>
             {secciones.map((area) => (
-              <SelectItem key={area.id} value={area.nombre_seccion}>{area.nombre_seccion}</SelectItem>
+              <SelectItem key={area.id} value={area.nombre_seccion}>
+                <span className="whitespace-normal wrap-break-word">{area.nombre_seccion}</span>
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -143,7 +148,9 @@ export default function DirectorioEmpleados({
           <SelectContent>
             <SelectItem value="all">Todas las empresas</SelectItem>
             {empresas.map((empresa) => (
-              <SelectItem key={empresa.id} value={empresa.nombre_empresa}>{empresa.nombre_empresa}</SelectItem>
+              <SelectItem key={empresa.id} value={empresa.nombre_empresa}>
+                <span className="whitespace-normal wrap-break-word">{empresa.nombre_empresa}</span>
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -155,14 +162,19 @@ export default function DirectorioEmpleados({
           </SelectContent>
         </Select>
 
-        <AddEmployee
+        {/*<AddEmployee
           horarios={horarios || []}
           descansos={descansos || []}
           puestos={puestos || []}
           ubicaciones={ubicaciones || []}
           estatuses={estatuses || []}
           n_empleados={String(n_empleados)}
-        />
+        />*/}
+        <Link href="/rh/empleados/agregar-empleado" passHref>
+          <Button className="bg-green-600 hover:bg-green-700 text-white w-full">
+            Agregar Empleado
+          </Button>
+        </Link>
         {/*<AddEmployeeInfoBasica
           horarios={horarios || []}
           descansos={descansos || []}
