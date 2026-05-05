@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
-import { addUser } from './actions';
+import { addUser } from '../../../../app/(roles)/rh/empleados/agregar-empleado/actions';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { SelectField } from '@/components/reutilizables/SelectField';
 import { ComboboxField } from '@/components/reutilizables/ComboboxField';
@@ -342,7 +342,18 @@ export function FormularioNuevoEmpleado({ horarios, descansos, puestos, ubicacio
                     }))}
                   />
                   <FormField control={form.control} name="sueldo" render={({ field }) => (
-                    <FormItem><FormLabel>SUELDO SEMANAL (LIBRE)</FormLabel><FormControl><Input type="number" placeholder="Ej: 2500" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormItem><FormLabel>SUELDO SEMANAL (LIBRE)</FormLabel><FormControl>
+                      <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">
+                        $
+                      </span>
+                      <Input
+                      type="number"
+                      placeholder="Ej: 2500"
+                      className='pl-7 h-10'
+                       {...field} />
+                      </div>
+                      </FormControl><FormMessage /></FormItem>)} />
 
                   <FormField control={form.control} name="email" render={({ field }) => (
                     <FormItem><FormLabel>EMAIL CORPORATIVO</FormLabel><FormControl><Input {...field} readOnly className="bg-slate-100 lowercase" /></FormControl><FormMessage /></FormItem>)} />

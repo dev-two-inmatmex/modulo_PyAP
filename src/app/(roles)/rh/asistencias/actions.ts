@@ -85,7 +85,7 @@ export async function responderSolicitudAsistenciaTardia(
 
   const score = biometricResult as number;
   // Usamos el mismo umbral que en el checador para consistencia
-  if (score > 0.55) {
+  if (biometricResult > 0.55) {
     return { success: false, message: `Identidad no verificada. Su rostro no coincide (Score: ${score.toFixed(4)})` };
   }
 
